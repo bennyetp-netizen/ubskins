@@ -68,6 +68,18 @@ export const useAuth = () => {
     );
     const initData = await initRes.json();
     if (initData?.url) {
+      // If we're inside the Lovable preview iframe, break out so Steam
+      // can actually navigate (iframes block top-level OpenID redirects).
+      try {
+        if (window.top && window.top !== window.self) {
+          window.top.location.href = initData.url;
+          return;
+        }
+      } catch {
+        // Cross-origin top — fall through to opening in a new tab
+        window.open(initData.url, "_blank", "noopener");
+        return;
+      }
       window.location.href = initData.url;
     } else {
       throw new Error(initData?.error ?? "Cannot start Steam login");
