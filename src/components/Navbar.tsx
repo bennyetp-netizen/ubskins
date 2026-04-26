@@ -83,11 +83,12 @@ const Navbar = () => {
             <Button
               variant="steam"
               size="sm"
-              className="hidden sm:inline-flex"
+              className="px-3"
               onClick={handleSteamLogin}
+              aria-label="Steam-р нэвтрэх"
             >
-              <User className="mr-1.5 h-4 w-4" />
-              Steam-р нэвтрэх
+              <User className="h-4 w-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Steam-р нэвтрэх</span>
             </Button>
           )}
         </div>
