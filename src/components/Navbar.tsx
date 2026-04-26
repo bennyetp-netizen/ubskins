@@ -1,8 +1,10 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { ShoppingCart, User, Shield } from "lucide-react";
+import { ShoppingCart, User, Shield, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/useCart";
+import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
 const links = [
   { to: "/", label: "Нүүр" },
@@ -13,7 +15,16 @@ const links = [
 
 const Navbar = () => {
   const { items } = useCart();
+  const { user, profile, signInWithSteam, signOut } = useAuth();
   const loc = useLocation();
+
+  const handleSteamLogin = async () => {
+    try {
+      await signInWithSteam();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Алдаа гарлаа");
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl">
@@ -55,10 +66,30 @@ const Navbar = () => {
               )}
             </Button>
           </Link>
-          <Button variant="steam" size="sm" className="hidden sm:inline-flex">
-            <User className="mr-1.5 h-4 w-4" />
-            Steam-р нэвтрэх
-          </Button>
+
+          {user ? (
+            <div className="flex items-center gap-2">
+              <Link to="/account" className="hidden items-center gap-2 rounded-full border border-border bg-secondary/40 px-3 py-1.5 sm:flex">
+                {profile?.avatar_url && (
+                  <img src={profile.avatar_url} alt="" className="h-6 w-6 rounded-full" />
+                )}
+                <span className="text-xs font-medium">{profile?.display_name ?? "Хэрэглэгч"}</span>
+              </Link>
+              <Button variant="ghost" size="icon" onClick={signOut} aria-label="Гарах">
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <Button
+              variant="steam"
+              size="sm"
+              className="hidden sm:inline-flex"
+              onClick={handleSteamLogin}
+            >
+              <User className="mr-1.5 h-4 w-4" />
+              Steam-р нэвтрэх
+            </Button>
+          )}
         </div>
       </nav>
       {/* mobile */}
