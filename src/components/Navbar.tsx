@@ -6,17 +6,28 @@ import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
-const links = [
+const baseLinks = [
   { to: "/", label: "Нүүр" },
   { to: "/shop", label: "Дэлгүүр" },
-  { to: "/account", label: "Хэрэглэгч" },
-  { to: "/admin", label: "Админ" },
 ];
+
+const authLinks = [
+  { to: "/orders", label: "Захиалга" },
+  { to: "/account", label: "Хэрэглэгч" },
+];
+
+const adminLinks = [{ to: "/admin", label: "Админ" }];
 
 const Navbar = () => {
   const { items } = useCart();
   const { user, profile, signInWithSteam, signOut } = useAuth();
   const loc = useLocation();
+
+  const links = [
+    ...baseLinks,
+    ...(user ? authLinks : []),
+    ...adminLinks,
+  ];
 
   const handleSteamLogin = async () => {
     try {
