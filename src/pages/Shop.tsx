@@ -1,17 +1,19 @@
 import { useMemo, useState } from "react";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search, SlidersHorizontal, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import SkinCard from "@/components/SkinCard";
-import { skins, type Wear, type Weapon } from "@/data/skins";
+import { type Wear } from "@/data/skins";
+import { useSkins } from "@/hooks/useSkins";
 
-const weaponOptions: Weapon[] = ["Rifle", "Sniper", "Knife", "Pistol", "SMG"];
+const weaponOptions = ["Rifle", "Sniper", "Knife", "Pistol", "SMG"];
 const wearOptions: Wear[] = ["FN", "MW", "FT", "WW", "BS"];
 
 const Shop = () => {
+  const { skins, loading } = useSkins();
   const [q, setQ] = useState("");
-  const [weapons, setWeapons] = useState<Weapon[]>([]);
+  const [weapons, setWeapons] = useState<string[]>([]);
   const [wears, setWears] = useState<Wear[]>([]);
   const [maxPrice, setMaxPrice] = useState(5000000);
   const [sort, setSort] = useState<"price-asc" | "price-desc" | "float-asc">("price-asc");
@@ -19,7 +21,7 @@ const Shop = () => {
   const filtered = useMemo(() => {
     let list = skins.filter((s) => {
       if (q && !`${s.weaponName} ${s.name}`.toLowerCase().includes(q.toLowerCase())) return false;
-      if (weapons.length && !weapons.includes(s.weapon)) return false;
+      if (weapons.length && !weapons.some((w) => s.weapon.toLowerCase().includes(w.toLowerCase()))) return false;
       if (wears.length && !wears.includes(s.wear)) return false;
       if (s.price > maxPrice) return false;
       return true;
@@ -28,7 +30,7 @@ const Shop = () => {
       sort === "price-asc" ? a.price - b.price : sort === "price-desc" ? b.price - a.price : a.float - b.float
     );
     return list;
-  }, [q, weapons, wears, maxPrice, sort]);
+  }, [skins, q, weapons, wears, maxPrice, sort]);
 
   const toggle = <T,>(arr: T[], v: T, set: (n: T[]) => void) =>
     set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
@@ -137,9 +139,13 @@ const Shop = () => {
             </div>
           </div>
 
-          {filtered.length === 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center rounded-2xl border border-dashed border-border p-20 text-muted-foreground">
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Уншиж байна...
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-border p-12 text-center text-muted-foreground">
-              Скин олдсонгүй. Шүүлтүүрээ өөрчилнө үү.
+              {skins.length === 0 ? "Одоогоор скин нэмэгдээгүй байна." : "Скин олдсонгүй. Шүүлтүүрээ өөрчилнө үү."}
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
