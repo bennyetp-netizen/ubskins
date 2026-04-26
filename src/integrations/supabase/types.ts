@@ -14,7 +14,96 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      orders: {
+        Row: {
+          created_at: string
+          float_value: number | null
+          id: string
+          payment_method: string
+          payment_reference: string | null
+          price_mnt: number
+          skin_id: string
+          skin_image: string | null
+          skin_name: string
+          status: string
+          trade_offer_id: string | null
+          trade_url: string | null
+          updated_at: string
+          user_id: string
+          wear: string | null
+        }
+        Insert: {
+          created_at?: string
+          float_value?: number | null
+          id?: string
+          payment_method: string
+          payment_reference?: string | null
+          price_mnt: number
+          skin_id: string
+          skin_image?: string | null
+          skin_name: string
+          status?: string
+          trade_offer_id?: string | null
+          trade_url?: string | null
+          updated_at?: string
+          user_id: string
+          wear?: string | null
+        }
+        Update: {
+          created_at?: string
+          float_value?: number | null
+          id?: string
+          payment_method?: string
+          payment_reference?: string | null
+          price_mnt?: number
+          skin_id?: string
+          skin_image?: string | null
+          skin_name?: string
+          status?: string
+          trade_offer_id?: string | null
+          trade_url?: string | null
+          updated_at?: string
+          user_id?: string
+          wear?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          profile_url: string | null
+          steam_id: string | null
+          trade_url: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          profile_url?: string | null
+          steam_id?: string | null
+          trade_url?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          profile_url?: string | null
+          steam_id?: string | null
+          trade_url?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
