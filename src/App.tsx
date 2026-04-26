@@ -10,6 +10,7 @@ import Shop from "./pages/Shop";
 import SkinDetail from "./pages/SkinDetail";
 import Cart from "./pages/Cart";
 import Account from "./pages/Account";
+import Orders from "./pages/Orders";
 import Admin from "./pages/Admin";
 import AuthCallback from "./pages/AuthCallback";
 import NotFound from "./pages/NotFound";
@@ -31,6 +32,7 @@ const App = () => (
               <Route path="/skin/:id" element={<SkinDetail />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/account" element={<Account />} />
+              <Route path="/orders" element={<Orders />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="*" element={<NotFound />} />
