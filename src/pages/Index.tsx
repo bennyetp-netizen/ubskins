@@ -74,9 +74,9 @@ const Index = () => {
                   Скин үзэх <ArrowRight className="ml-1" />
                 </Button>
               </Link>
-              <Button variant="steam" size="xl">
+              <Button variant="steam" size="xl" onClick={handleSteam}>
                 <LogIn className="mr-1" />
-                Steam-р нэвтрэх
+                {user ? "Бүртгэл рүү" : "Steam-р нэвтрэх"}
               </Button>
             </div>
 
@@ -191,7 +191,9 @@ const Index = () => {
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link to="/shop"><Button variant="hero" size="xl">Скин үзэх</Button></Link>
-              <Button variant="steam" size="xl"><LogIn className="mr-1" /> Steam-р нэвтрэх</Button>
+              <Button variant="steam" size="xl" onClick={handleSteam}>
+                <LogIn className="mr-1" /> {user ? "Бүртгэл рүү" : "Steam-р нэвтрэх"}
+              </Button>
             </div>
           </div>
         </div>
