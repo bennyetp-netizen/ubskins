@@ -1,8 +1,9 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ShieldCheck, Truck, Tag, Plus, Loader2 } from "lucide-react";
+import { ArrowLeft, ShieldCheck, Truck, Tag, Plus, Loader2, Globe2, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatMNT, storepayMonthly, wearLabel, wearColor } from "@/data/skins";
+import { formatMNT, wearLabel, wearColor } from "@/data/skins";
+import { calcPrepayment, mntToUsd } from "@/data/payment";
 import SkinCard from "@/components/SkinCard";
 import { useCart } from "@/hooks/useCart";
 import { useSkin, useSkins } from "@/hooks/useSkins";
@@ -34,10 +35,10 @@ const SkinDetail = () => {
 
   const related = all.filter((s) => s.id !== skin.id && s.weapon === skin.weapon).slice(0, 4);
 
-  const buy = (method: "storepay" | "qpay") => {
+  const orderNow = () => {
     add(skin);
-    toast.success(`${method === "storepay" ? "Storepay" : "QPay"} төлбөрт шилжиж байна...`);
-    setTimeout(() => nav("/cart"), 600);
+    toast.success("Сагсанд нэмэгдлээ. Захиалга үүсгэх рүү шилжиж байна...");
+    setTimeout(() => nav("/cart"), 500);
   };
 
   return (
@@ -103,25 +104,23 @@ const SkinDetail = () => {
               <div>
                 <p className="text-xs text-muted-foreground">Үнэ</p>
                 <p className="font-display text-4xl font-bold text-gradient-primary">{formatMNT(skin.price)}</p>
+                <p className="mt-1 text-xs text-muted-foreground">≈ ${mntToUsd(skin.price)} USD</p>
               </div>
               <div className="text-right">
-                <p className="text-xs text-muted-foreground">Storepay</p>
-                <p className="font-display text-lg font-semibold text-accent">{formatMNT(storepayMonthly(skin.price))} × 4</p>
-                <p className="text-[10px] text-muted-foreground">хүүгүй</p>
+                <p className="text-xs text-muted-foreground">Урьдчилгаа (30%)</p>
+                <p className="font-display text-lg font-semibold text-warning">{formatMNT(calcPrepayment(skin.price))}</p>
+                <p className="text-[10px] text-muted-foreground">олон улсын шилжүүлгээр</p>
               </div>
             </div>
 
-            <div className="mt-5 grid gap-2 sm:grid-cols-2">
-              <Button variant="storepay" size="lg" onClick={() => buy("storepay")}>
-                Storepay-р авах
+            <div className="mt-5 grid gap-2">
+              <Button variant="hero" size="lg" onClick={orderNow}>
+                <Globe2 className="mr-1.5 h-4 w-4" /> Захиалга үүсгэх
               </Button>
-              <Button variant="qpay" size="lg" onClick={() => buy("qpay")}>
-                QPay-р авах
+              <Button variant="outline" size="lg" onClick={() => { add(skin); toast.success("Сагсанд нэмэгдлээ"); }}>
+                <ShoppingCart className="mr-1.5 h-4 w-4" /> Сагсанд нэмэх
               </Button>
             </div>
-            <Button variant="outline" size="lg" className="mt-2 w-full" onClick={() => { add(skin); toast.success("Сагсанд нэмэгдлээ"); }}>
-              <Plus className="mr-1.5 h-4 w-4" /> Сагсанд нэмэх
-            </Button>
           </div>
 
           {skin.description && (
