@@ -54,14 +54,6 @@ export const useAuth = () => {
     const realm = window.location.origin;
     const returnTo = `${realm}/auth/callback`;
 
-    const { data, error } = await supabase.functions.invoke("steam-auth-init", {
-      body: null,
-      method: "GET",
-    } as any);
-
-    // Use a direct fetch since invoke doesn't pass query params for GET nicely
-    const url = `${(supabase as any).functionsUrl ?? ""}`;
-    // Fallback: build the URL via env
     const projectUrl = import.meta.env.VITE_SUPABASE_URL;
     const initRes = await fetch(
       `${projectUrl}/functions/v1/steam-auth-init?return_to=${encodeURIComponent(
