@@ -1,0 +1,100 @@
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import type { Session, User } from "@supabase/supabase-js";
+
+export interface SteamProfile {
+  user_id: string;
+  steam_id: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+  profile_url: string | null;
+  trade_url: string | null;
+}
+
+export const useAuth = () => {
+  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<SteamProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Set up listener FIRST
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, sess) => {
+      setSession(sess);
+      setUser(sess?.user ?? null);
+      if (sess?.user) {
+        // Defer profile fetch to avoid deadlocks
+        setTimeout(() => loadProfile(sess.user.id), 0);
+      } else {
+        setProfile(null);
+      }
+    });
+
+    // Then check existing session
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setUser(data.session?.user ?? null);
+      if (data.session?.user) loadProfile(data.session.user.id);
+      setLoading(false);
+    });
+
+    return () => subscription.subscription.unsubscribe();
+  }, []);
+
+  const loadProfile = async (userId: string) => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (data) setProfile(data as SteamProfile);
+  };
+
+  const signInWithSteam = async () => {
+    const realm = window.location.origin;
+    const returnTo = `${realm}/auth/callback`;
+
+    const { data, error } = await supabase.functions.invoke("steam-auth-init", {
+      body: null,
+      method: "GET",
+    } as any);
+
+    // Use a direct fetch since invoke doesn't pass query params for GET nicely
+    const url = `${(supabase as any).functionsUrl ?? ""}`;
+    // Fallback: build the URL via env
+    const projectUrl = import.meta.env.VITE_SUPABASE_URL;
+    const initRes = await fetch(
+      `${projectUrl}/functions/v1/steam-auth-init?return_to=${encodeURIComponent(
+        returnTo
+      )}&realm=${encodeURIComponent(realm)}`,
+      {
+        headers: {
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+      }
+    );
+    const initData = await initRes.json();
+    if (initData?.url) {
+      window.location.href = initData.url;
+    } else {
+      throw new Error(initData?.error ?? "Cannot start Steam login");
+    }
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+  };
+
+  const updateTradeUrl = async (tradeUrl: string) => {
+    if (!user) return { error: new Error("Not signed in") };
+    const { error } = await supabase
+      .from("profiles")
+      .update({ trade_url: tradeUrl })
+      .eq("user_id", user.id);
+    if (!error) await loadProfile(user.id);
+    return { error };
+  };
+
+  return { session, user, profile, loading, signInWithSteam, signOut, updateTradeUrl };
+};
