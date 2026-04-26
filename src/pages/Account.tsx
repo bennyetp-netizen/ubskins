@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { LogIn, Package, Clock, CheckCircle2, Truck, Copy } from "lucide-react";
+import { LogIn, Package, Clock, CheckCircle2, Truck, Copy, ExternalLink, ClipboardPaste, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -53,6 +53,39 @@ const Account = () => {
     setSaving(false);
     if (error) toast.error(error.message);
     else toast.success("Trade URL хадгалагдлаа");
+  };
+
+  const tradeUrlSettingsLink = profile?.steam_id
+    ? `https://steamcommunity.com/profiles/${profile.steam_id}/tradeoffers/privacy`
+    : "https://steamcommunity.com/my/tradeoffers/privacy";
+
+  const handlePasteFromClipboard = async () => {
+    try {
+      const text = (await navigator.clipboard.readText()).trim();
+      if (!text) {
+        toast.error("Clipboard хоосон байна");
+        return;
+      }
+      if (!/^https:\/\/steamcommunity\.com\/tradeoffer\/new\/\?partner=\d+&token=[\w-]+/.test(text)) {
+        toast.error("Зөв Steam Trade URL биш байна");
+        return;
+      }
+      setTradeUrl(text);
+      setSaving(true);
+      const { error } = await updateTradeUrl(text);
+      setSaving(false);
+      if (error) toast.error(error.message);
+      else toast.success("Trade URL автоматаар хадгалагдлаа");
+    } catch {
+      toast.error("Clipboard уншиж чадсангүй. Эхлээд URL-аа хуулна уу.");
+    }
+  };
+
+  const handleAutoFetch = () => {
+    window.open(tradeUrlSettingsLink, "_blank", "noopener,noreferrer");
+    toast.info("Trade URL-аа хуулаад буцаж ирээд 'Хуулсан URL-г оруулах' товчийг дар", {
+      duration: 6000,
+    });
   };
 
   if (loading) {
