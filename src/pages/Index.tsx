@@ -5,6 +5,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import SkinCard from "@/components/SkinCard";
 import { skins } from "@/data/skins";
 import heroBg from "@/assets/hero-bg.jpg";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const steps = [
   { icon: LogIn, title: "Steam-р нэвтэрнэ", desc: "Steam OpenID-р найдвартай нэвтэрч, trade URL-аа холбоно." },
@@ -28,6 +30,19 @@ const faqs = [
 ];
 
 const Index = () => {
+  const { user, signInWithSteam } = useAuth();
+
+  const handleSteam = async () => {
+    if (user) {
+      window.location.href = "/account";
+      return;
+    }
+    try {
+      await signInWithSteam();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Алдаа гарлаа");
+    }
+  };
   return (
     <>
       {/* Hero */}
@@ -59,9 +74,9 @@ const Index = () => {
                   Скин үзэх <ArrowRight className="ml-1" />
                 </Button>
               </Link>
-              <Button variant="steam" size="xl">
+              <Button variant="steam" size="xl" onClick={handleSteam}>
                 <LogIn className="mr-1" />
-                Steam-р нэвтрэх
+                {user ? "Бүртгэл рүү" : "Steam-р нэвтрэх"}
               </Button>
             </div>
 
@@ -176,7 +191,9 @@ const Index = () => {
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link to="/shop"><Button variant="hero" size="xl">Скин үзэх</Button></Link>
-              <Button variant="steam" size="xl"><LogIn className="mr-1" /> Steam-р нэвтрэх</Button>
+              <Button variant="steam" size="xl" onClick={handleSteam}>
+                <LogIn className="mr-1" /> {user ? "Бүртгэл рүү" : "Steam-р нэвтрэх"}
+              </Button>
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { LogIn, Package, Clock, CheckCircle2, Truck, Copy } from "lucide-react";
+import { LogIn, Package, Clock, CheckCircle2, Truck, Copy, ExternalLink, ClipboardPaste, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -53,6 +53,39 @@ const Account = () => {
     setSaving(false);
     if (error) toast.error(error.message);
     else toast.success("Trade URL хадгалагдлаа");
+  };
+
+  const tradeUrlSettingsLink = profile?.steam_id
+    ? `https://steamcommunity.com/profiles/${profile.steam_id}/tradeoffers/privacy`
+    : "https://steamcommunity.com/my/tradeoffers/privacy";
+
+  const handlePasteFromClipboard = async () => {
+    try {
+      const text = (await navigator.clipboard.readText()).trim();
+      if (!text) {
+        toast.error("Clipboard хоосон байна");
+        return;
+      }
+      if (!/^https:\/\/steamcommunity\.com\/tradeoffer\/new\/\?partner=\d+&token=[\w-]+/.test(text)) {
+        toast.error("Зөв Steam Trade URL биш байна");
+        return;
+      }
+      setTradeUrl(text);
+      setSaving(true);
+      const { error } = await updateTradeUrl(text);
+      setSaving(false);
+      if (error) toast.error(error.message);
+      else toast.success("Trade URL автоматаар хадгалагдлаа");
+    } catch {
+      toast.error("Clipboard уншиж чадсангүй. Эхлээд URL-аа хуулна уу.");
+    }
+  };
+
+  const handleAutoFetch = () => {
+    window.open(tradeUrlSettingsLink, "_blank", "noopener,noreferrer");
+    toast.info("Trade URL-аа хуулаад буцаж ирээд 'Хуулсан URL-г оруулах' товчийг дар", {
+      duration: 6000,
+    });
   };
 
   if (loading) {
@@ -122,6 +155,24 @@ const Account = () => {
             <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Trade URL
             </p>
+            <div className="mb-3 grid gap-2">
+              <Button
+                variant="steam"
+                size="sm"
+                className="w-full"
+                onClick={handleAutoFetch}
+              >
+                <Wand2 className="mr-1.5 h-4 w-4" /> Steam-аас Trade URL авах
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={handlePasteFromClipboard}
+              >
+                <ClipboardPaste className="mr-1.5 h-4 w-4" /> Хуулсан URL-г оруулах
+              </Button>
+            </div>
             <div className="flex gap-2">
               <Input
                 value={tradeUrl}
@@ -140,9 +191,14 @@ const Account = () => {
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
-            <p className="mt-2 text-[11px] text-muted-foreground">
-              Steam → Inventory → Trade Offers → Who can send → Trade URL
-            </p>
+            <a
+              href={tradeUrlSettingsLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-flex items-center gap-1 text-[11px] text-primary hover:underline"
+            >
+              <ExternalLink className="h-3 w-3" /> Steam Trade URL хуудсыг гараар нээх
+            </a>
             <Button
               size="sm"
               className="mt-3 w-full"
