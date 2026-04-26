@@ -225,11 +225,13 @@ const Account = () => {
           </div>
         </aside>
 
-        {/* Orders */}
+        {/* Orders preview */}
         <div>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-display text-xl font-semibold">Захиалгын түүх</h2>
-            <Package className="h-4 w-4 text-muted-foreground" />
+            <h2 className="font-display text-xl font-semibold">Сүүлийн захиалгууд</h2>
+            <a href="/orders" className="text-xs text-primary hover:underline">
+              Бүгдийг харах →
+            </a>
           </div>
 
           {orders.length === 0 ? (
@@ -238,7 +240,7 @@ const Account = () => {
             </div>
           ) : (
             <div className="space-y-3">
-              {orders.map((o) => {
+              {orders.slice(0, 3).map((o) => {
                 const s = statusMap[o.status] ?? statusMap.pending;
                 return (
                   <div
