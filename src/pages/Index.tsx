@@ -95,11 +95,13 @@ const Index = () => {
             <div className="relative aspect-square">
               <div className="absolute inset-10 rounded-full bg-primary/20 blur-3xl" />
               <div className="absolute inset-20 rounded-full bg-accent/20 blur-3xl" />
-              <img
-                src={skins[0].image}
-                alt="Featured skin"
-                className="relative animate-float-slow drop-shadow-[0_20px_60px_hsl(186_100%_50%/0.4)]"
-              />
+              {featured[0] && (
+                <img
+                  src={featured[0].image}
+                  alt="Featured skin"
+                  className="relative animate-float-slow drop-shadow-[0_20px_60px_hsl(186_100%_50%/0.4)]"
+                />
+              )}
             </div>
           </div>
         </div>
@@ -154,9 +156,11 @@ const Index = () => {
           </Link>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {skins.slice(0, 4).map((s) => (
-            <SkinCard key={s.id} skin={s} />
-          ))}
+          {featured.length === 0 ? (
+            <p className="col-span-full text-center text-muted-foreground">Скин удахгүй нэмэгдэнэ.</p>
+          ) : (
+            featured.map((s) => <SkinCard key={s.id} skin={s} />)
+          )}
         </div>
       </section>
 
