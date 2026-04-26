@@ -11,6 +11,7 @@ import SkinDetail from "./pages/SkinDetail";
 import Cart from "./pages/Cart";
 import Account from "./pages/Account";
 import Admin from "./pages/Admin";
+import AuthCallback from "./pages/AuthCallback";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
               <Route path="/cart" element={<Cart />} />
               <Route path="/account" element={<Account />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
