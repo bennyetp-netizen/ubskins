@@ -1,24 +1,61 @@
-import akImg from "@/assets/skin-ak.png";
-import awpImg from "@/assets/skin-awp.png";
-import knifeImg from "@/assets/skin-knife.png";
-import m4Img from "@/assets/skin-m4.png";
-
+// Скин — database row-той нийцэх type. Бүх өгөгдөл Supabase-ээс ирнэ.
 export type Wear = "FN" | "MW" | "FT" | "WW" | "BS";
 export type Weapon = "Rifle" | "Sniper" | "Knife" | "Pistol" | "SMG";
+export type Rarity = "Covert" | "Classified" | "Restricted" | "Mil-Spec";
 
 export interface Skin {
   id: string;
   name: string;
-  weapon: Weapon;
-  weaponName: string;
+  weapon: string; // Rifle/Sniper/Knife/Pistol/SMG (DB-д text)
+  weaponName: string; // AK-47, AWP, ★ Karambit гэх мэт
   wear: Wear;
   float: number;
   price: number; // MNT
   stock: number;
   image: string;
-  rarity: "Covert" | "Classified" | "Restricted" | "Mil-Spec";
+  rarity: Rarity;
   statTrak?: boolean;
+  game?: string;
+  description?: string | null;
+  isActive?: boolean;
+  isFeatured?: boolean;
 }
+
+// DB row-г UI Skin рүү хөрвүүлэгч
+export interface SkinRow {
+  id: string;
+  name: string;
+  weapon: string;
+  game: string;
+  wear: string | null;
+  float_value: number | null;
+  price_mnt: number;
+  image_url: string | null;
+  rarity: string | null;
+  description: string | null;
+  stattrak: boolean;
+  is_active: boolean;
+  is_featured: boolean;
+  stock: number;
+}
+
+export const mapSkinRow = (r: SkinRow): Skin => ({
+  id: r.id,
+  name: r.name,
+  weapon: r.weapon,
+  weaponName: r.weapon, // weapon талбар нь "AK-47" гэх мэтээр хадгалагдана
+  wear: (r.wear as Wear) ?? "FT",
+  float: r.float_value ?? 0,
+  price: r.price_mnt,
+  stock: r.stock,
+  image: r.image_url ?? "/placeholder.svg",
+  rarity: (r.rarity as Rarity) ?? "Mil-Spec",
+  statTrak: r.stattrak,
+  game: r.game,
+  description: r.description,
+  isActive: r.is_active,
+  isFeatured: r.is_featured,
+});
 
 export const wearLabel: Record<Wear, string> = {
   FN: "Factory New",
@@ -35,107 +72,6 @@ export const wearColor: Record<Wear, string> = {
   WW: "text-wear-ww",
   BS: "text-wear-bs",
 };
-
-export const skins: Skin[] = [
-  {
-    id: "ak-redline-mw",
-    name: "Redline",
-    weapon: "Rifle",
-    weaponName: "AK-47",
-    wear: "MW",
-    float: 0.124,
-    price: 285000,
-    stock: 3,
-    image: akImg,
-    rarity: "Classified",
-    statTrak: true,
-  },
-  {
-    id: "awp-asiimov-ft",
-    name: "Asiimov",
-    weapon: "Sniper",
-    weaponName: "AWP",
-    wear: "FT",
-    float: 0.281,
-    price: 412000,
-    stock: 2,
-    image: awpImg,
-    rarity: "Covert",
-  },
-  {
-    id: "karambit-fade-fn",
-    name: "Fade",
-    weapon: "Knife",
-    weaponName: "★ Karambit",
-    wear: "FN",
-    float: 0.012,
-    price: 4280000,
-    stock: 1,
-    image: knifeImg,
-    rarity: "Covert",
-  },
-  {
-    id: "m4-neon-ft",
-    name: "Neon Revolution",
-    weapon: "Rifle",
-    weaponName: "M4A4",
-    wear: "FT",
-    float: 0.215,
-    price: 198000,
-    stock: 5,
-    image: m4Img,
-    rarity: "Covert",
-  },
-  {
-    id: "ak-redline-ft",
-    name: "Redline",
-    weapon: "Rifle",
-    weaponName: "AK-47",
-    wear: "FT",
-    float: 0.224,
-    price: 245000,
-    stock: 7,
-    image: akImg,
-    rarity: "Classified",
-  },
-  {
-    id: "awp-asiimov-ww",
-    name: "Asiimov",
-    weapon: "Sniper",
-    weaponName: "AWP",
-    wear: "WW",
-    float: 0.412,
-    price: 358000,
-    stock: 4,
-    image: awpImg,
-    rarity: "Covert",
-  },
-  {
-    id: "m4-neon-mw",
-    name: "Neon Revolution",
-    weapon: "Rifle",
-    weaponName: "M4A4",
-    wear: "MW",
-    float: 0.098,
-    price: 268000,
-    stock: 2,
-    image: m4Img,
-    rarity: "Covert",
-    statTrak: true,
-  },
-  {
-    id: "karambit-fade-mw",
-    name: "Fade",
-    weapon: "Knife",
-    weaponName: "★ Karambit",
-    wear: "MW",
-    float: 0.085,
-    price: 3850000,
-    stock: 1,
-    image: knifeImg,
-    rarity: "Covert",
-  },
-];
 
 export const formatMNT = (n: number) =>
   new Intl.NumberFormat("mn-MN").format(n) + "₮";

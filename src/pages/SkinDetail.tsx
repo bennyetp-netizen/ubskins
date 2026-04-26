@@ -1,17 +1,27 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ShieldCheck, Truck, Tag, Plus } from "lucide-react";
+import { ArrowLeft, ShieldCheck, Truck, Tag, Plus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { skins, formatMNT, storepayMonthly, wearLabel, wearColor } from "@/data/skins";
+import { formatMNT, storepayMonthly, wearLabel, wearColor } from "@/data/skins";
 import SkinCard from "@/components/SkinCard";
 import { useCart } from "@/hooks/useCart";
+import { useSkin, useSkins } from "@/hooks/useSkins";
 import { toast } from "sonner";
 
 const SkinDetail = () => {
   const { id } = useParams();
   const nav = useNavigate();
-  const skin = skins.find((s) => s.id === id);
+  const { skin, loading } = useSkin(id);
+  const { skins: all } = useSkins();
   const { add } = useCart();
+
+  if (loading) {
+    return (
+      <div className="container flex items-center justify-center py-20 text-muted-foreground">
+        <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Уншиж байна...
+      </div>
+    );
+  }
 
   if (!skin) {
     return (
@@ -22,7 +32,7 @@ const SkinDetail = () => {
     );
   }
 
-  const related = skins.filter((s) => s.id !== skin.id && s.weapon === skin.weapon).slice(0, 4);
+  const related = all.filter((s) => s.id !== skin.id && s.weapon === skin.weapon).slice(0, 4);
 
   const buy = (method: "storepay" | "qpay") => {
     add(skin);
@@ -113,6 +123,12 @@ const SkinDetail = () => {
               <Plus className="mr-1.5 h-4 w-4" /> Сагсанд нэмэх
             </Button>
           </div>
+
+          {skin.description && (
+            <div className="mt-5 rounded-xl border border-border bg-card/50 p-4 text-sm text-muted-foreground">
+              {skin.description}
+            </div>
+          )}
 
           {/* features */}
           <div className="mt-5 space-y-2 text-sm">
