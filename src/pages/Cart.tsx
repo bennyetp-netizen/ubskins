@@ -1,16 +1,59 @@
-import { Link } from "react-router-dom";
-import { Trash2, ShoppingBag, ShieldCheck } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Trash2, ShoppingBag, ShieldCheck, Globe2, Loader2, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/useCart";
-import { formatMNT, storepayMonthly, wearColor } from "@/data/skins";
+import { useAuth } from "@/hooks/useAuth";
+import { formatMNT, wearColor } from "@/data/skins";
+import { PAYMENTS, calcPrepayment, mntToUsd, type PaymentMethod } from "@/data/payment";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const Cart = () => {
   const { items, remove, clear, total } = useCart();
+  const { user, signInWithSteam } = useAuth();
+  const nav = useNavigate();
+  const [method, setMethod] = useState<PaymentMethod>("wise");
+  const [submitting, setSubmitting] = useState(false);
 
-  const checkout = (m: string) => {
-    toast.success(`${m} төлбөр амжилттай үүслээ. Steam trade offer удахгүй явна.`);
-    clear();
+  const prepayment = calcPrepayment(total);
+  const usdTotal = mntToUsd(total);
+
+  const handleCreateOrder = async () => {
+    if (!user) {
+      toast.error("Эхлээд Steam-р нэвтэрнэ үү");
+      try { await signInWithSteam(); } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Нэвтрэх алдаа");
+      }
+      return;
+    }
+    if (items.length === 0) return;
+
+    setSubmitting(true);
+    try {
+      const rows = items.map(({ skin }) => ({
+        user_id: user.id,
+        skin_id: skin.id,
+        skin_name: `${skin.weaponName} | ${skin.name}`,
+        skin_image: skin.image,
+        wear: skin.wear,
+        float_value: skin.float,
+        price_mnt: skin.price,
+        payment_method: method,
+        status: "pending" as const,
+      }));
+
+      const { error } = await supabase.from("orders").insert(rows);
+      if (error) throw error;
+
+      toast.success("Захиалга амжилттай үүслээ! Төлбөрийн заавар руу шилжиж байна...");
+      clear();
+      setTimeout(() => nav("/orders"), 700);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Захиалга үүсгэхэд алдаа гарлаа");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (items.length === 0) {
@@ -28,9 +71,12 @@ const Cart = () => {
 
   return (
     <div className="container py-10">
-      <h1 className="mb-8 font-display text-3xl font-bold md:text-4xl">Сагс / Төлбөр</h1>
+      <h1 className="mb-2 font-display text-3xl font-bold md:text-4xl">Сагс / Захиалга</h1>
+      <p className="mb-8 text-sm text-muted-foreground">
+        Урьдчилгаа төлбөргүйгээр захиалгаа үүсгээд олон улсын шилжүүлгээр төлнө үү.
+      </p>
 
-      <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
+      <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
         <div className="space-y-3">
           {items.map(({ skin }) => (
             <div key={skin.id} className="flex gap-4 rounded-2xl border border-border bg-gradient-card p-4">
@@ -54,7 +100,7 @@ const Cart = () => {
           ))}
         </div>
 
-        {/* Summary */}
+        {/* Summary + Payment selection */}
         <div className="space-y-4">
           <div className="rounded-2xl border border-border bg-gradient-card p-5">
             <h3 className="font-display text-lg font-semibold">Захиалгын хураангуй</h3>
@@ -69,22 +115,66 @@ const Cart = () => {
               <div className="flex justify-between font-display text-lg font-bold">
                 <span>Нийт</span><span className="text-gradient-primary">{formatMNT(total)}</span>
               </div>
-              <p className="text-xs text-muted-foreground">
-                эсвэл Storepay-р <span className="text-accent">{formatMNT(storepayMonthly(total))}</span> × 4 хүүгүй
-              </p>
+              <p className="text-right text-xs text-muted-foreground">≈ ${usdTotal} USD</p>
+              <div className="mt-3 rounded-lg border border-warning/30 bg-warning/5 p-3">
+                <p className="text-xs font-semibold text-warning">30% урьдчилгаа төлбөр</p>
+                <p className="mt-0.5 font-display text-base font-bold">{formatMNT(prepayment)}</p>
+                <p className="text-[11px] text-muted-foreground">
+                  Скиныг бэлдэхийн тулд урьдчилгаа төлбөр шаардлагатай. Үлдсэн {formatMNT(total - prepayment)}-г trade offer илгээхээс өмнө төлнө.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Payment method picker */}
+          <div className="rounded-2xl border border-border bg-gradient-card p-5">
+            <div className="mb-3 flex items-center gap-2">
+              <Globe2 className="h-4 w-4 text-accent" />
+              <h3 className="font-display text-base font-semibold">Олон улсын төлбөрийн арга</h3>
+            </div>
+            <div className="space-y-2">
+              {(Object.values(PAYMENTS)).map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setMethod(p.id)}
+                  className={`w-full rounded-xl border p-3 text-left transition-colors ${
+                    method === p.id
+                      ? "border-primary bg-primary/10"
+                      : "border-border bg-secondary/30 hover:border-primary/40"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-display text-sm font-semibold">{p.label}</span>
+                    <span
+                      className={`h-3 w-3 rounded-full border-2 ${
+                        method === p.id ? "border-primary bg-primary" : "border-muted-foreground/40"
+                      }`}
+                    />
+                  </div>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">{p.badge}</p>
+                </button>
+              ))}
             </div>
 
-            <div className="mt-5 space-y-2">
-              <Button variant="storepay" size="lg" className="w-full" onClick={() => checkout("Storepay")}>
-                Storepay-р төлөх
-              </Button>
-              <Button variant="qpay" size="lg" className="w-full" onClick={() => checkout("QPay")}>
-                QPay-р төлөх
-              </Button>
-              <Button variant="outline" size="lg" className="w-full" onClick={() => checkout("Банкны шилжүүлэг")}>
-                Банкны шилжүүлэг
-              </Button>
-            </div>
+            <Button
+              variant="hero"
+              size="lg"
+              className="mt-4 w-full"
+              onClick={handleCreateOrder}
+              disabled={submitting}
+            >
+              {submitting ? (
+                <><Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Үүсгэж байна...</>
+              ) : !user ? (
+                <><LogIn className="mr-1.5 h-4 w-4" /> Нэвтэрч захиалга үүсгэх</>
+              ) : (
+                <>Захиалга үүсгэх</>
+              )}
+            </Button>
+            <p className="mt-2 text-center text-[11px] text-muted-foreground">
+              Захиалга үүсгэсний дараа төлбөрийн заавар автоматаар харагдана
+            </p>
           </div>
 
           <div className="rounded-2xl border border-accent/20 bg-accent/5 p-4 text-sm">
@@ -92,7 +182,7 @@ const Cart = () => {
               <ShieldCheck className="h-4 w-4" /> Хамгаалалттай төлбөр
             </div>
             <p className="text-muted-foreground">
-              Төлбөр баталгаажсаны дараа Steam trade offer-р скин автоматаар хүргэгдэнэ. Trade URL-аа account хэсгээс шинэчлээрэй.
+              Урьдчилгаа төлбөр баталгаажсаны дараа скинийг reserve хийнэ. Үлдэгдэл төлбөр баталгаажмагц Steam trade offer автоматаар явна.
             </p>
           </div>
         </div>
