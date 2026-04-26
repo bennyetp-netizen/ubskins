@@ -53,6 +53,17 @@ export const useAuth = () => {
   const signInWithSteam = async () => {
     const realm = window.location.origin;
     const returnTo = `${realm}/auth/callback`;
+    let popup: Window | null = null;
+
+    try {
+      if (window.top && window.top !== window.self) {
+        popup = window.open("about:blank", "_blank");
+        if (popup) popup.opener = null;
+      }
+    } catch {
+      popup = window.open("about:blank", "_blank");
+      if (popup) popup.opener = null;
+    }
 
     const projectUrl = import.meta.env.VITE_SUPABASE_URL;
     const initRes = await fetch(
@@ -68,6 +79,10 @@ export const useAuth = () => {
     );
     const initData = await initRes.json();
     if (initData?.url) {
+      if (popup) {
+        popup.location.href = initData.url;
+        return;
+      }
       // If we're inside the Lovable preview iframe, break out so Steam
       // can actually navigate (iframes block top-level OpenID redirects).
       try {
@@ -82,6 +97,7 @@ export const useAuth = () => {
       }
       window.location.href = initData.url;
     } else {
+      popup?.close();
       throw new Error(initData?.error ?? "Cannot start Steam login");
     }
   };
