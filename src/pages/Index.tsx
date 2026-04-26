@@ -5,6 +5,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import SkinCard from "@/components/SkinCard";
 import { skins } from "@/data/skins";
 import heroBg from "@/assets/hero-bg.jpg";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const steps = [
   { icon: LogIn, title: "Steam-р нэвтэрнэ", desc: "Steam OpenID-р найдвартай нэвтэрч, trade URL-аа холбоно." },
@@ -28,6 +30,19 @@ const faqs = [
 ];
 
 const Index = () => {
+  const { user, signInWithSteam } = useAuth();
+
+  const handleSteam = async () => {
+    if (user) {
+      window.location.href = "/account";
+      return;
+    }
+    try {
+      await signInWithSteam();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Алдаа гарлаа");
+    }
+  };
   return (
     <>
       {/* Hero */}
