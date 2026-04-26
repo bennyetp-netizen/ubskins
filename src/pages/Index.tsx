@@ -3,9 +3,9 @@ import { ArrowRight, ShieldCheck, LogIn, MousePointerClick, CreditCard, Send, Sp
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import SkinCard from "@/components/SkinCard";
-import { skins } from "@/data/skins";
 import heroBg from "@/assets/hero-bg.jpg";
 import { useAuth } from "@/hooks/useAuth";
+import { useSkins } from "@/hooks/useSkins";
 import { toast } from "sonner";
 
 const steps = [
@@ -31,6 +31,9 @@ const faqs = [
 
 const Index = () => {
   const { user, signInWithSteam } = useAuth();
+  const { skins } = useSkins({ featuredOnly: true });
+  const { skins: allSkins } = useSkins();
+  const featured = (skins.length > 0 ? skins : allSkins).slice(0, 4);
 
   const handleSteam = async () => {
     if (user) {
