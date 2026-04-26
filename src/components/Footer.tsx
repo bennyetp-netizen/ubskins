@@ -9,7 +9,7 @@ const Footer = () => (
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent">
               <Shield className="h-4 w-4 text-primary-foreground" />
             </div>
-            SkinHub<span className="text-primary">.MN</span>
+            UB<span className="text-primary">Skins</span>
           </div>
           <p className="mt-3 max-w-sm text-sm text-muted-foreground">
             Монголын анхны найдвартай CS2 скиний дэлгүүр. Gamble биш, шууд худалдаа.
@@ -27,13 +27,13 @@ const Footer = () => (
         <div>
           <h4 className="mb-3 text-sm font-semibold">Холбогдох</h4>
           <ul className="space-y-2 text-sm text-muted-foreground">
-            <li className="flex items-center gap-2"><Mail className="h-4 w-4" /> support@skinhub.mn</li>
+            <li className="flex items-center gap-2"><Mail className="h-4 w-4" /> support@ubskins.mn</li>
             <li className="flex items-center gap-2"><MessageCircle className="h-4 w-4" /> Discord</li>
           </ul>
         </div>
       </div>
       <div className="mt-10 border-t border-border/60 pt-6 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} SkinHub.MN — Бүх эрх хуулиар хамгаалагдсан
+        © {new Date().getFullYear()} UBSkins — Бүх эрх хуулиар хамгаалагдсан
       </div>
     </div>
   </footer>

@@ -33,7 +33,7 @@ const Navbar = () => {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent">
             <Shield className="h-4 w-4 text-primary-foreground" />
           </div>
-          <span>SkinHub<span className="text-primary">.MN</span></span>
+          <span>UB<span className="text-primary">Skins</span></span>
         </Link>
 
         <div className="hidden items-center gap-1 md:flex">
