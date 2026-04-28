@@ -40,7 +40,7 @@ const Orders = () => {
     if (!user) return;
     supabase
       .from("orders")
-      .select("id, skin_name, skin_image, price_mnt, payment_method, status, created_at, wear, trade_offer_id")
+      .select("id, order_number, skin_name, skin_image, price_mnt, payment_method, payment_confirmed, status, created_at, wear, trade_offer_id")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
