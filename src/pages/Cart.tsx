@@ -136,13 +136,38 @@ const Cart = () => {
                 <span>Нийт</span><span className="text-gradient-primary">{formatMNT(total)}</span>
               </div>
               <p className="text-right text-xs text-muted-foreground">≈ ${usdTotal} USD</p>
-              <div className="mt-3 rounded-lg border border-warning/30 bg-warning/5 p-3">
-                <p className="text-xs font-semibold text-warning">30% урьдчилгаа төлбөр</p>
-                <p className="mt-0.5 font-display text-base font-bold">{formatMNT(prepayment)}</p>
-                <p className="text-[11px] text-muted-foreground">
-                  Скиныг бэлдэхийн тулд урьдчилгаа төлбөр шаардлагатай. Үлдсэн {formatMNT(total - prepayment)}-г trade offer илгээхээс өмнө төлнө.
-                </p>
-              </div>
+              {hasPreorder && hasReady ? (
+                <div className="mt-3 space-y-2">
+                  <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3">
+                    <p className="text-xs font-semibold text-emerald-400">🟢 Бэлэн скин — бүтэн төлбөр</p>
+                    <p className="mt-0.5 font-display text-base font-bold">
+                      {formatMNT(items.filter(i => i.skin.productType === "ready").reduce((s, i) => s + i.skin.price, 0))}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-orange-500/30 bg-orange-500/5 p-3">
+                    <p className="text-xs font-semibold text-orange-400">🟡 Захиалга — 30% урьдчилгаа</p>
+                    <p className="mt-0.5 font-display text-base font-bold">
+                      {formatMNT(items.filter(i => i.skin.productType === "preorder").reduce((s, i) => s + calcPrepayment(i.skin.price), 0))}
+                    </p>
+                  </div>
+                </div>
+              ) : hasPreorder ? (
+                <div className="mt-3 rounded-lg border border-orange-500/30 bg-orange-500/5 p-3">
+                  <p className="text-xs font-semibold text-orange-400">🟡 ЗАХИАЛГА — 30% урьдчилгаа</p>
+                  <p className="mt-0.5 font-display text-base font-bold">{formatMNT(totalDeposit)}</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    Үлдэгдэл {formatMNT(totalRemaining)} — скин ирмэгц төлнө.
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3">
+                  <p className="text-xs font-semibold text-emerald-400">🟢 БЭЛЭН — бүтэн төлбөр</p>
+                  <p className="mt-0.5 font-display text-base font-bold">{formatMNT(total)}</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    Төлбөр баталгаажсаны дараа Steam trade offer шууд илгээнэ.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
