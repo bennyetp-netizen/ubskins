@@ -219,7 +219,7 @@ const Admin = () => {
       return;
     }
     setSaving(true);
-    const payload = {
+    const payload: any = {
       name: form.name,
       weapon: form.weapon,
       game: form.game,
@@ -233,6 +233,8 @@ const Admin = () => {
       is_active: form.is_active,
       is_featured: form.is_featured,
       stock: Number(form.stock) || 0,
+      product_type: form.product_type,
+      stock_quantity: Number(form.stock_quantity) || 0,
     };
     let error;
     if (form.id) {
