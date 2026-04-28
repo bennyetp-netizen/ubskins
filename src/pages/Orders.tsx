@@ -257,13 +257,12 @@ const Orders = () => {
                           </div>
                           {f.copy !== false && (
                             <Button
-                              variant="ghost"
-                              size="icon"
+                              variant="outline"
+                              size="sm"
                               className="shrink-0"
                               onClick={() => copy(f.value, f.label)}
-                              aria-label="Хуулах"
                             >
-                              <Copy className="h-4 w-4" />
+                              <Copy className="mr-1 h-3.5 w-3.5" /> Хуулах
                             </Button>
                           )}
                         </div>
