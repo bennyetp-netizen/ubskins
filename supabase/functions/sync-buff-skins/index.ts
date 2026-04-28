@@ -10,10 +10,10 @@ const corsHeaders = {
 
 // Buff163: category=weapon → зөвхөн зэвсгийн скин (sticker/case/key/agent/patch/music kit орохгүй)
 //          sort_by=sell_num.desc → хамгийн их зарагдсанаас эхэлж эрэмбэлнэ
-//          min/max price → 10₣ - 2000₣ (CNY)
+//          min/max price → 10₣ - 5000₣ (CNY)
 const BUFF_BASE =
-  "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category=weapon&sort_by=sell_num.desc&min_price=10&max_price=2000";
-const PAGES_TO_FETCH = 3; // 3 × 80 = 240 топ зарагддаг скин (timeout-ээс зайлсхийх)
+  "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category=weapon&sort_by=sell_num.desc&min_price=10&max_price=5000";
+const PAGES_TO_FETCH = 10; // 10 × 80 = 800 топ зарагддаг скин (хоосон ирвэл break)
 const RATE_URL = "https://open.er-api.com/v6/latest/CNY"; // free, түлхүүр шаардахгүй
 const MARGIN = 1.10;
 
@@ -144,7 +144,7 @@ Deno.serve(async (req) => {
       }
 
       // Үнийн давхар шалгалт (API param дотор гарч магад)
-      if (cnyPrice < 10 || cnyPrice > 2000) {
+      if (cnyPrice < 10 || cnyPrice > 5000) {
         skippedFilter++;
         continue;
       }
@@ -173,6 +173,7 @@ Deno.serve(async (req) => {
           rarity,
           stock: 1,
           is_active: true,
+          is_available: true,
           last_synced_at: new Date().toISOString(),
         },
         { onConflict: "buff_id" },
