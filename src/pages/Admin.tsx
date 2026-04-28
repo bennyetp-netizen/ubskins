@@ -312,7 +312,11 @@ const Admin = () => {
         </div>
       ) : (
         <div>
-          <div className="mb-4 flex justify-end">
+          <div className="mb-4 flex flex-wrap justify-end gap-2">
+            <Button variant="outline" onClick={syncFromBuff} disabled={syncing}>
+              {syncing ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-1 h-4 w-4" />}
+              Buff163-аас сэргээх
+            </Button>
             <Button variant="hero" onClick={openNew}><Plus className="mr-1 h-4 w-4" /> Шинэ скин нэмэх</Button>
           </div>
           <div className="overflow-x-auto rounded-2xl border border-border bg-gradient-card">
