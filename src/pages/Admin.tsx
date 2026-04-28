@@ -15,6 +15,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { formatMNT } from "@/data/skins";
+import ProductTypeBadge from "@/components/ProductTypeBadge";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,7 +26,7 @@ import { toast } from "sonner";
 interface SkinForm {
   id?: string;
   name: string;
-  weapon: string; // "AK-47" гэх мэт
+  weapon: string;
   game: string;
   wear: string;
   float_value: string;
@@ -37,6 +38,8 @@ interface SkinForm {
   is_active: boolean;
   is_featured: boolean;
   stock: string;
+  product_type: "ready" | "preorder";
+  stock_quantity: string;
 }
 
 const emptyForm: SkinForm = {
@@ -53,6 +56,8 @@ const emptyForm: SkinForm = {
   is_active: true,
   is_featured: false,
   stock: "1",
+  product_type: "ready",
+  stock_quantity: "1",
 };
 
 const Admin = () => {
@@ -69,14 +74,20 @@ const Admin = () => {
   const [syncing, setSyncing] = useState(false);
   const [orderFilter, setOrderFilter] = useState<"all" | "pending" | "paid" | "delivered">("all");
 
-  const totalRevenue = orders
-    .filter((o) => o.status === "paid" || o.status === "delivered")
+  const paidOrders = orders.filter((o) => o.status === "paid" || o.status === "delivered");
+  const totalRevenue = paidOrders.reduce((sum, o) => sum + (o.price_mnt ?? 0), 0);
+  const readyRevenue = paidOrders
+    .filter((o) => (o.product_type ?? "ready") === "ready")
     .reduce((sum, o) => sum + (o.price_mnt ?? 0), 0);
+  const preorderRevenue = paidOrders
+    .filter((o) => o.product_type === "preorder")
+    .reduce((sum, o) => sum + (o.price_mnt ?? 0), 0);
+
   const stats = [
-    { label: "Нийт захиалга", value: `${orders.length} захиалга`, icon: TrendingUp, color: "text-accent" },
+    { label: "Нийт захиалга", value: `${orders.length}`, icon: TrendingUp, color: "text-accent" },
     { label: "Нийт орлого", value: formatMNT(totalRevenue), icon: TrendingUp, color: "text-primary" },
-    { label: "Хүлээгдэж буй", value: String(orders.filter((o) => o.status === "pending").length), icon: Clock, color: "text-warning" },
-    { label: "Хүргэгдсэн", value: String(orders.filter((o) => o.status === "delivered").length), icon: Truck, color: "text-accent" },
+    { label: "БЭЛЭН-ээс", value: formatMNT(readyRevenue), icon: TrendingUp, color: "text-emerald-400" },
+    { label: "ЗАХИАЛГА-аас", value: formatMNT(preorderRevenue), icon: TrendingUp, color: "text-orange-400" },
   ];
 
   const syncFromBuff = async () => {
