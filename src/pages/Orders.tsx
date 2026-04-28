@@ -170,7 +170,12 @@ const Orders = () => {
             return (
               <div
                 key={o.id}
-                className="rounded-2xl border border-border bg-gradient-card transition-colors hover:border-primary/30"
+                id={`order-${o.id}`}
+                className={`rounded-2xl border bg-gradient-card transition-colors ${
+                  o.id === openId
+                    ? "border-primary shadow-[0_0_0_3px_hsl(var(--primary)/0.2)]"
+                    : "border-border hover:border-primary/30"
+                }`}
               >
                 <div className="flex flex-wrap items-center gap-4 p-4">
                   <div className="flex h-20 w-28 shrink-0 items-center justify-center rounded-xl bg-secondary/50">
