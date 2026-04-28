@@ -81,7 +81,7 @@ const Cart = () => {
     <div className="container py-10">
       <h1 className="mb-2 font-display text-3xl font-bold md:text-4xl">Сагс / Захиалга</h1>
       <p className="mb-8 text-sm text-muted-foreground">
-        Урьдчилгаа төлбөргүйгээр захиалгаа үүсгээд олон улсын шилжүүлгээр төлнө үү.
+        Захиалгаа үүсгээд Хаан банкны дансруу 30% урьдчилгаа шилжүүлээрэй.
       </p>
 
       <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
