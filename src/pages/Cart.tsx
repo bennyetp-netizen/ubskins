@@ -134,6 +134,25 @@ const Cart = () => {
             </div>
           </div>
 
+          {/* Phone number */}
+          <div className="rounded-2xl border border-border bg-gradient-card p-5">
+            <Label htmlFor="phone" className="flex items-center gap-2 font-display text-base font-semibold">
+              <Phone className="h-4 w-4 text-accent" /> Холбоо барих утас
+            </Label>
+            <Input
+              id="phone"
+              type="tel"
+              inputMode="tel"
+              placeholder="9911-2233"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="mt-2"
+            />
+            <p className="mt-1.5 text-[11px] text-muted-foreground">
+              Захиалга баталгаажихад тантай холбогдоход хэрэгтэй.
+            </p>
+          </div>
+
           {/* Payment method picker */}
           <div className="rounded-2xl border border-border bg-gradient-card p-5">
             <div className="mb-3 flex items-center gap-2">
