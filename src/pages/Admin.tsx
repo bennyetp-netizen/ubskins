@@ -187,6 +187,8 @@ const Admin = () => {
       is_active: s.is_active ?? true,
       is_featured: !!s.is_featured,
       stock: s.stock?.toString() ?? "1",
+      product_type: (s.product_type as "ready" | "preorder") ?? "ready",
+      stock_quantity: s.stock_quantity?.toString() ?? "1",
     });
     setOpen(true);
   };
