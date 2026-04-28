@@ -21,6 +21,11 @@ interface OrderRow {
   created_at: string;
   wear: string | null;
   trade_offer_id: string | null;
+  product_type?: string | null;
+  deposit_amount?: number | null;
+  remaining_amount?: number | null;
+  deposit_paid?: boolean | null;
+  remaining_paid?: boolean | null;
 }
 
 const statusMap: Record<string, { label: string; color: string; icon: typeof Clock }> = {
@@ -40,14 +45,13 @@ const Orders = () => {
     if (!user) return;
     supabase
       .from("orders")
-      .select("id, order_number, skin_name, skin_image, price_mnt, payment_method, payment_confirmed, status, created_at, wear, trade_offer_id")
+      .select("*")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
         if (data) {
-          setOrders(data as OrderRow[]);
-          // pending захиалга байвал хамгийн сүүлийнхийг автоматаар нээнэ
-          const firstPending = (data as OrderRow[]).find((o) => o.status === "pending");
+          setOrders(data as unknown as OrderRow[]);
+          const firstPending = (data as unknown as OrderRow[]).find((o) => o.status === "pending");
           if (firstPending) setExpanded(firstPending.id);
         }
       });
