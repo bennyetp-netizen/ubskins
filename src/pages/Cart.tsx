@@ -15,7 +15,7 @@ const Cart = () => {
   const { items, remove, clear, total } = useCart();
   const { user, signInWithSteam } = useAuth();
   const nav = useNavigate();
-  const [method, setMethod] = useState<PaymentMethod>("wise");
+  const [method, setMethod] = useState<PaymentMethod>("bank");
   const [phone, setPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
