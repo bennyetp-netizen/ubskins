@@ -13,7 +13,7 @@ const corsHeaders = {
 //          min/max price → 10₣ - 2000₣ (CNY)
 const BUFF_BASE =
   "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category=weapon&sort_by=sell_num.desc&min_price=10&max_price=2000";
-const PAGES_TO_FETCH = 4; // 4 × 80 = 320 топ зарагддаг скин
+const PAGES_TO_FETCH = 3; // 3 × 80 = 240 топ зарагддаг скин (timeout-ээс зайлсхийх)
 const RATE_URL = "https://open.er-api.com/v6/latest/CNY"; // free, түлхүүр шаардахгүй
 const MARGIN = 1.10;
 
