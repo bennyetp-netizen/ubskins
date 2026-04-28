@@ -11,10 +11,12 @@ import { toast } from "sonner";
 
 interface OrderRow {
   id: string;
+  order_number: string | null;
   skin_name: string;
   skin_image: string | null;
   price_mnt: number;
   payment_method: string;
+  payment_confirmed: boolean;
   status: string;
   created_at: string;
   wear: string | null;
