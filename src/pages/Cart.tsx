@@ -15,7 +15,7 @@ const Cart = () => {
   const { items, remove, clear, total } = useCart();
   const { user, signInWithSteam } = useAuth();
   const nav = useNavigate();
-  const [method, setMethod] = useState<PaymentMethod>("wise");
+  const [method, setMethod] = useState<PaymentMethod>("bank");
   const [phone, setPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -81,7 +81,7 @@ const Cart = () => {
     <div className="container py-10">
       <h1 className="mb-2 font-display text-3xl font-bold md:text-4xl">Сагс / Захиалга</h1>
       <p className="mb-8 text-sm text-muted-foreground">
-        Урьдчилгаа төлбөргүйгээр захиалгаа үүсгээд олон улсын шилжүүлгээр төлнө үү.
+        Захиалгаа үүсгээд Хаан банкны дансруу 30% урьдчилгаа шилжүүлээрэй.
       </p>
 
       <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
@@ -157,7 +157,7 @@ const Cart = () => {
           <div className="rounded-2xl border border-border bg-gradient-card p-5">
             <div className="mb-3 flex items-center gap-2">
               <Globe2 className="h-4 w-4 text-accent" />
-              <h3 className="font-display text-base font-semibold">Олон улсын төлбөрийн арга</h3>
+              <h3 className="font-display text-base font-semibold">Төлбөрийн арга</h3>
             </div>
             <div className="space-y-2">
               {(Object.values(PAYMENTS)).map((p) => (

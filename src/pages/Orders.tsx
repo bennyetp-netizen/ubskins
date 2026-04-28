@@ -11,10 +11,12 @@ import { toast } from "sonner";
 
 interface OrderRow {
   id: string;
+  order_number: string | null;
   skin_name: string;
   skin_image: string | null;
   price_mnt: number;
   payment_method: string;
+  payment_confirmed: boolean;
   status: string;
   created_at: string;
   wear: string | null;
@@ -38,7 +40,7 @@ const Orders = () => {
     if (!user) return;
     supabase
       .from("orders")
-      .select("id, skin_name, skin_image, price_mnt, payment_method, status, created_at, wear, trade_offer_id")
+      .select("id, order_number, skin_name, skin_image, price_mnt, payment_method, payment_confirmed, status, created_at, wear, trade_offer_id")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
@@ -172,7 +174,8 @@ const Orders = () => {
                       )}
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      №{o.id.slice(0, 8).toUpperCase()} ·{" "}
+                      <span className="font-mono font-bold text-primary">{o.order_number ?? o.id.slice(0, 8).toUpperCase()}</span>
+                      {" · "}
                       {new Date(o.created_at).toLocaleString("mn-MN", {
                         year: "numeric",
                         month: "short",
@@ -254,13 +257,12 @@ const Orders = () => {
                           </div>
                           {f.copy !== false && (
                             <Button
-                              variant="ghost"
-                              size="icon"
+                              variant="outline"
+                              size="sm"
                               className="shrink-0"
                               onClick={() => copy(f.value, f.label)}
-                              aria-label="Хуулах"
                             >
-                              <Copy className="h-4 w-4" />
+                              <Copy className="mr-1 h-3.5 w-3.5" /> Хуулах
                             </Button>
                           )}
                         </div>
@@ -268,27 +270,29 @@ const Orders = () => {
                     </div>
 
                     {/* Reference */}
-                    <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3">
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[11px] uppercase tracking-wider text-primary">
-                          Reference / Гүйлгээний утга (заавал!)
-                        </p>
-                        <p className="truncate font-mono text-sm font-bold">
-                          UBSKINS-{o.id.slice(0, 8).toUpperCase()}
-                        </p>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="shrink-0"
-                        onClick={() =>
-                          copy(`UBSKINS-${o.id.slice(0, 8).toUpperCase()}`, "Reference")
-                        }
-                        aria-label="Хуулах"
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    {(() => {
+                      const ref = o.order_number ?? `UBS-${o.id.slice(0, 8).toUpperCase()}`;
+                      return (
+                        <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border-2 border-primary/40 bg-primary/10 p-3">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[11px] uppercase tracking-wider text-primary">
+                              Гүйлгээний утга (заавал!)
+                            </p>
+                            <p className="truncate font-mono text-base font-bold text-primary">
+                              {ref}
+                            </p>
+                          </div>
+                          <Button
+                            variant="default"
+                            size="sm"
+                            className="shrink-0"
+                            onClick={() => copy(ref, "Гүйлгээний утга")}
+                          >
+                            <Copy className="mr-1 h-3.5 w-3.5" /> Хуулах
+                          </Button>
+                        </div>
+                      );
+                    })()}
 
                     {/* Notes */}
                     <ul className="mt-4 space-y-1.5">

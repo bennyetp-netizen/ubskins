@@ -20,12 +20,7 @@ import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const stats = [
-  { label: "Нийт борлуулалт", value: "—", icon: TrendingUp, color: "text-accent" },
-  { label: "Хүлээгдэж буй", value: "—", icon: Clock, color: "text-warning" },
-  { label: "Төлөгдсөн", value: "—", icon: CheckCircle2, color: "text-primary" },
-  { label: "Хүргэгдсэн", value: "—", icon: Truck, color: "text-accent" },
-];
+// stats нь dynamic — orders-аас тооцно (доорх useMemo)
 
 interface SkinForm {
   id?: string;
@@ -72,6 +67,17 @@ const Admin = () => {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [orderFilter, setOrderFilter] = useState<"all" | "pending" | "paid" | "delivered">("all");
+
+  const totalRevenue = orders
+    .filter((o) => o.status === "paid" || o.status === "delivered")
+    .reduce((sum, o) => sum + (o.price_mnt ?? 0), 0);
+  const stats = [
+    { label: "Нийт захиалга", value: `${orders.length} захиалга`, icon: TrendingUp, color: "text-accent" },
+    { label: "Нийт орлого", value: formatMNT(totalRevenue), icon: TrendingUp, color: "text-primary" },
+    { label: "Хүлээгдэж буй", value: String(orders.filter((o) => o.status === "pending").length), icon: Clock, color: "text-warning" },
+    { label: "Хүргэгдсэн", value: String(orders.filter((o) => o.status === "delivered").length), icon: Truck, color: "text-accent" },
+  ];
 
   const syncFromBuff = async () => {
     setSyncing(true);
@@ -97,8 +103,19 @@ const Admin = () => {
   };
 
   const loadOrders = async () => {
-    const { data } = await supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(50);
+    const { data } = await supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(500);
     setOrders(data ?? []);
+  };
+
+  const setOrderStatus = async (id: string, status: string, payment_confirmed?: boolean) => {
+    const patch: any = { status };
+    if (payment_confirmed !== undefined) patch.payment_confirmed = payment_confirmed;
+    const { error } = await supabase.from("orders").update(patch).eq("id", id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Шинэчиллээ");
+      loadOrders();
+    }
   };
 
   useEffect(() => {
@@ -276,41 +293,83 @@ const Admin = () => {
       </div>
 
       {tab === "orders" ? (
-        <div className="overflow-x-auto rounded-2xl border border-border bg-gradient-card">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border text-left text-xs uppercase tracking-wider text-muted-foreground">
-                <th className="px-4 py-3">ID</th>
-                <th className="px-4 py-3">Скин</th>
-                <th className="px-4 py-3">Үнэ</th>
-                <th className="px-4 py-3">Утас</th>
-                <th className="px-4 py-3">Төлбөр</th>
-                <th className="px-4 py-3">Төлөв</th>
-                <th className="px-4 py-3">Огноо</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="p-8 text-center text-muted-foreground">Захиалга байхгүй</td>
+        <div>
+          <div className="mb-4 flex flex-wrap gap-2">
+            {([
+              { key: "all", label: "Бүгд" },
+              { key: "pending", label: "Төлбөр хүлээгдэж байна" },
+              { key: "paid", label: "Баталгаажсан" },
+              { key: "delivered", label: "Хүргэгдсэн" },
+            ] as const).map((f) => {
+              const count = f.key === "all" ? orders.length : orders.filter((o) => o.status === f.key).length;
+              return (
+                <button
+                  key={f.key}
+                  onClick={() => setOrderFilter(f.key)}
+                  className={`rounded-full border px-4 py-1.5 text-xs font-medium transition-colors ${
+                    orderFilter === f.key
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-secondary/40 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {f.label} <span className="ml-1 opacity-60">({count})</span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="overflow-x-auto rounded-2xl border border-border bg-gradient-card">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-xs uppercase tracking-wider text-muted-foreground">
+                  <th className="px-4 py-3">№</th>
+                  <th className="px-4 py-3">Скин</th>
+                  <th className="px-4 py-3">Үнэ</th>
+                  <th className="px-4 py-3">Утас</th>
+                  <th className="px-4 py-3">Төлбөр</th>
+                  <th className="px-4 py-3">Төлөв</th>
+                  <th className="px-4 py-3">Огноо</th>
+                  <th className="px-4 py-3">Үйлдэл</th>
                 </tr>
-              ) : (
-                orders.map((o) => (
-                  <tr key={o.id} className="border-b border-border/60 last:border-0 hover:bg-secondary/30">
-                    <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{o.id.slice(0, 8)}</td>
-                    <td className="px-4 py-3">{o.skin_name}</td>
-                    <td className="px-4 py-3 font-display font-semibold">{formatMNT(o.price_mnt)}</td>
-                    <td className="px-4 py-3 text-xs">{o.phone ?? "—"}</td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">{o.payment_method}</td>
-                    <td className="px-4 py-3"><Badge variant="outline">{o.status}</Badge></td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">
-                      {new Date(o.created_at).toLocaleDateString("mn-MN")}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {(() => {
+                  const list = orderFilter === "all" ? orders : orders.filter((o) => o.status === orderFilter);
+                  if (list.length === 0) {
+                    return (
+                      <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">Захиалга байхгүй</td></tr>
+                    );
+                  }
+                  return list.map((o) => (
+                    <tr key={o.id} className="border-b border-border/60 last:border-0 hover:bg-secondary/30">
+                      <td className="px-4 py-3 font-mono text-xs font-bold text-primary">{o.order_number ?? o.id.slice(0, 8)}</td>
+                      <td className="px-4 py-3">{o.skin_name}</td>
+                      <td className="px-4 py-3 font-display font-semibold">{formatMNT(o.price_mnt)}</td>
+                      <td className="px-4 py-3 text-xs">{o.phone ?? "—"}</td>
+                      <td className="px-4 py-3 text-xs text-muted-foreground">{o.payment_method}</td>
+                      <td className="px-4 py-3"><Badge variant="outline">{o.status}</Badge></td>
+                      <td className="px-4 py-3 text-xs text-muted-foreground">
+                        {new Date(o.created_at).toLocaleDateString("mn-MN")}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-1">
+                          {o.status === "pending" && (
+                            <Button size="sm" variant="outline" onClick={() => setOrderStatus(o.id, "paid", true)}>
+                              Баталгаажуулах
+                            </Button>
+                          )}
+                          {o.status === "paid" && (
+                            <Button size="sm" variant="outline" onClick={() => setOrderStatus(o.id, "delivered")}>
+                              Хүргэгдсэн
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ));
+                })()}
+              </tbody>
+            </table>
+          </div>
         </div>
       ) : (
         <div>
