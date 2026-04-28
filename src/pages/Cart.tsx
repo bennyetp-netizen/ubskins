@@ -63,12 +63,16 @@ const Cart = () => {
         };
       });
 
-      const { error } = await supabase.from("orders").insert(rows as any);
+      const { data: inserted, error } = await supabase
+        .from("orders")
+        .insert(rows as any)
+        .select("id");
       if (error) throw error;
 
       toast.success("✅ Захиалга амжилттай! Төлбөрийн заавар руу шилжиж байна...");
       clear();
-      setTimeout(() => nav("/orders"), 700);
+      const firstId = inserted?.[0]?.id;
+      setTimeout(() => nav(firstId ? `/orders?open=${firstId}` : "/orders"), 500);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Захиалга үүсгэхэд алдаа гарлаа");
     } finally {

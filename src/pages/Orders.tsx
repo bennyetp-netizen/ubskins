@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { LogIn, Package, Clock, CheckCircle2, Truck, ShoppingBag, Copy, ChevronDown, ChevronUp, Globe2 } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
+import { LogIn, Package, Clock, CheckCircle2, Truck, ShoppingBag, Copy, ChevronDown, ChevronUp, Globe2, Banknote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatMNT } from "@/data/skins";
@@ -41,6 +41,8 @@ const Orders = () => {
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [filter, setFilter] = useState<"all" | "pending" | "paid" | "delivered">("all");
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const openId = searchParams.get("open");
 
   useEffect(() => {
     if (!user) return;
@@ -52,11 +54,23 @@ const Orders = () => {
       .then(({ data }) => {
         if (data) {
           setOrders(data as unknown as OrderRow[]);
-          const firstPending = (data as unknown as OrderRow[]).find((o) => o.status === "pending");
-          if (firstPending) setExpanded(firstPending.id);
+          const list = data as unknown as OrderRow[];
+          // Prefer ?open=ID, then first pending
+          const target = openId && list.find((o) => o.id === openId)
+            ? openId
+            : list.find((o) => o.status === "pending")?.id ?? null;
+          if (target) {
+            setExpanded(target);
+            setFilter("all");
+            // scroll to it after render
+            setTimeout(() => {
+              const el = document.getElementById(`order-${target}`);
+              el?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }, 200);
+          }
         }
       });
-  }, [user]);
+  }, [user, openId]);
 
   const copy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -156,7 +170,12 @@ const Orders = () => {
             return (
               <div
                 key={o.id}
-                className="rounded-2xl border border-border bg-gradient-card transition-colors hover:border-primary/30"
+                id={`order-${o.id}`}
+                className={`rounded-2xl border bg-gradient-card transition-colors ${
+                  o.id === openId
+                    ? "border-primary shadow-[0_0_0_3px_hsl(var(--primary)/0.2)]"
+                    : "border-border hover:border-primary/30"
+                }`}
               >
                 <div className="flex flex-wrap items-center gap-4 p-4">
                   <div className="flex h-20 w-28 shrink-0 items-center justify-center rounded-xl bg-secondary/50">
@@ -219,11 +238,16 @@ const Orders = () => {
                 {/* Payment instructions */}
                 {isOpen && o.status === "pending" && payment && (
                   <div className="border-t border-border bg-background/40 p-5">
-                    <div className="mb-4 flex items-center gap-2">
-                      <Globe2 className="h-4 w-4 text-accent" />
-                      <h4 className="font-display text-sm font-semibold">
-                        {payment.label} төлбөрийн заавар
-                      </h4>
+                    <div className="mb-4 rounded-xl border-2 border-primary/40 bg-primary/10 p-4 text-center">
+                      <div className="flex items-center justify-center gap-2 text-primary">
+                        <Banknote className="h-5 w-5" />
+                        <h4 className="font-display text-base font-bold uppercase tracking-wider">
+                          Төлбөрийн мэдээлэл — {payment.short}
+                        </h4>
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Доорх данс руу шилжүүлж, гүйлгээний утгад захиалгын дугаараа бичнэ үү
+                      </p>
                     </div>
 
                     {/* Amount summary */}
