@@ -283,6 +283,7 @@ const Admin = () => {
                 <th className="px-4 py-3">ID</th>
                 <th className="px-4 py-3">Скин</th>
                 <th className="px-4 py-3">Үнэ</th>
+                <th className="px-4 py-3">Утас</th>
                 <th className="px-4 py-3">Төлбөр</th>
                 <th className="px-4 py-3">Төлөв</th>
                 <th className="px-4 py-3">Огноо</th>
@@ -291,7 +292,7 @@ const Admin = () => {
             <tbody>
               {orders.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-muted-foreground">Захиалга байхгүй</td>
+                  <td colSpan={7} className="p-8 text-center text-muted-foreground">Захиалга байхгүй</td>
                 </tr>
               ) : (
                 orders.map((o) => (
@@ -299,6 +300,7 @@ const Admin = () => {
                     <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{o.id.slice(0, 8)}</td>
                     <td className="px-4 py-3">{o.skin_name}</td>
                     <td className="px-4 py-3 font-display font-semibold">{formatMNT(o.price_mnt)}</td>
+                    <td className="px-4 py-3 text-xs">{o.phone ?? "—"}</td>
                     <td className="px-4 py-3 text-xs text-muted-foreground">{o.payment_method}</td>
                     <td className="px-4 py-3"><Badge variant="outline">{o.status}</Badge></td>
                     <td className="px-4 py-3 text-xs text-muted-foreground">
