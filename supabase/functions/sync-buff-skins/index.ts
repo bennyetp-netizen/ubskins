@@ -144,7 +144,7 @@ Deno.serve(async (req) => {
       }
 
       // Үнийн давхар шалгалт (API param дотор гарч магад)
-      if (cnyPrice < 10 || cnyPrice > 2000) {
+      if (cnyPrice < 10 || cnyPrice > 5000) {
         skippedFilter++;
         continue;
       }
