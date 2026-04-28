@@ -144,24 +144,60 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Featured */}
-      <section className="container py-16">
-        <div className="mb-8 flex items-end justify-between">
+      {/* Ready (БЭЛЭН) section */}
+      <section className="container py-12">
+        <div className="mb-6 flex items-end justify-between">
           <div>
-            <h2 className="font-display text-3xl font-bold md:text-4xl">Онцлох скинүүд</h2>
-            <p className="mt-2 text-muted-foreground">Хамгийн их эрэлттэй сонголтууд</p>
+            <h2 className="font-display text-3xl font-bold md:text-4xl">🟢 БЭЛЭН СКИНҮҮД</h2>
+            <p className="mt-2 text-sm text-emerald-400/90">Шууд бэлэн — өнөөдөр хүргэнэ</p>
           </div>
           <Link to="/shop" className="hidden text-sm text-primary hover:underline sm:inline">
             Бүгдийг үзэх →
           </Link>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {featured.length === 0 ? (
-            <p className="col-span-full text-center text-muted-foreground">Скин удахгүй нэмэгдэнэ.</p>
-          ) : (
-            featured.map((s) => <SkinCard key={s.id} skin={s} />)
-          )}
+        {(() => {
+          const ready = allSkins.filter((s) => s.productType === "ready").slice(0, 8);
+          if (ready.length === 0) {
+            return (
+              <div className="rounded-2xl border border-dashed border-border p-10 text-center text-muted-foreground">
+                Бэлэн скин одоогоор алга. Удахгүй нэмэгдэнэ.
+              </div>
+            );
+          }
+          return (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {ready.map((s) => <SkinCard key={s.id} skin={s} />)}
+            </div>
+          );
+        })()}
+      </section>
+
+      {/* Pre-order (ЗАХИАЛГА) section */}
+      <section className="container py-12">
+        <div className="mb-6 flex items-end justify-between">
+          <div>
+            <h2 className="font-display text-3xl font-bold md:text-4xl">🟡 ЗАХИАЛГААР</h2>
+            <p className="mt-2 text-sm text-orange-400/90">Buff163-аас захиалгаар — 2-5 хоногт хүргэнэ</p>
+          </div>
+          <Link to="/shop" className="hidden text-sm text-primary hover:underline sm:inline">
+            Бүгдийг үзэх →
+          </Link>
         </div>
+        {(() => {
+          const preorder = allSkins.filter((s) => s.productType === "preorder").slice(0, 8);
+          if (preorder.length === 0) {
+            return (
+              <div className="rounded-2xl border border-dashed border-border p-10 text-center text-muted-foreground">
+                Захиалгын скин одоогоор алга.
+              </div>
+            );
+          }
+          return (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {preorder.map((s) => <SkinCard key={s.id} skin={s} />)}
+            </div>
+          );
+        })()}
       </section>
 
       {/* FAQ */}

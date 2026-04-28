@@ -7,12 +7,14 @@ import SkinCard from "@/components/SkinCard";
 import { type Wear } from "@/data/skins";
 import { useSkins } from "@/hooks/useSkins";
 
-const weaponOptions = ["Rifle", "Sniper", "Knife", "Pistol", "SMG"];
+const weaponOptions = ["AK-47", "AWP", "M4A4", "M4A1-S", "Desert Eagle", "USP-S", "Glock-18", "Knife", "Gloves"];
 const wearOptions: Wear[] = ["FN", "MW", "FT", "WW", "BS"];
+type TypeFilter = "all" | "ready" | "preorder";
 
 const Shop = () => {
   const { skins, loading } = useSkins();
   const [q, setQ] = useState("");
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
   const [weapons, setWeapons] = useState<string[]>([]);
   const [wears, setWears] = useState<Wear[]>([]);
   const [maxPrice, setMaxPrice] = useState(5000000);
@@ -20,6 +22,7 @@ const Shop = () => {
 
   const filtered = useMemo(() => {
     let list = skins.filter((s) => {
+      if (typeFilter !== "all" && s.productType !== typeFilter) return false;
       if (q && !`${s.weaponName} ${s.name}`.toLowerCase().includes(q.toLowerCase())) return false;
       if (weapons.length && !weapons.some((w) => s.weapon.toLowerCase().includes(w.toLowerCase()))) return false;
       if (wears.length && !wears.includes(s.wear)) return false;
@@ -30,20 +33,41 @@ const Shop = () => {
       sort === "price-asc" ? a.price - b.price : sort === "price-desc" ? b.price - a.price : a.float - b.float
     );
     return list;
-  }, [skins, q, weapons, wears, maxPrice, sort]);
+  }, [skins, q, typeFilter, weapons, wears, maxPrice, sort]);
 
   const toggle = <T,>(arr: T[], v: T, set: (n: T[]) => void) =>
     set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
+
+  const typeTabs: { key: TypeFilter; label: string; count: number }[] = [
+    { key: "all", label: "Бүгд", count: skins.length },
+    { key: "ready", label: "🟢 Бэлэн", count: skins.filter((s) => s.productType === "ready").length },
+    { key: "preorder", label: "🟡 Захиалга", count: skins.filter((s) => s.productType === "preorder").length },
+  ];
 
   return (
     <div className="container py-10">
       <div className="mb-8">
         <h1 className="font-display text-3xl font-bold md:text-4xl">Скин дэлгүүр</h1>
-        <p className="mt-1 text-muted-foreground">Зэвсэг, wear, float, үнээр шүүж сонго</p>
+        <p className="mt-1 text-muted-foreground">Бэлэн скин эсвэл захиалгаар авах боломжтой</p>
+      </div>
+
+      <div className="mb-6 flex flex-wrap gap-2">
+        {typeTabs.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setTypeFilter(t.key)}
+            className={`rounded-full border px-4 py-1.5 text-xs font-medium transition-colors ${
+              typeFilter === t.key
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-border bg-secondary/40 text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {t.label} <span className="ml-1 opacity-60">({t.count})</span>
+          </button>
+        ))}
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
-        {/* Sidebar */}
         <aside className="space-y-6 rounded-2xl border border-border bg-gradient-card p-5 lg:sticky lg:top-24 lg:self-start">
           <div>
             <label className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -115,13 +139,13 @@ const Shop = () => {
               setWeapons([]);
               setWears([]);
               setMaxPrice(5000000);
+              setTypeFilter("all");
             }}
           >
             Шүүлтүүр цэвэрлэх
           </Button>
         </aside>
 
-        {/* Grid */}
         <div>
           <div className="mb-4 flex items-center justify-between">
             <p className="text-sm text-muted-foreground">{filtered.length} скин олдсон</p>
