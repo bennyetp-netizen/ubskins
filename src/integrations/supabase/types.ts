@@ -46,6 +46,8 @@ export type Database = {
           created_at: string
           float_value: number | null
           id: string
+          order_number: string | null
+          payment_confirmed: boolean
           payment_method: string
           payment_reference: string | null
           phone: string | null
@@ -64,6 +66,8 @@ export type Database = {
           created_at?: string
           float_value?: number | null
           id?: string
+          order_number?: string | null
+          payment_confirmed?: boolean
           payment_method: string
           payment_reference?: string | null
           phone?: string | null
@@ -82,6 +86,8 @@ export type Database = {
           created_at?: string
           float_value?: number | null
           id?: string
+          order_number?: string | null
+          payment_confirmed?: boolean
           payment_method?: string
           payment_reference?: string | null
           phone?: string | null
