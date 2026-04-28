@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatMNT } from "@/data/skins";
 import { PAYMENTS, calcPrepayment, mntToUsd, paymentLabel, type PaymentMethod } from "@/data/payment";
+import ProductTypeBadge from "@/components/ProductTypeBadge";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -21,6 +22,11 @@ interface OrderRow {
   created_at: string;
   wear: string | null;
   trade_offer_id: string | null;
+  product_type?: string | null;
+  deposit_amount?: number | null;
+  remaining_amount?: number | null;
+  deposit_paid?: boolean | null;
+  remaining_paid?: boolean | null;
 }
 
 const statusMap: Record<string, { label: string; color: string; icon: typeof Clock }> = {
@@ -40,14 +46,13 @@ const Orders = () => {
     if (!user) return;
     supabase
       .from("orders")
-      .select("id, order_number, skin_name, skin_image, price_mnt, payment_method, payment_confirmed, status, created_at, wear, trade_offer_id")
+      .select("*")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
         if (data) {
-          setOrders(data as OrderRow[]);
-          // pending захиалга байвал хамгийн сүүлийнхийг автоматаар нээнэ
-          const firstPending = (data as OrderRow[]).find((o) => o.status === "pending");
+          setOrders(data as unknown as OrderRow[]);
+          const firstPending = (data as unknown as OrderRow[]).find((o) => o.status === "pending");
           if (firstPending) setExpanded(firstPending.id);
         }
       });
@@ -164,6 +169,7 @@ const Orders = () => {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="font-display font-semibold">{o.skin_name}</p>
+                      <ProductTypeBadge type={(o.product_type as "ready" | "preorder") ?? "ready"} />
                       <Badge variant="outline" className={s.color}>
                         <s.icon className="mr-1 h-3 w-3" /> {s.label}
                       </Badge>
@@ -221,26 +227,36 @@ const Orders = () => {
                     </div>
 
                     {/* Amount summary */}
-                    <div className="mb-4 grid grid-cols-2 gap-3">
-                      <div className="rounded-xl border border-warning/30 bg-warning/5 p-3">
-                        <p className="text-[11px] uppercase tracking-wider text-warning">
-                          Урьдчилгаа (30%)
+                    {(o.product_type ?? "ready") === "ready" ? (
+                      <div className="mb-4 rounded-xl border border-emerald-500/40 bg-emerald-500/5 p-4">
+                        <p className="text-[11px] uppercase tracking-wider text-emerald-400">
+                          🟢 БЭЛЭН — Бүтэн төлбөр
                         </p>
-                        <p className="mt-1 font-display text-lg font-bold">{formatMNT(prepay)}</p>
-                        <p className="text-[10px] text-muted-foreground">≈ ${mntToUsd(prepay)} USD</p>
-                      </div>
-                      <div className="rounded-xl border border-border bg-secondary/40 p-3">
-                        <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                          Үлдэгдэл
-                        </p>
-                        <p className="mt-1 font-display text-lg font-bold">
-                          {formatMNT(o.price_mnt - prepay)}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground">
-                          ≈ ${usd - mntToUsd(prepay)} USD · trade-ийн өмнө
+                        <p className="mt-1 font-display text-2xl font-bold">{formatMNT(o.price_mnt)}</p>
+                        <p className="mt-1 text-[11px] text-muted-foreground">
+                          Төлбөр баталгаажсаны дараа Steam trade offer илгээнэ.
                         </p>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="mb-4 grid grid-cols-2 gap-3">
+                        <div className="rounded-xl border border-orange-500/40 bg-orange-500/5 p-3">
+                          <p className="text-[11px] uppercase tracking-wider text-orange-400">
+                            Урьдчилгаа (30%)
+                          </p>
+                          <p className="mt-1 font-display text-lg font-bold">{formatMNT(o.deposit_amount ?? prepay)}</p>
+                          <p className="text-[10px] text-muted-foreground">эхлээд төлнө</p>
+                        </div>
+                        <div className="rounded-xl border border-border bg-secondary/40 p-3">
+                          <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                            Үлдэгдэл (70%)
+                          </p>
+                          <p className="mt-1 font-display text-lg font-bold">
+                            {formatMNT(o.remaining_amount ?? (o.price_mnt - prepay))}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">скин ирмэгц</p>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Account fields */}
                     <div className="space-y-2">

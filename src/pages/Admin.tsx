@@ -15,6 +15,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { formatMNT } from "@/data/skins";
+import ProductTypeBadge from "@/components/ProductTypeBadge";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,7 +26,7 @@ import { toast } from "sonner";
 interface SkinForm {
   id?: string;
   name: string;
-  weapon: string; // "AK-47" гэх мэт
+  weapon: string;
   game: string;
   wear: string;
   float_value: string;
@@ -37,6 +38,8 @@ interface SkinForm {
   is_active: boolean;
   is_featured: boolean;
   stock: string;
+  product_type: "ready" | "preorder";
+  stock_quantity: string;
 }
 
 const emptyForm: SkinForm = {
@@ -53,6 +56,8 @@ const emptyForm: SkinForm = {
   is_active: true,
   is_featured: false,
   stock: "1",
+  product_type: "ready",
+  stock_quantity: "1",
 };
 
 const Admin = () => {
@@ -69,14 +74,20 @@ const Admin = () => {
   const [syncing, setSyncing] = useState(false);
   const [orderFilter, setOrderFilter] = useState<"all" | "pending" | "paid" | "delivered">("all");
 
-  const totalRevenue = orders
-    .filter((o) => o.status === "paid" || o.status === "delivered")
+  const paidOrders = orders.filter((o) => o.status === "paid" || o.status === "delivered");
+  const totalRevenue = paidOrders.reduce((sum, o) => sum + (o.price_mnt ?? 0), 0);
+  const readyRevenue = paidOrders
+    .filter((o) => (o.product_type ?? "ready") === "ready")
     .reduce((sum, o) => sum + (o.price_mnt ?? 0), 0);
+  const preorderRevenue = paidOrders
+    .filter((o) => o.product_type === "preorder")
+    .reduce((sum, o) => sum + (o.price_mnt ?? 0), 0);
+
   const stats = [
-    { label: "Нийт захиалга", value: `${orders.length} захиалга`, icon: TrendingUp, color: "text-accent" },
+    { label: "Нийт захиалга", value: `${orders.length}`, icon: TrendingUp, color: "text-accent" },
     { label: "Нийт орлого", value: formatMNT(totalRevenue), icon: TrendingUp, color: "text-primary" },
-    { label: "Хүлээгдэж буй", value: String(orders.filter((o) => o.status === "pending").length), icon: Clock, color: "text-warning" },
-    { label: "Хүргэгдсэн", value: String(orders.filter((o) => o.status === "delivered").length), icon: Truck, color: "text-accent" },
+    { label: "БЭЛЭН-ээс", value: formatMNT(readyRevenue), icon: TrendingUp, color: "text-emerald-400" },
+    { label: "ЗАХИАЛГА-аас", value: formatMNT(preorderRevenue), icon: TrendingUp, color: "text-orange-400" },
   ];
 
   const syncFromBuff = async () => {
@@ -111,6 +122,15 @@ const Admin = () => {
     const patch: any = { status };
     if (payment_confirmed !== undefined) patch.payment_confirmed = payment_confirmed;
     const { error } = await supabase.from("orders").update(patch).eq("id", id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Шинэчиллээ");
+      loadOrders();
+    }
+  };
+
+  const updateOrder = async (id: string, patch: Record<string, any>) => {
+    const { error } = await supabase.from("orders").update(patch as any).eq("id", id);
     if (error) toast.error(error.message);
     else {
       toast.success("Шинэчиллээ");
@@ -176,6 +196,8 @@ const Admin = () => {
       is_active: s.is_active ?? true,
       is_featured: !!s.is_featured,
       stock: s.stock?.toString() ?? "1",
+      product_type: (s.product_type as "ready" | "preorder") ?? "ready",
+      stock_quantity: s.stock_quantity?.toString() ?? "1",
     });
     setOpen(true);
   };
@@ -206,7 +228,7 @@ const Admin = () => {
       return;
     }
     setSaving(true);
-    const payload = {
+    const payload: any = {
       name: form.name,
       weapon: form.weapon,
       game: form.game,
@@ -220,6 +242,8 @@ const Admin = () => {
       is_active: form.is_active,
       is_featured: form.is_featured,
       stock: Number(form.stock) || 0,
+      product_type: form.product_type,
+      stock_quantity: Number(form.stock_quantity) || 0,
     };
     let error;
     if (form.id) {
@@ -322,10 +346,10 @@ const Admin = () => {
               <thead>
                 <tr className="border-b border-border text-left text-xs uppercase tracking-wider text-muted-foreground">
                   <th className="px-4 py-3">№</th>
+                  <th className="px-4 py-3">Төрөл</th>
                   <th className="px-4 py-3">Скин</th>
                   <th className="px-4 py-3">Үнэ</th>
                   <th className="px-4 py-3">Утас</th>
-                  <th className="px-4 py-3">Төлбөр</th>
                   <th className="px-4 py-3">Төлөв</th>
                   <th className="px-4 py-3">Огноо</th>
                   <th className="px-4 py-3">Үйлдэл</th>
@@ -339,33 +363,69 @@ const Admin = () => {
                       <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">Захиалга байхгүй</td></tr>
                     );
                   }
-                  return list.map((o) => (
-                    <tr key={o.id} className="border-b border-border/60 last:border-0 hover:bg-secondary/30">
+                  return list.map((o) => {
+                    const ptype = (o.product_type as "ready" | "preorder") ?? "ready";
+                    return (
+                    <tr key={o.id} className="border-b border-border/60 last:border-0 hover:bg-secondary/30 align-top">
                       <td className="px-4 py-3 font-mono text-xs font-bold text-primary">{o.order_number ?? o.id.slice(0, 8)}</td>
-                      <td className="px-4 py-3">{o.skin_name}</td>
+                      <td className="px-4 py-3"><ProductTypeBadge type={ptype} /></td>
+                      <td className="px-4 py-3">
+                        <p>{o.skin_name}</p>
+                        <p className="text-[11px] text-muted-foreground">{o.payment_method}</p>
+                      </td>
                       <td className="px-4 py-3 font-display font-semibold">{formatMNT(o.price_mnt)}</td>
                       <td className="px-4 py-3 text-xs">{o.phone ?? "—"}</td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">{o.payment_method}</td>
                       <td className="px-4 py-3"><Badge variant="outline">{o.status}</Badge></td>
                       <td className="px-4 py-3 text-xs text-muted-foreground">
                         {new Date(o.created_at).toLocaleDateString("mn-MN")}
                       </td>
                       <td className="px-4 py-3">
-                        <div className="flex flex-wrap gap-1">
-                          {o.status === "pending" && (
-                            <Button size="sm" variant="outline" onClick={() => setOrderStatus(o.id, "paid", true)}>
-                              Баталгаажуулах
-                            </Button>
+                        <div className="flex flex-col gap-2">
+                          {ptype === "ready" ? (
+                            <label className="flex items-center gap-2 text-xs">
+                              <Switch
+                                checked={!!o.payment_confirmed}
+                                onCheckedChange={(v) =>
+                                  updateOrder(o.id, { payment_confirmed: v, status: v ? "paid" : "pending" })
+                                }
+                              />
+                              Төлбөр баталгаажсан уу?
+                            </label>
+                          ) : (
+                            <>
+                              <label className="flex items-center gap-2 text-xs">
+                                <Switch
+                                  checked={!!o.deposit_paid}
+                                  onCheckedChange={(v) =>
+                                    updateOrder(o.id, {
+                                      deposit_paid: v,
+                                      status: v && !o.remaining_paid ? "paid" : (o.remaining_paid ? "delivered" : "pending"),
+                                    })
+                                  }
+                                />
+                                Урьдчилгаа орсон уу?
+                              </label>
+                              <label className="flex items-center gap-2 text-xs">
+                                <Switch
+                                  checked={!!o.remaining_paid}
+                                  onCheckedChange={(v) =>
+                                    updateOrder(o.id, { remaining_paid: v })
+                                  }
+                                />
+                                Үлдэгдэл орсон уу?
+                              </label>
+                            </>
                           )}
-                          {o.status === "paid" && (
-                            <Button size="sm" variant="outline" onClick={() => setOrderStatus(o.id, "delivered")}>
+                          {o.status !== "delivered" && (
+                            <Button size="sm" variant="outline" onClick={() => updateOrder(o.id, { status: "delivered" })}>
                               Хүргэгдсэн
                             </Button>
                           )}
                         </div>
                       </td>
                     </tr>
-                  ));
+                    );
+                  });
                 })()}
               </tbody>
             </table>
@@ -522,6 +582,35 @@ const Admin = () => {
               </div>
             </div>
 
+            <div className="sm:col-span-2">
+              <Label>Бүтээгдэхүүний төрөл *</Label>
+              <div className="mt-1.5 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, product_type: "ready" })}
+                  className={`rounded-lg border p-3 text-left transition ${
+                    form.product_type === "ready"
+                      ? "border-emerald-500 bg-emerald-500/10"
+                      : "border-border bg-secondary/30 hover:border-emerald-500/40"
+                  }`}
+                >
+                  <p className="font-display text-sm font-semibold text-emerald-400">🟢 БЭЛЭН</p>
+                  <p className="text-[11px] text-muted-foreground">Агуулахад бэлэн · бүтэн төлбөр</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, product_type: "preorder" })}
+                  className={`rounded-lg border p-3 text-left transition ${
+                    form.product_type === "preorder"
+                      ? "border-orange-500 bg-orange-500/10"
+                      : "border-border bg-secondary/30 hover:border-orange-500/40"
+                  }`}
+                >
+                  <p className="font-display text-sm font-semibold text-orange-400">🟡 ЗАХИАЛГА</p>
+                  <p className="text-[11px] text-muted-foreground">Buff163-аас · 30% урьдчилгаа</p>
+                </button>
+              </div>
+            </div>
             <div>
               <Label>Зэвсэг *</Label>
               <Input

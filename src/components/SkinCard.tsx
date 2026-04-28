@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import type { Skin } from "@/data/skins";
 import { formatMNT, storepayMonthly, wearColor, wearLabel } from "@/data/skins";
 import { Badge } from "@/components/ui/badge";
+import ProductTypeBadge from "@/components/ProductTypeBadge";
 
 interface Props {
   skin: Skin;
@@ -24,11 +25,14 @@ const SkinCard = ({ skin }: Props) => {
           loading="lazy"
           className="relative z-10 max-h-full w-auto object-contain transition-transform duration-500 group-hover:scale-110"
         />
-        {skin.statTrak && (
-          <Badge className="absolute left-3 top-3 border-warning/30 bg-warning/10 text-warning hover:bg-warning/20">
-            StatTrak™
-          </Badge>
-        )}
+        <div className="absolute left-3 top-3 flex flex-col gap-1.5">
+          <ProductTypeBadge type={skin.productType} />
+          {skin.statTrak && (
+            <Badge className="border-warning/30 bg-warning/10 text-warning hover:bg-warning/20">
+              StatTrak™
+            </Badge>
+          )}
+        </div>
         <Badge
           variant="outline"
           className={`absolute right-3 top-3 border-current/30 bg-background/60 backdrop-blur ${wearColor[skin.wear]}`}
@@ -58,12 +62,18 @@ const SkinCard = ({ skin }: Props) => {
               {formatMNT(skin.price)}
             </p>
             <p className="text-[11px] text-muted-foreground">
-              эсвэл <span className="text-accent">{formatMNT(storepayMonthly(skin.price))}</span> × 4
+              {skin.productType === "ready" ? (
+                <span className="text-emerald-400">Өнөөдөр хүргэнэ</span>
+              ) : (
+                <span className="text-orange-400">2-5 хоног</span>
+              )}
             </p>
           </div>
-          <span className="text-[11px] text-muted-foreground">
-            Үлд: {skin.stock}
-          </span>
+          {skin.productType === "ready" && (
+            <span className="text-[11px] text-muted-foreground">
+              Үлд: {skin.stockQuantity || skin.stock}
+            </span>
+          )}
         </div>
       </div>
     </Link>

@@ -19,8 +19,14 @@ const Cart = () => {
   const [phone, setPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const prepayment = calcPrepayment(total);
+  // Per-item deposit: ready=100% (no deposit), preorder=30%
+  const itemDeposit = (skin: typeof items[number]["skin"]) =>
+    skin.productType === "preorder" ? calcPrepayment(skin.price) : skin.price;
+  const totalDeposit = items.reduce((s, { skin }) => s + itemDeposit(skin), 0);
+  const totalRemaining = total - totalDeposit;
   const usdTotal = mntToUsd(total);
+  const hasPreorder = items.some(({ skin }) => skin.productType === "preorder");
+  const hasReady = items.some(({ skin }) => skin.productType === "ready");
 
   const handleCreateOrder = async () => {
     if (!user) {
@@ -38,23 +44,29 @@ const Cart = () => {
 
     setSubmitting(true);
     try {
-      const rows = items.map(({ skin }) => ({
-        user_id: user.id,
-        skin_id: skin.id,
-        skin_name: `${skin.weaponName} | ${skin.name}`,
-        skin_image: skin.image,
-        wear: skin.wear,
-        float_value: skin.float,
-        price_mnt: skin.price,
-        payment_method: method,
-        phone: phone.trim(),
-        status: "pending" as const,
-      }));
+      const rows = items.map(({ skin }) => {
+        const deposit = itemDeposit(skin);
+        return {
+          user_id: user.id,
+          skin_id: skin.id,
+          skin_name: `${skin.weaponName} | ${skin.name}`,
+          skin_image: skin.image,
+          wear: skin.wear,
+          float_value: skin.float,
+          price_mnt: skin.price,
+          payment_method: method,
+          phone: phone.trim(),
+          status: "pending" as const,
+          product_type: skin.productType,
+          deposit_amount: deposit,
+          remaining_amount: skin.price - deposit,
+        };
+      });
 
-      const { error } = await supabase.from("orders").insert(rows);
+      const { error } = await supabase.from("orders").insert(rows as any);
       if (error) throw error;
 
-      toast.success("Захиалга амжилттай үүслээ! Төлбөрийн заавар руу шилжиж байна...");
+      toast.success("✅ Захиалга амжилттай! Төлбөрийн заавар руу шилжиж байна...");
       clear();
       setTimeout(() => nav("/orders"), 700);
     } catch (e) {
@@ -124,13 +136,38 @@ const Cart = () => {
                 <span>Нийт</span><span className="text-gradient-primary">{formatMNT(total)}</span>
               </div>
               <p className="text-right text-xs text-muted-foreground">≈ ${usdTotal} USD</p>
-              <div className="mt-3 rounded-lg border border-warning/30 bg-warning/5 p-3">
-                <p className="text-xs font-semibold text-warning">30% урьдчилгаа төлбөр</p>
-                <p className="mt-0.5 font-display text-base font-bold">{formatMNT(prepayment)}</p>
-                <p className="text-[11px] text-muted-foreground">
-                  Скиныг бэлдэхийн тулд урьдчилгаа төлбөр шаардлагатай. Үлдсэн {formatMNT(total - prepayment)}-г trade offer илгээхээс өмнө төлнө.
-                </p>
-              </div>
+              {hasPreorder && hasReady ? (
+                <div className="mt-3 space-y-2">
+                  <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3">
+                    <p className="text-xs font-semibold text-emerald-400">🟢 Бэлэн скин — бүтэн төлбөр</p>
+                    <p className="mt-0.5 font-display text-base font-bold">
+                      {formatMNT(items.filter(i => i.skin.productType === "ready").reduce((s, i) => s + i.skin.price, 0))}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-orange-500/30 bg-orange-500/5 p-3">
+                    <p className="text-xs font-semibold text-orange-400">🟡 Захиалга — 30% урьдчилгаа</p>
+                    <p className="mt-0.5 font-display text-base font-bold">
+                      {formatMNT(items.filter(i => i.skin.productType === "preorder").reduce((s, i) => s + calcPrepayment(i.skin.price), 0))}
+                    </p>
+                  </div>
+                </div>
+              ) : hasPreorder ? (
+                <div className="mt-3 rounded-lg border border-orange-500/30 bg-orange-500/5 p-3">
+                  <p className="text-xs font-semibold text-orange-400">🟡 ЗАХИАЛГА — 30% урьдчилгаа</p>
+                  <p className="mt-0.5 font-display text-base font-bold">{formatMNT(totalDeposit)}</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    Үлдэгдэл {formatMNT(totalRemaining)} — скин ирмэгц төлнө.
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3">
+                  <p className="text-xs font-semibold text-emerald-400">🟢 БЭЛЭН — бүтэн төлбөр</p>
+                  <p className="mt-0.5 font-display text-base font-bold">{formatMNT(total)}</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    Төлбөр баталгаажсаны дараа Steam trade offer шууд илгээнэ.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 

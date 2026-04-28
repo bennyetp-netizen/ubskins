@@ -67,6 +67,27 @@ const SkinDetail = () => {
             <Badge variant="outline" className={`border-current/40 bg-background ${wearColor[skin.wear]}`}>{wearLabel[skin.wear]}</Badge>
           </div>
 
+          {/* Product type banner */}
+          {skin.productType === "ready" ? (
+            <div className="mt-4 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4">
+              <p className="font-display text-sm font-bold text-emerald-400">
+                🟢 БЭЛЭН — Өнөөдөр хүргэнэ
+              </p>
+              <p className="mt-1 text-xs text-emerald-300/80">
+                Энэ скин агуулахад бэлэн байна. Бүтэн төлбөрөө шилжүүлсний дараа Steam trade offer шууд илгээнэ.
+              </p>
+            </div>
+          ) : (
+            <div className="mt-4 rounded-xl border border-orange-500/40 bg-orange-500/10 p-4">
+              <p className="font-display text-sm font-bold text-orange-400">
+                🟡 ЗАХИАЛГА — 2-5 хоногт хүргэнэ
+              </p>
+              <p className="mt-1 text-xs text-orange-300/80">
+                Buff163-аас захиалгаар авна. 30% урьдчилгаа төлсний дараа худалдан авч, ирмэгц үлдэгдлийг төлж trade offer хүлээн авна.
+              </p>
+            </div>
+          )}
+
           {/* stats */}
           <div className="mt-6 grid grid-cols-3 gap-3">
             <div className="rounded-xl border border-border bg-card p-4">
@@ -78,8 +99,12 @@ const SkinDetail = () => {
               <p className={`mt-1 font-display text-lg font-bold ${wearColor[skin.wear]}`}>{skin.wear}</p>
             </div>
             <div className="rounded-xl border border-border bg-card p-4">
-              <p className="text-xs text-muted-foreground">Үлдэгдэл</p>
-              <p className="mt-1 font-display text-lg font-bold">{skin.stock}</p>
+              <p className="text-xs text-muted-foreground">
+                {skin.productType === "ready" ? "Үлдэгдэл" : "Хүргэх"}
+              </p>
+              <p className="mt-1 font-display text-lg font-bold">
+                {skin.productType === "ready" ? (skin.stockQuantity || skin.stock) : "2-5 хоног"}
+              </p>
             </div>
           </div>
 
@@ -106,11 +131,19 @@ const SkinDetail = () => {
                 <p className="font-display text-4xl font-bold text-gradient-primary">{formatMNT(skin.price)}</p>
                 <p className="mt-1 text-xs text-muted-foreground">≈ ${mntToUsd(skin.price)} USD</p>
               </div>
-              <div className="text-right">
-                <p className="text-xs text-muted-foreground">Урьдчилгаа (30%)</p>
-                <p className="font-display text-lg font-semibold text-warning">{formatMNT(calcPrepayment(skin.price))}</p>
-                <p className="text-[10px] text-muted-foreground">олон улсын шилжүүлгээр</p>
-              </div>
+              {skin.productType === "preorder" ? (
+                <div className="text-right">
+                  <p className="text-xs text-muted-foreground">Урьдчилгаа (30%)</p>
+                  <p className="font-display text-lg font-semibold text-warning">{formatMNT(calcPrepayment(skin.price))}</p>
+                  <p className="text-[10px] text-muted-foreground">үлдэгдлийг хүргэх үед</p>
+                </div>
+              ) : (
+                <div className="text-right">
+                  <p className="text-xs text-muted-foreground">Бүтэн төлбөр</p>
+                  <p className="font-display text-lg font-semibold text-emerald-400">{formatMNT(skin.price)}</p>
+                  <p className="text-[10px] text-muted-foreground">100% урьдчилан</p>
+                </div>
+              )}
             </div>
 
             <div className="mt-5 grid gap-2">
