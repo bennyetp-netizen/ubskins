@@ -16,6 +16,7 @@ const Cart = () => {
   const { user, signInWithSteam } = useAuth();
   const nav = useNavigate();
   const [method, setMethod] = useState<PaymentMethod>("wise");
+  const [phone, setPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const prepayment = calcPrepayment(total);
