@@ -44,6 +44,8 @@ export type Database = {
       orders: {
         Row: {
           created_at: string
+          deposit_amount: number | null
+          deposit_paid: boolean
           float_value: number | null
           id: string
           order_number: string | null
@@ -52,6 +54,9 @@ export type Database = {
           payment_reference: string | null
           phone: string | null
           price_mnt: number
+          product_type: string
+          remaining_amount: number | null
+          remaining_paid: boolean
           skin_id: string
           skin_image: string | null
           skin_name: string
@@ -64,6 +69,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          deposit_amount?: number | null
+          deposit_paid?: boolean
           float_value?: number | null
           id?: string
           order_number?: string | null
@@ -72,6 +79,9 @@ export type Database = {
           payment_reference?: string | null
           phone?: string | null
           price_mnt: number
+          product_type?: string
+          remaining_amount?: number | null
+          remaining_paid?: boolean
           skin_id: string
           skin_image?: string | null
           skin_name: string
@@ -84,6 +94,8 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          deposit_amount?: number | null
+          deposit_paid?: boolean
           float_value?: number | null
           id?: string
           order_number?: string | null
@@ -92,6 +104,9 @@ export type Database = {
           payment_reference?: string | null
           phone?: string | null
           price_mnt?: number
+          product_type?: string
+          remaining_amount?: number | null
+          remaining_paid?: boolean
           skin_id?: string
           skin_image?: string | null
           skin_name?: string
@@ -156,9 +171,11 @@ export type Database = {
           last_synced_at: string | null
           name: string
           price_mnt: number
+          product_type: string
           rarity: string | null
           stattrak: boolean
           stock: number
+          stock_quantity: number
           updated_at: string
           weapon: string
           weapon_type: string | null
@@ -179,9 +196,11 @@ export type Database = {
           last_synced_at?: string | null
           name: string
           price_mnt: number
+          product_type?: string
           rarity?: string | null
           stattrak?: boolean
           stock?: number
+          stock_quantity?: number
           updated_at?: string
           weapon: string
           weapon_type?: string | null
@@ -202,9 +221,11 @@ export type Database = {
           last_synced_at?: string | null
           name?: string
           price_mnt?: number
+          product_type?: string
           rarity?: string | null
           stattrak?: boolean
           stock?: number
+          stock_quantity?: number
           updated_at?: string
           weapon?: string
           weapon_type?: string | null
