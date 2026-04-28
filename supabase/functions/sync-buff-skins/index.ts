@@ -8,10 +8,33 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-const BUFF_URL =
-  "https://buff.163.com/api/market/goods?game=csgo&page_num=1&page_size=80";
+// Buff163: category=weapon → зөвхөн зэвсгийн скин (sticker/case/key/agent/patch/music kit орохгүй)
+//          sort_by=sell_num.desc → хамгийн их зарагдсанаас эхэлж эрэмбэлнэ
+//          min/max price → 10₣ - 2000₣ (CNY)
+const BUFF_BASE =
+  "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category=weapon&sort_by=sell_num.desc&min_price=10&max_price=2000";
+const PAGES_TO_FETCH = 4; // 4 × 80 = 320 топ зарагддаг скин
 const RATE_URL = "https://open.er-api.com/v6/latest/CNY"; // free, түлхүүр шаардахгүй
 const MARGIN = 1.10;
+
+// Зөвшөөрөгдсөн зэвсгүүд (хатуу шүүлт)
+const ALLOWED_WEAPONS = new Set([
+  "AK-47", "AWP", "M4A4", "M4A1-S",
+  "Desert Eagle", "USP-S", "Glock-18",
+  "MP9", "MP5-SD",
+]);
+// Хутга бүх төрлөөр (Karambit, Bayonet, Butterfly, Flip, Huntsman гэх мэт)
+const KNIFE_KEYWORDS = ["knife", "karambit", "bayonet", "daggers", "★"];
+// Бээлий
+const GLOVES_KEYWORDS = ["gloves", "hand wraps"];
+
+function isAllowed(fullName: string, weapon: string): boolean {
+  const lower = fullName.toLowerCase();
+  if (KNIFE_KEYWORDS.some((k) => lower.includes(k))) return true;
+  if (GLOVES_KEYWORDS.some((k) => lower.includes(k))) return true;
+  return ALLOWED_WEAPONS.has(weapon);
+}
+
 
 // Зэвсгийн нэрнээс ангилал тогтоох
 function detectWeaponType(name: string): string {
