@@ -173,6 +173,7 @@ Deno.serve(async (req) => {
           rarity,
           stock: 1,
           is_active: true,
+          is_available: true,
           last_synced_at: new Date().toISOString(),
         },
         { onConflict: "buff_id" },
