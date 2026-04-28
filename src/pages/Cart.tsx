@@ -31,6 +31,10 @@ const Cart = () => {
       return;
     }
     if (items.length === 0) return;
+    if (!phone.trim() || phone.replace(/\D/g, "").length < 8) {
+      toast.error("Утасны дугаараа зөв оруулна уу");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -43,6 +47,7 @@ const Cart = () => {
         float_value: skin.float,
         price_mnt: skin.price,
         payment_method: method,
+        phone: phone.trim(),
         status: "pending" as const,
       }));
 
