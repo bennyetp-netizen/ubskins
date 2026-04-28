@@ -20,12 +20,7 @@ import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const stats = [
-  { label: "Нийт борлуулалт", value: "—", icon: TrendingUp, color: "text-accent" },
-  { label: "Хүлээгдэж буй", value: "—", icon: Clock, color: "text-warning" },
-  { label: "Төлөгдсөн", value: "—", icon: CheckCircle2, color: "text-primary" },
-  { label: "Хүргэгдсэн", value: "—", icon: Truck, color: "text-accent" },
-];
+// stats нь dynamic — orders-аас тооцно (доорх useMemo)
 
 interface SkinForm {
   id?: string;
