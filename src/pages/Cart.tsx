@@ -63,7 +63,7 @@ const Cart = () => {
         };
       });
 
-      const { error } = await supabase.from("orders").insert(rows);
+      const { error } = await supabase.from("orders").insert(rows as any);
       if (error) throw error;
 
       toast.success("✅ Захиалга амжилттай! Төлбөрийн заавар руу шилжиж байна...");
