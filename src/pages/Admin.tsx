@@ -67,6 +67,17 @@ const Admin = () => {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [orderFilter, setOrderFilter] = useState<"all" | "pending" | "paid" | "delivered">("all");
+
+  const totalRevenue = orders
+    .filter((o) => o.status === "paid" || o.status === "delivered")
+    .reduce((sum, o) => sum + (o.price_mnt ?? 0), 0);
+  const stats = [
+    { label: "Нийт захиалга", value: `${orders.length} захиалга`, icon: TrendingUp, color: "text-accent" },
+    { label: "Нийт орлого", value: formatMNT(totalRevenue), icon: TrendingUp, color: "text-primary" },
+    { label: "Хүлээгдэж буй", value: String(orders.filter((o) => o.status === "pending").length), icon: Clock, color: "text-warning" },
+    { label: "Хүргэгдсэн", value: String(orders.filter((o) => o.status === "delivered").length), icon: Truck, color: "text-accent" },
+  ];
 
   const syncFromBuff = async () => {
     setSyncing(true);
