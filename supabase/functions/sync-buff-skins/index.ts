@@ -8,25 +8,43 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-const BUFF_URL =
-  "https://buff.163.com/api/market/goods?game=csgo&page_num=1&page_size=80";
+// Buff163: category=weapon → зөвхөн зэвсгийн скин (sticker/case/key/agent/patch/music kit орохгүй)
+//          sort_by=sell_num.desc → хамгийн их зарагдсанаас эхэлж эрэмбэлнэ
+//          min/max price → 10₣ - 2000₣ (CNY)
+const BUFF_BASE =
+  "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category=weapon&sort_by=sell_num.desc&min_price=10&max_price=2000";
+const PAGES_TO_FETCH = 3; // 3 × 80 = 240 топ зарагддаг скин (timeout-ээс зайлсхийх)
 const RATE_URL = "https://open.er-api.com/v6/latest/CNY"; // free, түлхүүр шаардахгүй
 const MARGIN = 1.10;
+
+// Зөвшөөрөгдсөн зэвсгүүд (хатуу шүүлт)
+const ALLOWED_WEAPONS = new Set([
+  "AK-47", "AWP", "M4A4", "M4A1-S",
+  "Desert Eagle", "USP-S", "Glock-18",
+  "MP9", "MP5-SD",
+]);
+// Хутга бүх төрлөөр (Karambit, Bayonet, Butterfly, Flip, Huntsman гэх мэт)
+const KNIFE_KEYWORDS = ["knife", "karambit", "bayonet", "daggers", "★"];
+// Бээлий
+const GLOVES_KEYWORDS = ["gloves", "hand wraps"];
+
+function isAllowed(fullName: string, weapon: string): boolean {
+  const lower = fullName.toLowerCase();
+  if (KNIFE_KEYWORDS.some((k) => lower.includes(k))) return true;
+  if (GLOVES_KEYWORDS.some((k) => lower.includes(k))) return true;
+  return ALLOWED_WEAPONS.has(weapon);
+}
+
 
 // Зэвсгийн нэрнээс ангилал тогтоох
 function detectWeaponType(name: string): string {
   const n = name.toLowerCase();
-  if (n.includes("knife") || n.includes("karambit") || n.includes("bayonet") ||
-      n.includes("daggers") || n.includes("★")) return "Knife";
-  if (n.includes("awp") || n.includes("ssg") || n.includes("scar-20") ||
-      n.includes("g3sg1")) return "Sniper";
-  if (n.includes("glock") || n.includes("usp") || n.includes("p250") ||
-      n.includes("deagle") || n.includes("desert eagle") || n.includes("five-seven") ||
-      n.includes("tec-9") || n.includes("cz75") || n.includes("p2000") ||
-      n.includes("dual berettas") || n.includes("r8")) return "Pistol";
-  if (n.includes("mp9") || n.includes("mp7") || n.includes("mp5") ||
-      n.includes("ump") || n.includes("p90") || n.includes("mac-10") ||
-      n.includes("pp-bizon")) return "SMG";
+  if (GLOVES_KEYWORDS.some((k) => n.includes(k))) return "Gloves";
+  if (KNIFE_KEYWORDS.some((k) => n.includes(k))) return "Knife";
+  if (n.includes("awp")) return "Sniper";
+  if (n.includes("glock") || n.includes("usp") ||
+      n.includes("deagle") || n.includes("desert eagle")) return "Pistol";
+  if (n.includes("mp9") || n.includes("mp5")) return "SMG";
   return "Rifle";
 }
 
@@ -78,37 +96,59 @@ Deno.serve(async (req) => {
       { onConflict: "base,quote" },
     );
 
-    // 2) Buff163-аас скин жагсаалт татах
-    const buffRes = await fetch(BUFF_URL, {
-      headers: {
-        "Cookie": BUFF_COOKIE,
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
-        "Referer": "https://buff.163.com/market/csgo",
-        "Accept": "application/json",
-      },
-    });
+    // 2) Buff163-аас олон хуудас татах (popularity-аар эрэмбэлсэн, weapon-only, 10-2000¥)
+    const allItems: any[] = [];
+    for (let page = 1; page <= PAGES_TO_FETCH; page++) {
+      const url = `${BUFF_BASE}&page_num=${page}`;
+      const buffRes = await fetch(url, {
+        headers: {
+          "Cookie": BUFF_COOKIE,
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+          "Referer": "https://buff.163.com/market/csgo",
+          "Accept": "application/json",
+        },
+      });
 
-    if (!buffRes.ok) {
-      const txt = await buffRes.text();
-      throw new Error(`Buff163 алдаа [${buffRes.status}]: ${txt.slice(0, 200)}`);
+      if (!buffRes.ok) {
+        const txt = await buffRes.text();
+        throw new Error(`Buff163 алдаа [${buffRes.status}] page=${page}: ${txt.slice(0, 200)}`);
+      }
+
+      const buffJson = await buffRes.json();
+      if (buffJson.code !== "OK") {
+        throw new Error(`Buff163 хариу буруу page=${page}: ${JSON.stringify(buffJson).slice(0, 300)}`);
+      }
+      const pageItems = buffJson?.data?.items ?? [];
+      allItems.push(...pageItems);
+      if (pageItems.length < 80) break; // дуусаад байна
+      // зөөлөн хүлээлт — rate limit-ээс зайлсхийх
+      await new Promise((r) => setTimeout(r, 200));
     }
 
-    const buffJson = await buffRes.json();
-    if (buffJson.code !== "OK") {
-      throw new Error("Buff163 хариу буруу: " + JSON.stringify(buffJson).slice(0, 300));
-    }
-
-    const items = buffJson?.data?.items ?? [];
     let upserted = 0;
+    let skippedFilter = 0;
 
-    for (const it of items) {
+    for (const it of allItems) {
       const fullName: string = it?.name ?? "";
       const buffId = String(it?.id ?? "");
       const cnyPrice = Number(it?.sell_min_price ?? 0);
       if (!buffId || !cnyPrice) continue;
 
       const { weapon, skin } = cleanName(fullName);
+
+      // Зөвшөөрөгдсөн зэвсгийн жагсаалтад орохгүй бол алгасах
+      if (!isAllowed(fullName, weapon)) {
+        skippedFilter++;
+        continue;
+      }
+
+      // Үнийн давхар шалгалт (API param дотор гарч магад)
+      if (cnyPrice < 10 || cnyPrice > 2000) {
+        skippedFilter++;
+        continue;
+      }
+
       const weaponType = detectWeaponType(fullName);
       const wear = detectWear(fullName);
       const rarity = detectRarity(it?.goods_info?.info?.tags);
@@ -145,7 +185,8 @@ Deno.serve(async (req) => {
       JSON.stringify({
         success: true,
         rate_cny_mnt: cnyToMnt,
-        items_received: items.length,
+        items_received: allItems.length,
+        skipped_filter: skippedFilter,
         upserted,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
