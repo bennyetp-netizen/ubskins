@@ -97,8 +97,19 @@ const Admin = () => {
   };
 
   const loadOrders = async () => {
-    const { data } = await supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(50);
+    const { data } = await supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(500);
     setOrders(data ?? []);
+  };
+
+  const setOrderStatus = async (id: string, status: string, payment_confirmed?: boolean) => {
+    const patch: any = { status };
+    if (payment_confirmed !== undefined) patch.payment_confirmed = payment_confirmed;
+    const { error } = await supabase.from("orders").update(patch).eq("id", id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Шинэчиллээ");
+      loadOrders();
+    }
   };
 
   useEffect(() => {
