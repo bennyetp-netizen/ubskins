@@ -174,7 +174,8 @@ const Orders = () => {
                       )}
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      №{o.id.slice(0, 8).toUpperCase()} ·{" "}
+                      <span className="font-mono font-bold text-primary">{o.order_number ?? o.id.slice(0, 8).toUpperCase()}</span>
+                      {" · "}
                       {new Date(o.created_at).toLocaleString("mn-MN", {
                         year: "numeric",
                         month: "short",
