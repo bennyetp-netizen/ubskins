@@ -19,8 +19,14 @@ const Cart = () => {
   const [phone, setPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const prepayment = calcPrepayment(total);
+  // Per-item deposit: ready=100% (no deposit), preorder=30%
+  const itemDeposit = (skin: typeof items[number]["skin"]) =>
+    skin.productType === "preorder" ? calcPrepayment(skin.price) : skin.price;
+  const totalDeposit = items.reduce((s, { skin }) => s + itemDeposit(skin), 0);
+  const totalRemaining = total - totalDeposit;
   const usdTotal = mntToUsd(total);
+  const hasPreorder = items.some(({ skin }) => skin.productType === "preorder");
+  const hasReady = items.some(({ skin }) => skin.productType === "ready");
 
   const handleCreateOrder = async () => {
     if (!user) {
@@ -38,23 +44,29 @@ const Cart = () => {
 
     setSubmitting(true);
     try {
-      const rows = items.map(({ skin }) => ({
-        user_id: user.id,
-        skin_id: skin.id,
-        skin_name: `${skin.weaponName} | ${skin.name}`,
-        skin_image: skin.image,
-        wear: skin.wear,
-        float_value: skin.float,
-        price_mnt: skin.price,
-        payment_method: method,
-        phone: phone.trim(),
-        status: "pending" as const,
-      }));
+      const rows = items.map(({ skin }) => {
+        const deposit = itemDeposit(skin);
+        return {
+          user_id: user.id,
+          skin_id: skin.id,
+          skin_name: `${skin.weaponName} | ${skin.name}`,
+          skin_image: skin.image,
+          wear: skin.wear,
+          float_value: skin.float,
+          price_mnt: skin.price,
+          payment_method: method,
+          phone: phone.trim(),
+          status: "pending" as const,
+          product_type: skin.productType,
+          deposit_amount: deposit,
+          remaining_amount: skin.price - deposit,
+        };
+      });
 
       const { error } = await supabase.from("orders").insert(rows);
       if (error) throw error;
 
-      toast.success("Захиалга амжилттай үүслээ! Төлбөрийн заавар руу шилжиж байна...");
+      toast.success("✅ Захиалга амжилттай! Төлбөрийн заавар руу шилжиж байна...");
       clear();
       setTimeout(() => nav("/orders"), 700);
     } catch (e) {
