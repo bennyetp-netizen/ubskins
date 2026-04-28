@@ -157,7 +157,7 @@ const Cart = () => {
           <div className="rounded-2xl border border-border bg-gradient-card p-5">
             <div className="mb-3 flex items-center gap-2">
               <Globe2 className="h-4 w-4 text-accent" />
-              <h3 className="font-display text-base font-semibold">Олон улсын төлбөрийн арга</h3>
+              <h3 className="font-display text-base font-semibold">Төлбөрийн арга</h3>
             </div>
             <div className="space-y-2">
               {(Object.values(PAYMENTS)).map((p) => (
