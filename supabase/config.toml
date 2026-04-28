@@ -1,1 +1,4 @@
 project_id = "dsatymimraxujqyhqccv"
+
+[functions.sync-buff-skins]
+verify_jwt = false

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Pencil, Trash2, TrendingUp, Clock, CheckCircle2, Truck, Package, Loader2, Upload, ShieldAlert, Eye, EyeOff, Star } from "lucide-react";
+import { Plus, Pencil, Trash2, TrendingUp, Clock, CheckCircle2, Truck, Package, Loader2, Upload, ShieldAlert, Eye, EyeOff, Star, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -71,6 +71,22 @@ const Admin = () => {
   const [form, setForm] = useState<SkinForm>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+
+  const syncFromBuff = async () => {
+    setSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("sync-buff-skins");
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error ?? "Тодорхойгүй алдаа");
+      toast.success(`Buff163-аас ${data.upserted}/${data.items_received} скин шинэчлэгдлээ. Ханш: 1¥ = ${Number(data.rate_cny_mnt).toFixed(2)}₮`);
+      loadSkins();
+    } catch (e: any) {
+      toast.error(e.message ?? "Sync хийхэд алдаа гарлаа");
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const loadSkins = async () => {
     setLoading(true);
@@ -267,6 +283,7 @@ const Admin = () => {
                 <th className="px-4 py-3">ID</th>
                 <th className="px-4 py-3">Скин</th>
                 <th className="px-4 py-3">Үнэ</th>
+                <th className="px-4 py-3">Утас</th>
                 <th className="px-4 py-3">Төлбөр</th>
                 <th className="px-4 py-3">Төлөв</th>
                 <th className="px-4 py-3">Огноо</th>
@@ -275,7 +292,7 @@ const Admin = () => {
             <tbody>
               {orders.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-muted-foreground">Захиалга байхгүй</td>
+                  <td colSpan={7} className="p-8 text-center text-muted-foreground">Захиалга байхгүй</td>
                 </tr>
               ) : (
                 orders.map((o) => (
@@ -283,6 +300,7 @@ const Admin = () => {
                     <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{o.id.slice(0, 8)}</td>
                     <td className="px-4 py-3">{o.skin_name}</td>
                     <td className="px-4 py-3 font-display font-semibold">{formatMNT(o.price_mnt)}</td>
+                    <td className="px-4 py-3 text-xs">{o.phone ?? "—"}</td>
                     <td className="px-4 py-3 text-xs text-muted-foreground">{o.payment_method}</td>
                     <td className="px-4 py-3"><Badge variant="outline">{o.status}</Badge></td>
                     <td className="px-4 py-3 text-xs text-muted-foreground">
@@ -296,7 +314,11 @@ const Admin = () => {
         </div>
       ) : (
         <div>
-          <div className="mb-4 flex justify-end">
+          <div className="mb-4 flex flex-wrap justify-end gap-2">
+            <Button variant="outline" onClick={syncFromBuff} disabled={syncing}>
+              {syncing ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-1 h-4 w-4" />}
+              Buff163-аас сэргээх
+            </Button>
             <Button variant="hero" onClick={openNew}><Plus className="mr-1 h-4 w-4" /> Шинэ скин нэмэх</Button>
           </div>
           <div className="overflow-x-auto rounded-2xl border border-border bg-gradient-card">

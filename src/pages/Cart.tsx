@@ -1,7 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Trash2, ShoppingBag, ShieldCheck, Globe2, Loader2, LogIn } from "lucide-react";
+import { Trash2, ShoppingBag, ShieldCheck, Globe2, Loader2, LogIn, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { formatMNT, wearColor } from "@/data/skins";
@@ -14,6 +16,7 @@ const Cart = () => {
   const { user, signInWithSteam } = useAuth();
   const nav = useNavigate();
   const [method, setMethod] = useState<PaymentMethod>("wise");
+  const [phone, setPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const prepayment = calcPrepayment(total);
@@ -28,6 +31,10 @@ const Cart = () => {
       return;
     }
     if (items.length === 0) return;
+    if (!phone.trim() || phone.replace(/\D/g, "").length < 8) {
+      toast.error("Утасны дугаараа зөв оруулна уу");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -40,6 +47,7 @@ const Cart = () => {
         float_value: skin.float,
         price_mnt: skin.price,
         payment_method: method,
+        phone: phone.trim(),
         status: "pending" as const,
       }));
 
@@ -124,6 +132,25 @@ const Cart = () => {
                 </p>
               </div>
             </div>
+          </div>
+
+          {/* Phone number */}
+          <div className="rounded-2xl border border-border bg-gradient-card p-5">
+            <Label htmlFor="phone" className="flex items-center gap-2 font-display text-base font-semibold">
+              <Phone className="h-4 w-4 text-accent" /> Холбоо барих утас
+            </Label>
+            <Input
+              id="phone"
+              type="tel"
+              inputMode="tel"
+              placeholder="9911-2233"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="mt-2"
+            />
+            <p className="mt-1.5 text-[11px] text-muted-foreground">
+              Захиалга баталгаажихад тантай холбогдоход хэрэгтэй.
+            </p>
           </div>
 
           {/* Payment method picker */}
