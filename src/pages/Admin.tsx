@@ -71,6 +71,22 @@ const Admin = () => {
   const [form, setForm] = useState<SkinForm>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+
+  const syncFromBuff = async () => {
+    setSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("sync-buff-skins");
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error ?? "Тодорхойгүй алдаа");
+      toast.success(`Buff163-аас ${data.upserted}/${data.items_received} скин шинэчлэгдлээ. Ханш: 1¥ = ${Number(data.rate_cny_mnt).toFixed(2)}₮`);
+      loadSkins();
+    } catch (e: any) {
+      toast.error(e.message ?? "Sync хийхэд алдаа гарлаа");
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const loadSkins = async () => {
     setLoading(true);
