@@ -293,41 +293,83 @@ const Admin = () => {
       </div>
 
       {tab === "orders" ? (
-        <div className="overflow-x-auto rounded-2xl border border-border bg-gradient-card">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border text-left text-xs uppercase tracking-wider text-muted-foreground">
-                <th className="px-4 py-3">ID</th>
-                <th className="px-4 py-3">Скин</th>
-                <th className="px-4 py-3">Үнэ</th>
-                <th className="px-4 py-3">Утас</th>
-                <th className="px-4 py-3">Төлбөр</th>
-                <th className="px-4 py-3">Төлөв</th>
-                <th className="px-4 py-3">Огноо</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="p-8 text-center text-muted-foreground">Захиалга байхгүй</td>
+        <div>
+          <div className="mb-4 flex flex-wrap gap-2">
+            {([
+              { key: "all", label: "Бүгд" },
+              { key: "pending", label: "Төлбөр хүлээгдэж байна" },
+              { key: "paid", label: "Баталгаажсан" },
+              { key: "delivered", label: "Хүргэгдсэн" },
+            ] as const).map((f) => {
+              const count = f.key === "all" ? orders.length : orders.filter((o) => o.status === f.key).length;
+              return (
+                <button
+                  key={f.key}
+                  onClick={() => setOrderFilter(f.key)}
+                  className={`rounded-full border px-4 py-1.5 text-xs font-medium transition-colors ${
+                    orderFilter === f.key
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-secondary/40 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {f.label} <span className="ml-1 opacity-60">({count})</span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="overflow-x-auto rounded-2xl border border-border bg-gradient-card">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-xs uppercase tracking-wider text-muted-foreground">
+                  <th className="px-4 py-3">№</th>
+                  <th className="px-4 py-3">Скин</th>
+                  <th className="px-4 py-3">Үнэ</th>
+                  <th className="px-4 py-3">Утас</th>
+                  <th className="px-4 py-3">Төлбөр</th>
+                  <th className="px-4 py-3">Төлөв</th>
+                  <th className="px-4 py-3">Огноо</th>
+                  <th className="px-4 py-3">Үйлдэл</th>
                 </tr>
-              ) : (
-                orders.map((o) => (
-                  <tr key={o.id} className="border-b border-border/60 last:border-0 hover:bg-secondary/30">
-                    <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{o.id.slice(0, 8)}</td>
-                    <td className="px-4 py-3">{o.skin_name}</td>
-                    <td className="px-4 py-3 font-display font-semibold">{formatMNT(o.price_mnt)}</td>
-                    <td className="px-4 py-3 text-xs">{o.phone ?? "—"}</td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">{o.payment_method}</td>
-                    <td className="px-4 py-3"><Badge variant="outline">{o.status}</Badge></td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">
-                      {new Date(o.created_at).toLocaleDateString("mn-MN")}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {(() => {
+                  const list = orderFilter === "all" ? orders : orders.filter((o) => o.status === orderFilter);
+                  if (list.length === 0) {
+                    return (
+                      <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">Захиалга байхгүй</td></tr>
+                    );
+                  }
+                  return list.map((o) => (
+                    <tr key={o.id} className="border-b border-border/60 last:border-0 hover:bg-secondary/30">
+                      <td className="px-4 py-3 font-mono text-xs font-bold text-primary">{o.order_number ?? o.id.slice(0, 8)}</td>
+                      <td className="px-4 py-3">{o.skin_name}</td>
+                      <td className="px-4 py-3 font-display font-semibold">{formatMNT(o.price_mnt)}</td>
+                      <td className="px-4 py-3 text-xs">{o.phone ?? "—"}</td>
+                      <td className="px-4 py-3 text-xs text-muted-foreground">{o.payment_method}</td>
+                      <td className="px-4 py-3"><Badge variant="outline">{o.status}</Badge></td>
+                      <td className="px-4 py-3 text-xs text-muted-foreground">
+                        {new Date(o.created_at).toLocaleDateString("mn-MN")}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-1">
+                          {o.status === "pending" && (
+                            <Button size="sm" variant="outline" onClick={() => setOrderStatus(o.id, "paid", true)}>
+                              Баталгаажуулах
+                            </Button>
+                          )}
+                          {o.status === "paid" && (
+                            <Button size="sm" variant="outline" onClick={() => setOrderStatus(o.id, "delivered")}>
+                              Хүргэгдсэн
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ));
+                })()}
+              </tbody>
+            </table>
+          </div>
         </div>
       ) : (
         <div>
