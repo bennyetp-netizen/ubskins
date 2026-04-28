@@ -233,6 +233,39 @@ export type Database = {
         }
         Relationships: []
       }
+      sms_logs: {
+        Row: {
+          created_at: string
+          id: string
+          matched_action: string | null
+          matched_order_id: string | null
+          parsed_amount: number | null
+          parsed_reference: string | null
+          raw_text: string
+          source_ip: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          matched_action?: string | null
+          matched_order_id?: string | null
+          parsed_amount?: number | null
+          parsed_reference?: string | null
+          raw_text: string
+          source_ip?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          matched_action?: string | null
+          matched_order_id?: string | null
+          parsed_amount?: number | null
+          parsed_reference?: string | null
+          raw_text?: string
+          source_ip?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
