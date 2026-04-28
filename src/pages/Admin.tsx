@@ -582,6 +582,35 @@ const Admin = () => {
               </div>
             </div>
 
+            <div className="sm:col-span-2">
+              <Label>Бүтээгдэхүүний төрөл *</Label>
+              <div className="mt-1.5 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, product_type: "ready" })}
+                  className={`rounded-lg border p-3 text-left transition ${
+                    form.product_type === "ready"
+                      ? "border-emerald-500 bg-emerald-500/10"
+                      : "border-border bg-secondary/30 hover:border-emerald-500/40"
+                  }`}
+                >
+                  <p className="font-display text-sm font-semibold text-emerald-400">🟢 БЭЛЭН</p>
+                  <p className="text-[11px] text-muted-foreground">Агуулахад бэлэн · бүтэн төлбөр</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, product_type: "preorder" })}
+                  className={`rounded-lg border p-3 text-left transition ${
+                    form.product_type === "preorder"
+                      ? "border-orange-500 bg-orange-500/10"
+                      : "border-border bg-secondary/30 hover:border-orange-500/40"
+                  }`}
+                >
+                  <p className="font-display text-sm font-semibold text-orange-400">🟡 ЗАХИАЛГА</p>
+                  <p className="text-[11px] text-muted-foreground">Buff163-аас · 30% урьдчилгаа</p>
+                </button>
+              </div>
+            </div>
             <div>
               <Label>Зэвсэг *</Label>
               <Input
