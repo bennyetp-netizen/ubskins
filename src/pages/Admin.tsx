@@ -129,6 +129,15 @@ const Admin = () => {
     }
   };
 
+  const updateOrder = async (id: string, patch: Record<string, any>) => {
+    const { error } = await supabase.from("orders").update(patch as any).eq("id", id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Шинэчиллээ");
+      loadOrders();
+    }
+  };
+
   useEffect(() => {
     if (isAdmin) {
       loadSkins();
