@@ -16,8 +16,12 @@ export interface PaymentInfo {
 // 30% урьдчилгаа
 export const PREPAYMENT_RATE = 0.3;
 
-export const calcPrepayment = (total: number) =>
-  Math.ceil((total * PREPAYMENT_RATE) / 1000) * 1000;
+export const calcPrepayment = (total: number) => {
+  const raw = total * PREPAYMENT_RATE;
+  // Round up to nearest 1000, but never exceed total
+  const rounded = Math.ceil(raw / 1000) * 1000;
+  return Math.min(rounded, total);
+};
 
 // USD ханш (тогтмол ойролцоо)
 export const USD_RATE = 3500;
