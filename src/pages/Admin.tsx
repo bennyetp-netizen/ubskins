@@ -346,10 +346,10 @@ const Admin = () => {
               <thead>
                 <tr className="border-b border-border text-left text-xs uppercase tracking-wider text-muted-foreground">
                   <th className="px-4 py-3">№</th>
+                  <th className="px-4 py-3">Төрөл</th>
                   <th className="px-4 py-3">Скин</th>
                   <th className="px-4 py-3">Үнэ</th>
                   <th className="px-4 py-3">Утас</th>
-                  <th className="px-4 py-3">Төлбөр</th>
                   <th className="px-4 py-3">Төлөв</th>
                   <th className="px-4 py-3">Огноо</th>
                   <th className="px-4 py-3">Үйлдэл</th>
@@ -363,33 +363,69 @@ const Admin = () => {
                       <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">Захиалга байхгүй</td></tr>
                     );
                   }
-                  return list.map((o) => (
-                    <tr key={o.id} className="border-b border-border/60 last:border-0 hover:bg-secondary/30">
+                  return list.map((o) => {
+                    const ptype = (o.product_type as "ready" | "preorder") ?? "ready";
+                    return (
+                    <tr key={o.id} className="border-b border-border/60 last:border-0 hover:bg-secondary/30 align-top">
                       <td className="px-4 py-3 font-mono text-xs font-bold text-primary">{o.order_number ?? o.id.slice(0, 8)}</td>
-                      <td className="px-4 py-3">{o.skin_name}</td>
+                      <td className="px-4 py-3"><ProductTypeBadge type={ptype} /></td>
+                      <td className="px-4 py-3">
+                        <p>{o.skin_name}</p>
+                        <p className="text-[11px] text-muted-foreground">{o.payment_method}</p>
+                      </td>
                       <td className="px-4 py-3 font-display font-semibold">{formatMNT(o.price_mnt)}</td>
                       <td className="px-4 py-3 text-xs">{o.phone ?? "—"}</td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">{o.payment_method}</td>
                       <td className="px-4 py-3"><Badge variant="outline">{o.status}</Badge></td>
                       <td className="px-4 py-3 text-xs text-muted-foreground">
                         {new Date(o.created_at).toLocaleDateString("mn-MN")}
                       </td>
                       <td className="px-4 py-3">
-                        <div className="flex flex-wrap gap-1">
-                          {o.status === "pending" && (
-                            <Button size="sm" variant="outline" onClick={() => setOrderStatus(o.id, "paid", true)}>
-                              Баталгаажуулах
-                            </Button>
+                        <div className="flex flex-col gap-2">
+                          {ptype === "ready" ? (
+                            <label className="flex items-center gap-2 text-xs">
+                              <Switch
+                                checked={!!o.payment_confirmed}
+                                onCheckedChange={(v) =>
+                                  updateOrder(o.id, { payment_confirmed: v, status: v ? "paid" : "pending" })
+                                }
+                              />
+                              Төлбөр баталгаажсан уу?
+                            </label>
+                          ) : (
+                            <>
+                              <label className="flex items-center gap-2 text-xs">
+                                <Switch
+                                  checked={!!o.deposit_paid}
+                                  onCheckedChange={(v) =>
+                                    updateOrder(o.id, {
+                                      deposit_paid: v,
+                                      status: v && !o.remaining_paid ? "paid" : (o.remaining_paid ? "delivered" : "pending"),
+                                    })
+                                  }
+                                />
+                                Урьдчилгаа орсон уу?
+                              </label>
+                              <label className="flex items-center gap-2 text-xs">
+                                <Switch
+                                  checked={!!o.remaining_paid}
+                                  onCheckedChange={(v) =>
+                                    updateOrder(o.id, { remaining_paid: v })
+                                  }
+                                />
+                                Үлдэгдэл орсон уу?
+                              </label>
+                            </>
                           )}
-                          {o.status === "paid" && (
-                            <Button size="sm" variant="outline" onClick={() => setOrderStatus(o.id, "delivered")}>
+                          {o.status !== "delivered" && (
+                            <Button size="sm" variant="outline" onClick={() => updateOrder(o.id, { status: "delivered" })}>
                               Хүргэгдсэн
                             </Button>
                           )}
                         </div>
                       </td>
                     </tr>
-                  ));
+                    );
+                  });
                 })()}
               </tbody>
             </table>
