@@ -39,17 +39,12 @@ function isAllowed(fullName: string, weapon: string): boolean {
 // Зэвсгийн нэрнээс ангилал тогтоох
 function detectWeaponType(name: string): string {
   const n = name.toLowerCase();
-  if (n.includes("knife") || n.includes("karambit") || n.includes("bayonet") ||
-      n.includes("daggers") || n.includes("★")) return "Knife";
-  if (n.includes("awp") || n.includes("ssg") || n.includes("scar-20") ||
-      n.includes("g3sg1")) return "Sniper";
-  if (n.includes("glock") || n.includes("usp") || n.includes("p250") ||
-      n.includes("deagle") || n.includes("desert eagle") || n.includes("five-seven") ||
-      n.includes("tec-9") || n.includes("cz75") || n.includes("p2000") ||
-      n.includes("dual berettas") || n.includes("r8")) return "Pistol";
-  if (n.includes("mp9") || n.includes("mp7") || n.includes("mp5") ||
-      n.includes("ump") || n.includes("p90") || n.includes("mac-10") ||
-      n.includes("pp-bizon")) return "SMG";
+  if (GLOVES_KEYWORDS.some((k) => n.includes(k))) return "Gloves";
+  if (KNIFE_KEYWORDS.some((k) => n.includes(k))) return "Knife";
+  if (n.includes("awp")) return "Sniper";
+  if (n.includes("glock") || n.includes("usp") ||
+      n.includes("deagle") || n.includes("desert eagle")) return "Pistol";
+  if (n.includes("mp9") || n.includes("mp5")) return "SMG";
   return "Rifle";
 }
 
