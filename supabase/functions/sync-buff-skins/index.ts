@@ -123,7 +123,7 @@ Deno.serve(async (req) => {
       allItems.push(...pageItems);
       if (pageItems.length < 80) break; // дуусаад байна
       // зөөлөн хүлээлт — rate limit-ээс зайлсхийх
-      await new Promise((r) => setTimeout(r, 400));
+      await new Promise((r) => setTimeout(r, 200));
     }
 
     let upserted = 0;
