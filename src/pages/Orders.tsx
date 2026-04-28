@@ -238,11 +238,16 @@ const Orders = () => {
                 {/* Payment instructions */}
                 {isOpen && o.status === "pending" && payment && (
                   <div className="border-t border-border bg-background/40 p-5">
-                    <div className="mb-4 flex items-center gap-2">
-                      <Globe2 className="h-4 w-4 text-accent" />
-                      <h4 className="font-display text-sm font-semibold">
-                        {payment.label} төлбөрийн заавар
-                      </h4>
+                    <div className="mb-4 rounded-xl border-2 border-primary/40 bg-primary/10 p-4 text-center">
+                      <div className="flex items-center justify-center gap-2 text-primary">
+                        <Banknote className="h-5 w-5" />
+                        <h4 className="font-display text-base font-bold uppercase tracking-wider">
+                          Төлбөрийн мэдээлэл — {payment.short}
+                        </h4>
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Доорх данс руу шилжүүлж, гүйлгээний утгад захиалгын дугаараа бичнэ үү
+                      </p>
                     </div>
 
                     {/* Amount summary */}
