@@ -185,7 +185,8 @@ Deno.serve(async (req) => {
       JSON.stringify({
         success: true,
         rate_cny_mnt: cnyToMnt,
-        items_received: items.length,
+        items_received: allItems.length,
+        skipped_filter: skippedFilter,
         upserted,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
