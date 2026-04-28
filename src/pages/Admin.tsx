@@ -314,13 +314,33 @@ const Admin = () => {
         </div>
       ) : (
         <div>
-          <div className="mb-4 flex flex-wrap justify-end gap-2">
-            <Button variant="outline" onClick={syncFromBuff} disabled={syncing}>
-              {syncing ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-1 h-4 w-4" />}
-              Buff163-аас сэргээх
-            </Button>
-            <Button variant="hero" onClick={openNew}><Plus className="mr-1 h-4 w-4" /> Шинэ скин нэмэх</Button>
-          </div>
+          {(() => {
+            const synced = skins.filter((s) => s.last_synced_at).map((s) => new Date(s.last_synced_at).getTime());
+            const lastSync = synced.length ? Math.max(...synced) : null;
+            const hoursAgo = lastSync ? Math.floor((Date.now() - lastSync) / 3_600_000) : null;
+            const minsAgo = lastSync ? Math.floor((Date.now() - lastSync) / 60_000) : null;
+            const label =
+              lastSync == null ? "Хэзээ ч sync хийгдээгүй"
+              : hoursAgo! >= 1 ? `Сүүлд sync: ${hoursAgo} цагийн өмнө`
+              : `Сүүлд sync: ${minsAgo} минутын өмнө`;
+            return (
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-gradient-card px-4 py-3">
+                <div className="flex flex-wrap items-center gap-3 text-sm">
+                  <Badge variant="outline" className="border-accent/40 bg-accent/10 text-accent">
+                    Нийт: {skins.length} скин
+                  </Badge>
+                  <span className="text-muted-foreground">{label}</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="outline" onClick={syncFromBuff} disabled={syncing}>
+                    {syncing ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-1 h-4 w-4" />}
+                    Sync Buff Skins
+                  </Button>
+                  <Button variant="hero" onClick={openNew}><Plus className="mr-1 h-4 w-4" /> Шинэ скин нэмэх</Button>
+                </div>
+              </div>
+            );
+          })()}
           <div className="overflow-x-auto rounded-2xl border border-border bg-gradient-card">
             {loading ? (
               <div className="flex items-center justify-center p-12 text-muted-foreground">
