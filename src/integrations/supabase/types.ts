@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      exchange_rates: {
+        Row: {
+          base: string
+          id: string
+          quote: string
+          rate: number
+          source: string | null
+          updated_at: string
+        }
+        Insert: {
+          base: string
+          id?: string
+          quote: string
+          rate: number
+          source?: string | null
+          updated_at?: string
+        }
+        Update: {
+          base?: string
+          id?: string
+          quote?: string
+          rate?: number
+          source?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           created_at: string
@@ -21,6 +48,7 @@ export type Database = {
           id: string
           payment_method: string
           payment_reference: string | null
+          phone: string | null
           price_mnt: number
           skin_id: string
           skin_image: string | null
@@ -38,6 +66,7 @@ export type Database = {
           id?: string
           payment_method: string
           payment_reference?: string | null
+          phone?: string | null
           price_mnt: number
           skin_id: string
           skin_image?: string | null
@@ -55,6 +84,7 @@ export type Database = {
           id?: string
           payment_method?: string
           payment_reference?: string | null
+          phone?: string | null
           price_mnt?: number
           skin_id?: string
           skin_image?: string | null
@@ -106,6 +136,8 @@ export type Database = {
       }
       skins: {
         Row: {
+          buff_id: string | null
+          buff_price_cny: number | null
           created_at: string
           description: string | null
           float_value: number | null
@@ -114,6 +146,7 @@ export type Database = {
           image_url: string | null
           is_active: boolean
           is_featured: boolean
+          last_synced_at: string | null
           name: string
           price_mnt: number
           rarity: string | null
@@ -121,9 +154,12 @@ export type Database = {
           stock: number
           updated_at: string
           weapon: string
+          weapon_type: string | null
           wear: string | null
         }
         Insert: {
+          buff_id?: string | null
+          buff_price_cny?: number | null
           created_at?: string
           description?: string | null
           float_value?: number | null
@@ -132,6 +168,7 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean
           is_featured?: boolean
+          last_synced_at?: string | null
           name: string
           price_mnt: number
           rarity?: string | null
@@ -139,9 +176,12 @@ export type Database = {
           stock?: number
           updated_at?: string
           weapon: string
+          weapon_type?: string | null
           wear?: string | null
         }
         Update: {
+          buff_id?: string | null
+          buff_price_cny?: number | null
           created_at?: string
           description?: string | null
           float_value?: number | null
@@ -150,6 +190,7 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean
           is_featured?: boolean
+          last_synced_at?: string | null
           name?: string
           price_mnt?: number
           rarity?: string | null
@@ -157,6 +198,7 @@ export type Database = {
           stock?: number
           updated_at?: string
           weapon?: string
+          weapon_type?: string | null
           wear?: string | null
         }
         Relationships: []
