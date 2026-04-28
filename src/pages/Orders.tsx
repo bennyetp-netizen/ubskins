@@ -41,6 +41,8 @@ const Orders = () => {
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [filter, setFilter] = useState<"all" | "pending" | "paid" | "delivered">("all");
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const openId = searchParams.get("open");
 
   useEffect(() => {
     if (!user) return;
@@ -52,11 +54,23 @@ const Orders = () => {
       .then(({ data }) => {
         if (data) {
           setOrders(data as unknown as OrderRow[]);
-          const firstPending = (data as unknown as OrderRow[]).find((o) => o.status === "pending");
-          if (firstPending) setExpanded(firstPending.id);
+          const list = data as unknown as OrderRow[];
+          // Prefer ?open=ID, then first pending
+          const target = openId && list.find((o) => o.id === openId)
+            ? openId
+            : list.find((o) => o.status === "pending")?.id ?? null;
+          if (target) {
+            setExpanded(target);
+            setFilter("all");
+            // scroll to it after render
+            setTimeout(() => {
+              const el = document.getElementById(`order-${target}`);
+              el?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }, 200);
+          }
         }
       });
-  }, [user]);
+  }, [user, openId]);
 
   const copy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
