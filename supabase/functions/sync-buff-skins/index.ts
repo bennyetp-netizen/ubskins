@@ -28,10 +28,12 @@ function detectWeaponType(name: string): string {
   const n = name.toLowerCase();
   if (GLOVES_KEYWORDS.some((k) => n.includes(k))) return "Gloves";
   if (KNIFE_KEYWORDS.some((k) => n.includes(k))) return "Knife";
-  if (n.includes("awp")) return "Sniper";
-  if (n.includes("glock") || n.includes("usp") ||
-      n.includes("deagle") || n.includes("desert eagle")) return "Pistol";
-  if (n.includes("mp9") || n.includes("mp5")) return "SMG";
+  if (n.includes("awp") || n.includes("ssg") || n.includes("scar") || n.includes("g3sg1")) return "Sniper";
+  if (n.includes("glock") || n.includes("usp") || n.includes("p250") || n.includes("five-seven") || n.includes("tec-9") || n.includes("cz75") || n.includes("r8") ||
+      n.includes("deagle") || n.includes("desert eagle") || n.includes("dual berettas") || n.includes("p2000")) return "Pistol";
+  if (n.includes("mp9") || n.includes("mp5") || n.includes("mp7") || n.includes("ump") || n.includes("p90") || n.includes("pp-bizon") || n.includes("mac-10")) return "SMG";
+  if (n.includes("mag-7") || n.includes("nova") || n.includes("xm1014") || n.includes("sawed-off")) return "Shotgun";
+  if (n.includes("m249") || n.includes("negev")) return "Heavy";
   return "Rifle";
 }
 
