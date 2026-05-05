@@ -152,8 +152,10 @@ Deno.serve(async (req) => {
 
       const { weapon, skin } = cleanName(fullName);
 
-      // Үнийн давхар шалгалт
-      if (cnyPrice < 1 || cnyPrice > 3000) {
+      // Үнийн давхар шалгалт (хутга 10000 хүртэл, бусад 3000 хүртэл)
+      const isKnife = KNIFE_KEYWORDS.some((k) => fullName.toLowerCase().includes(k));
+      const maxPrice = isKnife ? 10000 : 3000;
+      if (cnyPrice < 1 || cnyPrice > maxPrice) {
         skippedFilter++;
         continue;
       }
