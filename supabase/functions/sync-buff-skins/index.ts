@@ -168,6 +168,7 @@ Deno.serve(async (req) => {
 
     let upserted = 0;
     let skippedFilter = 0;
+    const batch: any[] = [];
 
     for (const it of allItems) {
       const fullName: string = it?.name ?? "";
@@ -177,10 +178,9 @@ Deno.serve(async (req) => {
 
       const { weapon, skin } = cleanName(fullName);
 
-      // Үнийн давхар шалгалт (хутга 10000 хүртэл, бусад 3000 хүртэл)
       const isKnife = KNIFE_KEYWORDS.some((k) => fullName.toLowerCase().includes(k));
-      const maxPrice = isKnife ? 10000 : 3000;
-      if (cnyPrice < 1 || cnyPrice > maxPrice) {
+      const maxCny = isKnife ? 10000 : 3000;
+      if (cnyPrice < 1 || cnyPrice > maxCny) {
         skippedFilter++;
         continue;
       }
@@ -188,34 +188,35 @@ Deno.serve(async (req) => {
       const weaponType = detectWeaponType(fullName);
       const wear = detectWear(fullName);
       const rarity = detectRarity(it?.goods_info?.info?.tags);
-      const image =
-        it?.goods_info?.icon_url ?? it?.goods_info?.original_icon_url ?? null;
-
-      // Үнэ: cny * rate * 1.10 → ойролцоох 100₮
+      const image = it?.goods_info?.icon_url ?? it?.goods_info?.original_icon_url ?? null;
       const rawMnt = cnyPrice * cnyToMnt * MARGIN;
       const priceMnt = Math.round(rawMnt / 100) * 100;
 
-      const { error } = await sb.from("skins").upsert(
-        {
-          buff_id: buffId,
-          name: skin,
-          weapon: weapon,
-          weapon_type: weaponType,
-          game: "CS2",
-          wear,
-          buff_price_cny: cnyPrice,
-          price_mnt: priceMnt,
-          image_url: image,
-          rarity,
-          stock: 1,
-          is_active: true,
-          is_available: true,
-          last_synced_at: new Date().toISOString(),
-        },
-        { onConflict: "buff_id" },
-      );
-      if (!error) upserted++;
-      else console.error("Upsert алдаа:", error.message, fullName);
+      batch.push({
+        buff_id: buffId,
+        name: skin,
+        weapon,
+        weapon_type: weaponType,
+        game: "CS2",
+        wear,
+        buff_price_cny: cnyPrice,
+        price_mnt: priceMnt,
+        image_url: image,
+        rarity,
+        stock: 1,
+        is_active: true,
+        is_available: true,
+        last_synced_at: new Date().toISOString(),
+      });
+    }
+
+    // Batch upsert 50 бүрээр
+    const BATCH_SIZE = 50;
+    for (let i = 0; i < batch.length; i += BATCH_SIZE) {
+      const chunk = batch.slice(i, i + BATCH_SIZE);
+      const { error, count } = await sb.from("skins").upsert(chunk, { onConflict: "buff_id" });
+      if (error) console.error(`Batch upsert алдаа [${i}-${i+chunk.length}]:`, error.message);
+      else upserted += chunk.length;
     }
 
     return new Response(
