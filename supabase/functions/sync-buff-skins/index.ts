@@ -136,16 +136,23 @@ Deno.serve(async (req) => {
       return items;
     }
 
-    // *** ХУТГА ЭХЛЭЭД ТАТНА (тэргүүлэх ач холбогдол) ***
-    const knifeItems = await fetchPages(BUFF_KNIFE_BASE, PAGES_KNIVES);
-    console.log(`Хутга: ${knifeItems.length} item татсан`);
+    // mode=knife → зөвхөн хутга, mode=weapon → зөвхөн зэвсэг, default → хоёулаа
+    const url = new URL(req.url);
+    const mode = url.searchParams.get("mode") ?? "all";
 
-    // Хутга татсаны дараа 5 секунд хүлээх
-    await new Promise((r) => setTimeout(r, 5000));
+    let knifeItems: any[] = [];
+    let weaponItems: any[] = [];
 
-    // Зэвсгүүд (category=weapon, 1-3000 CNY)
-    const weaponItems = await fetchPages(`${BUFF_BASE}&category=weapon&min_price=1&max_price=3000`, PAGES_WEAPONS);
-    console.log(`Зэвсэг: ${weaponItems.length} item татсан`);
+    if (mode === "all" || mode === "knife") {
+      knifeItems = await fetchPages(BUFF_KNIFE_BASE, PAGES_KNIVES);
+      console.log(`Хутга: ${knifeItems.length} item татсан`);
+    }
+
+    if (mode === "all" || mode === "weapon") {
+      if (knifeItems.length > 0) await new Promise((r) => setTimeout(r, 3000));
+      weaponItems = await fetchPages(`${BUFF_BASE}&category=weapon&min_price=1&max_price=3000`, PAGES_WEAPONS);
+      console.log(`Зэвсэг: ${weaponItems.length} item татсан`);
+    }
 
     // Давхардлыг buff_id-аар арилгах
     const seenIds = new Set<string>();
