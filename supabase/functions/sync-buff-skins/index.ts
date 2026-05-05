@@ -12,8 +12,11 @@ const corsHeaders = {
 //          sort_by=sell_num.desc → хамгийн их зарагдсанаас эхэлж эрэмбэлнэ
 //          min/max price → 1-3000 CNY (хямдаас дундаж хүртэл)
 const BUFF_BASE =
-  "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category=weapon&sort_by=sell_num.desc&min_price=1&max_price=3000";
-const PAGES_TO_FETCH = 20; // 20 × 80 = 1600 скин хүртэл
+  "https://buff.163.com/api/market/goods?game=csgo&page_size=80&sort_by=sell_num.desc";
+const PAGES_WEAPONS = 20; // weapons: 20 × 80 = 1600
+const PAGES_KNIVES = 15;  // knives: 15 × 80 = 1200
+const BUFF_KNIFE_BASE =
+  "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category=knife&sort_by=sell_num.desc&min_price=1&max_price=10000";
 const RATE_URL = "https://open.er-api.com/v6/latest/CNY"; // free, түлхүүр шаардахгүй
 const MARGIN = 1.10;
 
