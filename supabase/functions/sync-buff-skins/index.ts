@@ -12,8 +12,11 @@ const corsHeaders = {
 //          sort_by=sell_num.desc → хамгийн их зарагдсанаас эхэлж эрэмбэлнэ
 //          min/max price → 1-3000 CNY (хямдаас дундаж хүртэл)
 const BUFF_BASE =
-  "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category=weapon&sort_by=sell_num.desc&min_price=1&max_price=3000";
-const PAGES_TO_FETCH = 20; // 20 × 80 = 1600 скин хүртэл
+  "https://buff.163.com/api/market/goods?game=csgo&page_size=80&sort_by=sell_num.desc";
+const PAGES_WEAPONS = 20; // weapons: 20 × 80 = 1600
+const PAGES_KNIVES = 15;  // knives: 15 × 80 = 1200
+const BUFF_KNIFE_BASE =
+  "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category=knife&sort_by=sell_num.desc&min_price=1&max_price=10000";
 const RATE_URL = "https://open.er-api.com/v6/latest/CNY"; // free, түлхүүр шаардахгүй
 const MARGIN = 1.10;
 
@@ -85,35 +88,58 @@ Deno.serve(async (req) => {
       { onConflict: "base,quote" },
     );
 
-    // 2) Buff163-аас олон хуудас татах (popularity-аар эрэмбэлсэн, weapon-only, 10-2000¥)
-    const allItems: any[] = [];
-    for (let page = 1; page <= PAGES_TO_FETCH; page++) {
-      const url = `${BUFF_BASE}&page_num=${page}`;
-      const buffRes = await fetch(url, {
-        headers: {
-          "Cookie": BUFF_COOKIE,
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
-          "Referer": "https://buff.163.com/market/csgo",
-          "Accept": "application/json",
-        },
-      });
+    // 2) Buff163-аас олон хуудас татах — зэвсэг + хутга тусдаа
+    const buffHeaders = {
+      "Cookie": BUFF_COOKIE,
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+      "Referer": "https://buff.163.com/market/csgo",
+      "Accept": "application/json",
+    };
 
-      if (!buffRes.ok) {
-        const txt = await buffRes.text();
-        throw new Error(`Buff163 алдаа [${buffRes.status}] page=${page}: ${txt.slice(0, 200)}`);
+    async function fetchPages(baseUrl: string, maxPages: number): Promise<any[]> {
+      const items: any[] = [];
+      for (let page = 1; page <= maxPages; page++) {
+        const url = `${baseUrl}&page_num=${page}`;
+        const res = await fetch(url, { headers: buffHeaders });
+        if (!res.ok) {
+          const txt = await res.text();
+          console.error(`Buff163 алдаа [${res.status}] page=${page}: ${txt.slice(0, 200)}`);
+          break;
+        }
+        const json = await res.json();
+        if (json.code !== "OK") {
+          console.error(`Buff163 хариу буруу page=${page}: ${JSON.stringify(json).slice(0, 300)}`);
+          break;
+        }
+        const pageItems = json?.data?.items ?? [];
+        items.push(...pageItems);
+        if (pageItems.length < 80) break;
+        await new Promise((r) => setTimeout(r, 300));
       }
-
-      const buffJson = await buffRes.json();
-      if (buffJson.code !== "OK") {
-        throw new Error(`Buff163 хариу буруу page=${page}: ${JSON.stringify(buffJson).slice(0, 300)}`);
-      }
-      const pageItems = buffJson?.data?.items ?? [];
-      allItems.push(...pageItems);
-      if (pageItems.length < 80) break; // дуусаад байна
-      // зөөлөн хүлээлт — rate limit-ээс зайлсхийх
-      await new Promise((r) => setTimeout(r, 200));
+      return items;
     }
+
+    // Зэвсгүүд (category=weapon, 1-3000 CNY)
+    const weaponItems = await fetchPages(`${BUFF_BASE}&category=weapon&min_price=1&max_price=3000`, PAGES_WEAPONS);
+    console.log(`Зэвсэг: ${weaponItems.length} item татсан`);
+
+    // Хутга тусдаа (category=knife, 1-10000 CNY) — илүү олон, илүү үнэтэй
+    await new Promise((r) => setTimeout(r, 500));
+    const knifeItems = await fetchPages(BUFF_KNIFE_BASE, PAGES_KNIVES);
+    console.log(`Хутга: ${knifeItems.length} item татсан`);
+
+    // Давхардлыг buff_id-аар арилгах
+    const seenIds = new Set<string>();
+    const allItems: any[] = [];
+    for (const it of [...knifeItems, ...weaponItems]) {
+      const id = String(it?.id ?? "");
+      if (id && !seenIds.has(id)) {
+        seenIds.add(id);
+        allItems.push(it);
+      }
+    }
+    console.log(`Нийт давхардалгүй: ${allItems.length} item`);
 
     let upserted = 0;
     let skippedFilter = 0;
@@ -126,8 +152,10 @@ Deno.serve(async (req) => {
 
       const { weapon, skin } = cleanName(fullName);
 
-      // Үнийн давхар шалгалт
-      if (cnyPrice < 1 || cnyPrice > 3000) {
+      // Үнийн давхар шалгалт (хутга 10000 хүртэл, бусад 3000 хүртэл)
+      const isKnife = KNIFE_KEYWORDS.some((k) => fullName.toLowerCase().includes(k));
+      const maxPrice = isKnife ? 10000 : 3000;
+      if (cnyPrice < 1 || cnyPrice > maxPrice) {
         skippedFilter++;
         continue;
       }
