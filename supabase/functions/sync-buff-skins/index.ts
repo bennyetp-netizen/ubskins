@@ -100,34 +100,52 @@ Deno.serve(async (req) => {
     async function fetchPages(baseUrl: string, maxPages: number): Promise<any[]> {
       const items: any[] = [];
       for (let page = 1; page <= maxPages; page++) {
-        const url = `${baseUrl}&page_num=${page}`;
-        const res = await fetch(url, { headers: buffHeaders });
-        if (!res.ok) {
-          const txt = await res.text();
-          console.error(`Buff163 алдаа [${res.status}] page=${page}: ${txt.slice(0, 200)}`);
+        let success = false;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const url = `${baseUrl}&page_num=${page}`;
+          const res = await fetch(url, { headers: buffHeaders });
+          if (res.status === 429) {
+            const wait = (attempt + 1) * 5000;
+            console.warn(`429 rate limit page=${page}, ${wait/1000}s хүлээж байна...`);
+            await new Promise((r) => setTimeout(r, wait));
+            continue;
+          }
+          if (!res.ok) {
+            const txt = await res.text();
+            console.error(`Buff163 алдаа [${res.status}] page=${page}: ${txt.slice(0, 200)}`);
+            return items;
+          }
+          const json = await res.json();
+          if (json.code !== "OK") {
+            console.error(`Buff163 хариу буруу page=${page}: ${JSON.stringify(json).slice(0, 300)}`);
+            return items;
+          }
+          const pageItems = json?.data?.items ?? [];
+          items.push(...pageItems);
+          success = true;
+          if (pageItems.length < 80) return items;
           break;
         }
-        const json = await res.json();
-        if (json.code !== "OK") {
-          console.error(`Buff163 хариу буруу page=${page}: ${JSON.stringify(json).slice(0, 300)}`);
+        if (!success) {
+          console.error(`3 удаа оролдсон ч амжилтгүй page=${page}`);
           break;
         }
-        const pageItems = json?.data?.items ?? [];
-        items.push(...pageItems);
-        if (pageItems.length < 80) break;
-        await new Promise((r) => setTimeout(r, 300));
+        // Rate limit-ээс зайлсхийхийн тулд 2 секунд хүлээх
+        await new Promise((r) => setTimeout(r, 2000));
       }
       return items;
     }
 
+    // *** ХУТГА ЭХЛЭЭД ТАТНА (тэргүүлэх ач холбогдол) ***
+    const knifeItems = await fetchPages(BUFF_KNIFE_BASE, PAGES_KNIVES);
+    console.log(`Хутга: ${knifeItems.length} item татсан`);
+
+    // Хутга татсаны дараа 5 секунд хүлээх
+    await new Promise((r) => setTimeout(r, 5000));
+
     // Зэвсгүүд (category=weapon, 1-3000 CNY)
     const weaponItems = await fetchPages(`${BUFF_BASE}&category=weapon&min_price=1&max_price=3000`, PAGES_WEAPONS);
     console.log(`Зэвсэг: ${weaponItems.length} item татсан`);
-
-    // Хутга тусдаа (category=knife, 1-10000 CNY) — илүү олон, илүү үнэтэй
-    await new Promise((r) => setTimeout(r, 500));
-    const knifeItems = await fetchPages(BUFF_KNIFE_BASE, PAGES_KNIVES);
-    console.log(`Хутга: ${knifeItems.length} item татсан`);
 
     // Давхардлыг buff_id-аар арилгах
     const seenIds = new Set<string>();
