@@ -1,6 +1,6 @@
 // Скин — database row-той нийцэх type. Бүх өгөгдөл Supabase-ээс ирнэ.
 export type Wear = "FN" | "MW" | "FT" | "WW" | "BS";
-export type Weapon = "Rifle" | "Sniper" | "Knife" | "Pistol" | "SMG";
+export type Weapon = "Rifle" | "Sniper" | "Knife" | "Pistol" | "SMG" | "Shotgun" | "Heavy" | "Gloves";
 export type Rarity = "Covert" | "Classified" | "Restricted" | "Mil-Spec";
 
 export type ProductType = "ready" | "preorder";
