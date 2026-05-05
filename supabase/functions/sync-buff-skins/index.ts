@@ -16,7 +16,7 @@ const BUFF_BASE =
 const PAGES_WEAPONS = 5; // weapons: 5 × 80 = 400
 const PAGES_KNIVES = 10;  // knives: 10 × 80 = 800
 const BUFF_KNIFE_BASE =
-  "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category=knife&sort_by=sell_num.desc&min_price=1&max_price=10000";
+  "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category_group=knife&sort_by=sell_num.desc&min_price=1&max_price=10000";
 const RATE_URL = "https://open.er-api.com/v6/latest/CNY"; // free, түлхүүр шаардахгүй
 const MARGIN = 1.10;
 
