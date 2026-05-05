@@ -70,6 +70,9 @@ const Index = () => {
             <p className="mt-5 max-w-xl text-base text-muted-foreground md:text-lg">
               Найдвартай шууд худалдаа. Gamble биш. Steam-р нэвтрээд, дуртай скинээ сонгоод, төгрөгөөр төлж, хэдхэн минутад trade offer хүлээн ав.
             </p>
+            <p className="mt-3 max-w-xl text-sm font-semibold text-orange-400 md:text-base">
+              💰 Урьдчилгаа 30% төлөөд скинээ захиалуулаарай!
+            </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
               <Link to="/shop">
