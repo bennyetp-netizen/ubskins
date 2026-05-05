@@ -105,7 +105,7 @@ Deno.serve(async (req) => {
           const url = `${baseUrl}&page_num=${page}`;
           const res = await fetch(url, { headers: buffHeaders });
           if (res.status === 429) {
-            const wait = (attempt + 1) * 5000;
+            const wait = (attempt + 1) * 3000;
             console.warn(`429 rate limit page=${page}, ${wait/1000}s хүлээж байна...`);
             await new Promise((r) => setTimeout(r, wait));
             continue;
