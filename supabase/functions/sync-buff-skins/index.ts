@@ -126,14 +126,8 @@ Deno.serve(async (req) => {
 
       const { weapon, skin } = cleanName(fullName);
 
-      // Зөвшөөрөгдсөн зэвсгийн жагсаалтад орохгүй бол алгасах
-      if (!isAllowed(fullName, weapon)) {
-        skippedFilter++;
-        continue;
-      }
-
-      // Үнийн давхар шалгалт (API param дотор гарч магад)
-      if (cnyPrice < 10 || cnyPrice > 5000) {
+      // Үнийн давхар шалгалт
+      if (cnyPrice < 1 || cnyPrice > 3000) {
         skippedFilter++;
         continue;
       }
