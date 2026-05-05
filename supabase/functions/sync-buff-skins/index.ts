@@ -88,35 +88,58 @@ Deno.serve(async (req) => {
       { onConflict: "base,quote" },
     );
 
-    // 2) Buff163-аас олон хуудас татах (popularity-аар эрэмбэлсэн, weapon-only, 10-2000¥)
-    const allItems: any[] = [];
-    for (let page = 1; page <= PAGES_TO_FETCH; page++) {
-      const url = `${BUFF_BASE}&page_num=${page}`;
-      const buffRes = await fetch(url, {
-        headers: {
-          "Cookie": BUFF_COOKIE,
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
-          "Referer": "https://buff.163.com/market/csgo",
-          "Accept": "application/json",
-        },
-      });
+    // 2) Buff163-аас олон хуудас татах — зэвсэг + хутга тусдаа
+    const buffHeaders = {
+      "Cookie": BUFF_COOKIE,
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+      "Referer": "https://buff.163.com/market/csgo",
+      "Accept": "application/json",
+    };
 
-      if (!buffRes.ok) {
-        const txt = await buffRes.text();
-        throw new Error(`Buff163 алдаа [${buffRes.status}] page=${page}: ${txt.slice(0, 200)}`);
+    async function fetchPages(baseUrl: string, maxPages: number): Promise<any[]> {
+      const items: any[] = [];
+      for (let page = 1; page <= maxPages; page++) {
+        const url = `${baseUrl}&page_num=${page}`;
+        const res = await fetch(url, { headers: buffHeaders });
+        if (!res.ok) {
+          const txt = await res.text();
+          console.error(`Buff163 алдаа [${res.status}] page=${page}: ${txt.slice(0, 200)}`);
+          break;
+        }
+        const json = await res.json();
+        if (json.code !== "OK") {
+          console.error(`Buff163 хариу буруу page=${page}: ${JSON.stringify(json).slice(0, 300)}`);
+          break;
+        }
+        const pageItems = json?.data?.items ?? [];
+        items.push(...pageItems);
+        if (pageItems.length < 80) break;
+        await new Promise((r) => setTimeout(r, 300));
       }
-
-      const buffJson = await buffRes.json();
-      if (buffJson.code !== "OK") {
-        throw new Error(`Buff163 хариу буруу page=${page}: ${JSON.stringify(buffJson).slice(0, 300)}`);
-      }
-      const pageItems = buffJson?.data?.items ?? [];
-      allItems.push(...pageItems);
-      if (pageItems.length < 80) break; // дуусаад байна
-      // зөөлөн хүлээлт — rate limit-ээс зайлсхийх
-      await new Promise((r) => setTimeout(r, 200));
+      return items;
     }
+
+    // Зэвсгүүд (category=weapon, 1-3000 CNY)
+    const weaponItems = await fetchPages(`${BUFF_BASE}&category=weapon&min_price=1&max_price=3000`, PAGES_WEAPONS);
+    console.log(`Зэвсэг: ${weaponItems.length} item татсан`);
+
+    // Хутга тусдаа (category=knife, 1-10000 CNY) — илүү олон, илүү үнэтэй
+    await new Promise((r) => setTimeout(r, 500));
+    const knifeItems = await fetchPages(BUFF_KNIFE_BASE, PAGES_KNIVES);
+    console.log(`Хутга: ${knifeItems.length} item татсан`);
+
+    // Давхардлыг buff_id-аар арилгах
+    const seenIds = new Set<string>();
+    const allItems: any[] = [];
+    for (const it of [...knifeItems, ...weaponItems]) {
+      const id = String(it?.id ?? "");
+      if (id && !seenIds.has(id)) {
+        seenIds.add(id);
+        allItems.push(it);
+      }
+    }
+    console.log(`Нийт давхардалгүй: ${allItems.length} item`);
 
     let upserted = 0;
     let skippedFilter = 0;
