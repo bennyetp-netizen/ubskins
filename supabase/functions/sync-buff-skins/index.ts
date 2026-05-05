@@ -131,7 +131,7 @@ Deno.serve(async (req) => {
           break;
         }
         // Rate limit-ээс зайлсхийхийн тулд 2 секунд хүлээх
-        await new Promise((r) => setTimeout(r, 2000));
+        await new Promise((r) => setTimeout(r, 1500));
       }
       return items;
     }
