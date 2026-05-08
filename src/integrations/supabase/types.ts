@@ -46,6 +46,8 @@ export type Database = {
           created_at: string
           deposit_amount: number | null
           deposit_paid: boolean
+          exact_float_request: string | null
+          float_preference: string | null
           float_value: number | null
           id: string
           order_number: string | null
@@ -53,6 +55,7 @@ export type Database = {
           payment_method: string
           payment_reference: string | null
           phone: string | null
+          price_adjustment_pct: number
           price_mnt: number
           product_type: string
           remaining_amount: number | null
@@ -61,6 +64,7 @@ export type Database = {
           skin_image: string | null
           skin_name: string
           status: string
+          sticker_request: string | null
           trade_offer_id: string | null
           trade_url: string | null
           updated_at: string
@@ -71,6 +75,8 @@ export type Database = {
           created_at?: string
           deposit_amount?: number | null
           deposit_paid?: boolean
+          exact_float_request?: string | null
+          float_preference?: string | null
           float_value?: number | null
           id?: string
           order_number?: string | null
@@ -78,6 +84,7 @@ export type Database = {
           payment_method: string
           payment_reference?: string | null
           phone?: string | null
+          price_adjustment_pct?: number
           price_mnt: number
           product_type?: string
           remaining_amount?: number | null
@@ -86,6 +93,7 @@ export type Database = {
           skin_image?: string | null
           skin_name: string
           status?: string
+          sticker_request?: string | null
           trade_offer_id?: string | null
           trade_url?: string | null
           updated_at?: string
@@ -96,6 +104,8 @@ export type Database = {
           created_at?: string
           deposit_amount?: number | null
           deposit_paid?: boolean
+          exact_float_request?: string | null
+          float_preference?: string | null
           float_value?: number | null
           id?: string
           order_number?: string | null
@@ -103,6 +113,7 @@ export type Database = {
           payment_method?: string
           payment_reference?: string | null
           phone?: string | null
+          price_adjustment_pct?: number
           price_mnt?: number
           product_type?: string
           remaining_amount?: number | null
@@ -111,6 +122,7 @@ export type Database = {
           skin_image?: string | null
           skin_name?: string
           status?: string
+          sticker_request?: string | null
           trade_offer_id?: string | null
           trade_url?: string | null
           updated_at?: string
