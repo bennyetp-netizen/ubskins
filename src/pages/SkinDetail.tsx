@@ -7,6 +7,7 @@ import { formatMNT, wearLabel, wearColor } from "@/data/skins";
 import { calcPrepayment, mntToUsd } from "@/data/payment";
 import SkinCard from "@/components/SkinCard";
 import FloatPreference from "@/components/FloatPreference";
+import FloatBar from "@/components/FloatBar";
 import MarketPriceReference from "@/components/MarketPriceReference";
 import { useCart, type CartPreferences } from "@/hooks/useCart";
 import { useSkin, useSkins } from "@/hooks/useSkins";
@@ -123,19 +124,9 @@ const SkinDetail = () => {
             </div>
           </div>
 
-          {/* float bar */}
+          {/* Float visualization */}
           <div className="mt-4">
-            <div className="mb-1 flex justify-between text-[10px] text-muted-foreground">
-              <span>0.00</span><span>0.07</span><span>0.15</span><span>0.38</span><span>0.45</span><span>1.00</span>
-            </div>
-            <div className="relative h-2 overflow-hidden rounded-full bg-secondary">
-              <div className="absolute inset-y-0 left-0 w-[7%] bg-wear-fn" />
-              <div className="absolute inset-y-0 left-[7%] w-[8%] bg-wear-mw" />
-              <div className="absolute inset-y-0 left-[15%] w-[23%] bg-wear-ft" />
-              <div className="absolute inset-y-0 left-[38%] w-[7%] bg-wear-ww" />
-              <div className="absolute inset-y-0 left-[45%] right-0 bg-wear-bs" />
-              <div className="absolute top-1/2 h-4 w-1 -translate-y-1/2 rounded bg-foreground shadow-lg" style={{ left: `${skin.float * 100}%` }} />
-            </div>
+            <FloatBar float={skin.float} />
           </div>
 
           {/* Float preference */}
