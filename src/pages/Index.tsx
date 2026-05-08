@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, ShieldCheck, LogIn, MousePointerClick, CreditCard, Send, Sparkles, Gauge, Lock, BadgeCheck, CheckCircle2, Wallet, Truck, Activity } from "lucide-react";
+import { ArrowRight, ShieldCheck, LogIn, CreditCard, Send, Sparkles, Lock, BadgeCheck, CheckCircle2, Wallet, Truck, Activity, Star, MessageCircle, Headphones, Zap, Globe2, Quote, ShoppingBag, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import SkinCard from "@/components/SkinCard";
@@ -7,19 +7,6 @@ import heroBg from "@/assets/hero-bg.jpg";
 import { useAuth } from "@/hooks/useAuth";
 import { useSkins } from "@/hooks/useSkins";
 import { toast } from "sonner";
-
-const steps = [
-  { icon: LogIn, title: "Steam-р нэвтэрнэ", desc: "Steam OpenID-р найдвартай нэвтэрч, trade URL-аа холбоно." },
-  { icon: MousePointerClick, title: "Скинээ сонгоно", desc: "Зэвсэг, wear, float, үнээр шүүж тохирох скинээ ол." },
-  { icon: CreditCard, title: "Storepay/QPay-р төлнө", desc: "Төгрөгөөр шууд эсвэл 4 хуваан хүүгүй төлбөр." },
-  { icon: Send, title: "Trade offer хүлээн авна", desc: "Төлбөр баталгаажмагц Steam trade offer автоматаар очно." },
-];
-
-const trust = [
-  { icon: ShieldCheck, title: "Gamble биш", desc: "Case opening, betting, jackpot үгүй. Зөвхөн шууд худалдаа." },
-  { icon: Gauge, title: "Шуурхай хүргэлт", desc: "Төлбөр баталгаажсаны дараа дунджаар 5 минутад trade offer." },
-  { icon: Lock, title: "Найдвартай төлбөр", desc: "QPay, Storepay, банкны шилжүүлэг — албан ёсны интеграц." },
-];
 
 const faqs = [
   { q: "Storepay-р яаж худалдан авах вэ?", a: "Buy with Storepay товчийг дарж дансаараа нэвтэрснээр үнийн дүнг 4 хувааж, хүүгүй төлнө. Эхний төлбөр шууд төлөгдөнө." },
@@ -200,25 +187,139 @@ const Index = () => {
         </div>
       </section>
 
-      {/* How it works */}
+      {/* Why UBskins */}
       <section className="container py-16">
         <div className="mb-10 text-center">
-          <h2 className="font-display text-3xl font-bold md:text-4xl">Хэрхэн ажилладаг вэ</h2>
-          <p className="mt-2 text-muted-foreground">4 алхамд скинээ авах</p>
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary">
+            <Sparkles className="h-3 w-3" /> Яагаад UBskins?
+          </div>
+          <h2 className="font-display text-3xl font-bold md:text-4xl">
+            Монголд <span className="text-gradient-primary">итгэгдсэн</span> CS2 marketplace
+          </h2>
+          <p className="mx-auto mt-2 max-w-xl text-muted-foreground">
+            Local payment, гар аргаар float шалгалт, шуурхай trade — бүгд нэг дор.
+          </p>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {steps.map((s, i) => (
-            <div key={s.title} className="relative rounded-2xl border border-border bg-gradient-card p-6">
-              <span className="absolute right-4 top-4 font-display text-3xl font-bold text-muted-foreground/20">
-                0{i + 1}
-              </span>
-              <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 text-primary">
-                <s.icon className="h-5 w-5" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[
+            { icon: Wallet, title: "Local Payments", desc: "QPay, Storepay, банкны шилжүүлэг — төгрөгөөр л шууд төл." },
+            { icon: Zap, title: "Fast Delivery", desc: "Төлбөр баталгаажсан тэр даруйд trade offer илгээнэ." },
+            { icon: BadgeCheck, title: "Float Checked", desc: "Скин бүрийн float-ыг гар аргаар шалгана." },
+            { icon: ShieldCheck, title: "Trade Verified", desc: "Албан Steam trade — scam, fake account-аас хамгаалагдсан." },
+            { icon: Headphones, title: "Mongolian Support", desc: "Монгол хэлээр 24/7 чат, утсаар тусална." },
+            { icon: CreditCard, title: "Storepay Available", desc: "Хүүгүй 4 хуваан төлбөр — өнөөдөр л скинээ ав." },
+          ].map((f, i) => (
+            <div
+              key={f.title}
+              className="glass-card group relative overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-[0_20px_50px_-15px_hsl(186_100%_50%/0.4)]"
+              style={{ animationDelay: `${i * 60}ms` }}
+            >
+              <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-primary/10 blur-2xl transition-opacity duration-500 group-hover:opacity-60 opacity-30" />
+              <div className="relative">
+                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary/25 to-accent/25 text-primary ring-1 ring-primary/30">
+                  <f.icon className="h-5 w-5" />
+                </div>
+                <h3 className="font-display text-lg font-semibold">{f.title}</h3>
+                <p className="mt-1.5 text-sm text-muted-foreground">{f.desc}</p>
               </div>
-              <h3 className="font-display text-base font-semibold">{s.title}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{s.desc}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* How it works — visual flow */}
+      <section className="container py-16">
+        <div className="mb-12 text-center">
+          <h2 className="font-display text-3xl font-bold md:text-4xl">Хэрхэн ажилладаг вэ</h2>
+          <p className="mt-2 text-muted-foreground">4 хялбар алхам — 5 минутад скинтэй</p>
+        </div>
+        <div className="relative">
+          {/* connecting line */}
+          <div className="pointer-events-none absolute left-0 right-0 top-[44px] hidden h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent lg:block" />
+          <div className="relative grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { icon: ShoppingBag, title: "Скинээ сонгоно", desc: "Зэвсэг, wear, float-оор шүүж тохирох скинээ ол." },
+              { icon: CreditCard, title: "Аюулгүй төлбөр", desc: "QPay, Storepay, банкаар төгрөгөөр шууд төл." },
+              { icon: Send, title: "Trade link илгээ", desc: "Steam trade URL-аа орууллаа уу. Бид зөвхөн албан Steam trade ашигладаг." },
+              { icon: Package, title: "Скинээ хүлээн ав", desc: "Trade offer 5 минутад очно. Steam дээр хүлээн ав." },
+            ].map((s, i) => (
+              <div key={s.title} className="relative">
+                <div className="glass-card group relative rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50">
+                  <div className="absolute -top-4 left-6 inline-flex h-8 items-center rounded-full bg-gradient-to-r from-primary to-accent px-3 text-xs font-bold text-primary-foreground shadow-[0_8px_24px_-8px_hsl(186_100%_50%/0.6)]">
+                    Алхам {i + 1}
+                  </div>
+                  <div className="mb-3 mt-2 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 text-primary ring-1 ring-primary/30 transition-transform group-hover:scale-110">
+                    <s.icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="font-display text-base font-semibold">{s.title}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{s.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Trust & Social Proof */}
+      <section className="container py-16">
+        <div className="mb-10 text-center">
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs text-accent">
+            <Star className="h-3 w-3 fill-accent" /> Хэрэглэгчдийн сэтгэгдэл
+          </div>
+          <h2 className="font-display text-3xl font-bold md:text-4xl">
+            <span className="text-gradient-primary">2,400+</span> хэрэглэгч итгэн ашигладаг
+          </h2>
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5">
+              <span className="flex">{[...Array(5)].map((_, i) => <Star key={i} className="h-3.5 w-3.5 fill-warning text-warning" />)}</span>
+              <span className="font-semibold text-foreground">4.9/5</span> · 380+ үнэлгээ
+            </span>
+            <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-accent" /> 5,800+ амжилттай trade</span>
+            <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-primary" /> 0 scam report</span>
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[
+            { name: "Tamir.B", handle: "Steam · Lvl 24", text: "AK Redline-аа 7 минутад авлаа. Storepay-р хуваагаад асуудалгүй. Recommend!", item: "AK-47 | Redline (FT)" },
+            { name: "Bilguun", handle: "Steam · Lvl 41", text: "Float-аа гар аргаар шалгаад баталгаажуулсан, яг хүссэн скин. Монгол support супер.", item: "★ Karambit | Doppler" },
+            { name: "Enkhjin", handle: "Steam · Lvl 18", text: "QPay-р шууд төлөөд 5 минутад trade offer ирлээ. Хамгийн найдвартай газар.", item: "AWP | Asiimov (FT)" },
+          ].map((r) => (
+            <div key={r.name} className="glass-card group relative overflow-hidden rounded-2xl p-6 transition-all hover:-translate-y-1 hover:border-primary/50">
+              <Quote className="absolute right-4 top-4 h-8 w-8 text-primary/20" />
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent font-bold text-primary-foreground">
+                  {r.name.charAt(0)}
+                </div>
+                <div>
+                  <div className="font-semibold">{r.name}</div>
+                  <div className="text-xs text-muted-foreground">{r.handle}</div>
+                </div>
+              </div>
+              <div className="mt-3 flex">
+                {[...Array(5)].map((_, i) => <Star key={i} className="h-3.5 w-3.5 fill-warning text-warning" />)}
+              </div>
+              <p className="mt-2 text-sm text-foreground/90">"{r.text}"</p>
+              <div className="mt-4 flex items-center justify-between rounded-lg border border-border/60 bg-secondary/40 px-3 py-2">
+                <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-accent" /> Delivery confirmed
+                </span>
+                <span className="truncate text-xs font-medium text-primary">{r.item}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/40 px-3 py-1.5">
+            <Globe2 className="h-3.5 w-3.5 text-primary" /> Steam OpenID Verified
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/40 px-3 py-1.5">
+            <Lock className="h-3.5 w-3.5 text-primary" /> SSL Secured
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/40 px-3 py-1.5">
+            <MessageCircle className="h-3.5 w-3.5 text-primary" /> Discord Community
+          </span>
         </div>
       </section>
 
