@@ -106,26 +106,47 @@ const Cart = () => {
 
       <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
         <div className="space-y-3">
-          {items.map(({ skin }) => (
-            <div key={skin.id} className="flex gap-4 rounded-2xl border border-border bg-gradient-card p-4">
-              <div className="flex h-24 w-32 shrink-0 items-center justify-center rounded-xl bg-secondary/50">
-                <img src={skin.image} alt={skin.name} className="max-h-full object-contain" />
-              </div>
-              <div className="flex flex-1 flex-col justify-between">
-                <div>
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground">{skin.weaponName}</p>
-                  <p className="font-display font-semibold">{skin.name}</p>
-                  <p className={`text-xs ${wearColor[skin.wear]}`}>{skin.wear} · Float {skin.float.toFixed(3)}</p>
+          {items.map(({ skin, preferences, lineId }) => {
+            const tierLabel =
+              preferences?.floatPreference === "very_clean" ? "Very Clean Float (+10%)"
+              : preferences?.floatPreference === "clean" ? "Clean Float (+5%)"
+              : "Cheapest Available";
+            return (
+              <div key={lineId} className="flex gap-4 rounded-2xl border border-border bg-gradient-card p-4">
+                <div className="flex h-24 w-32 shrink-0 items-center justify-center rounded-xl bg-secondary/50">
+                  <img src={skin.image} alt={skin.name} className="max-h-full object-contain" />
                 </div>
-                <div className="flex items-end justify-between">
-                  <p className="font-display text-lg font-bold">{formatMNT(skin.price)}</p>
-                  <Button variant="ghost" size="icon" onClick={() => remove(skin.id)} aria-label="Устгах">
-                    <Trash2 className="h-4 w-4 text-muted-foreground" />
-                  </Button>
+                <div className="flex flex-1 flex-col justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground">{skin.weaponName}</p>
+                    <p className="font-display font-semibold">{skin.name}</p>
+                    <p className={`text-xs ${wearColor[skin.wear]}`}>{skin.wear} · Float {skin.float.toFixed(3)}</p>
+                    <div className="mt-1.5 flex flex-wrap gap-1.5">
+                      <span className="rounded-md border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                        {tierLabel}
+                      </span>
+                      {preferences?.exactFloatRequest && (
+                        <span className="rounded-md border border-border bg-secondary/40 px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                          Float: {preferences.exactFloatRequest}
+                        </span>
+                      )}
+                      {preferences?.stickerRequest && (
+                        <span className="rounded-md border border-border bg-secondary/40 px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                          Sticker: {preferences.stickerRequest}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-end justify-between">
+                    <p className="font-display text-lg font-bold">{formatMNT(skin.price)}</p>
+                    <Button variant="ghost" size="icon" onClick={() => remove(lineId)} aria-label="Устгах">
+                      <Trash2 className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Summary + Payment selection */}
