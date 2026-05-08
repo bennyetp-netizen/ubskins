@@ -1,11 +1,13 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ShieldCheck, Truck, Tag, Plus, Loader2, Globe2, ShoppingCart } from "lucide-react";
+import { useState } from "react";
+import { ArrowLeft, ShieldCheck, Truck, Tag, Loader2, Globe2, ShoppingCart, BadgeCheck, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatMNT, wearLabel, wearColor } from "@/data/skins";
 import { calcPrepayment, mntToUsd } from "@/data/payment";
 import SkinCard from "@/components/SkinCard";
-import { useCart } from "@/hooks/useCart";
+import FloatPreference from "@/components/FloatPreference";
+import { useCart, type CartPreferences } from "@/hooks/useCart";
 import { useSkin, useSkins } from "@/hooks/useSkins";
 import { toast } from "sonner";
 
@@ -15,6 +17,10 @@ const SkinDetail = () => {
   const { skin, loading } = useSkin(id);
   const { skins: all } = useSkins();
   const { add } = useCart();
+  const [prefs, setPrefs] = useState<CartPreferences>({
+    floatPreference: "cheapest",
+    priceAdjustmentPct: 0,
+  });
 
   if (loading) {
     return (
