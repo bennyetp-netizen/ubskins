@@ -41,8 +41,10 @@ const SkinDetail = () => {
 
   const related = all.filter((s) => s.id !== skin.id && s.weapon === skin.weapon).slice(0, 4);
 
+  const adjustedPrice = Math.round(skin.price * (1 + prefs.priceAdjustmentPct / 100));
+
   const orderNow = () => {
-    add(skin);
+    add(skin, prefs);
     toast.success("Сагсанд нэмэгдлээ. Захиалга үүсгэх рүү шилжиж байна...");
     setTimeout(() => nav("/cart"), 500);
   };
