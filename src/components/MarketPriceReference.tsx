@@ -1,5 +1,6 @@
 import { TrendingUp, Info, ShieldCheck, BadgeCheck, Repeat, Wallet, Smartphone } from "lucide-react";
-import { formatMNT, mntToUsd } from "@/data/payment-helpers";
+import { formatMNT } from "@/data/skins";
+import { mntToUsd } from "@/data/payment";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Props {
