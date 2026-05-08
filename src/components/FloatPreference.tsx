@@ -94,13 +94,13 @@ const FloatPreference = ({ value, onChange }: Props) => {
 
       <p className="mt-3 flex items-start gap-1.5 text-[11px] text-muted-foreground">
         <Info className="mt-0.5 h-3 w-3 shrink-0 text-primary/70" />
-        Lower float = cleaner and better looking skin appearance.
+        Float бага байх тусам скин илүү цэвэрхэн, гоё харагдана.
       </p>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <div>
           <Label htmlFor="exact-float" className="text-xs font-medium text-muted-foreground">
-            Exact Float Request <span className="opacity-60">(Optional)</span>
+            Тодорхой Float хүсэлт <span className="opacity-60">(Заавал биш)</span>
           </Label>
           <Input
             id="exact-float"
@@ -112,7 +112,7 @@ const FloatPreference = ({ value, onChange }: Props) => {
         </div>
         <div>
           <Label htmlFor="sticker-req" className="text-xs font-medium text-muted-foreground">
-            Sticker / Pattern Request <span className="opacity-60">(Optional)</span>
+            Стикер / Хээний хүсэлт <span className="opacity-60">(Заавал биш)</span>
           </Label>
           <Input
             id="sticker-req"
@@ -127,8 +127,8 @@ const FloatPreference = ({ value, onChange }: Props) => {
       <div className="mt-4 flex items-start gap-2 rounded-xl border border-primary/25 bg-primary/5 p-3">
         <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
         <p className="text-[11px] leading-relaxed text-muted-foreground">
-          Final price may slightly change depending on float, pattern, and market availability.
-          We will confirm the exact skin before delivery.
+          Эцсийн үнэ нь float, хээ болон зах зээлийн нөөцөөс хамаарч бага зэрэг өөрчлөгдөж болно.
+          Хүргэхээс өмнө бид яг ямар скин болохыг танд баталгаажуулна.
         </p>
       </div>
     </div>
