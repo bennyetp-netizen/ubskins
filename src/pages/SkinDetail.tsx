@@ -183,6 +183,8 @@ const SkinDetail = () => {
             </div>
           </div>
 
+          <MarketPriceReference finalPriceMnt={adjustedPrice} />
+
           {skin.description && (
             <div className="mt-5 rounded-xl border border-border bg-card/50 p-4 text-sm text-muted-foreground">
               {skin.description}
