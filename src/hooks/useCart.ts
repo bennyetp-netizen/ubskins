@@ -3,16 +3,36 @@ import type { Skin } from "@/data/skins";
 
 const KEY = "skinhub-cart";
 
+export type FloatPreferenceTier = "cheapest" | "clean" | "very_clean";
+
+export interface CartPreferences {
+  floatPreference: FloatPreferenceTier;
+  priceAdjustmentPct: number; // 0, 5, 10
+  exactFloatRequest?: string;
+  stickerRequest?: string;
+}
+
 export interface CartItem {
-  skin: Skin;
+  skin: Skin; // skin.price reflects adjusted final price
+  preferences?: CartPreferences;
+  lineId: string; // unique per cart line
 }
 
 const read = (): CartItem[] => {
   try {
-    return JSON.parse(localStorage.getItem(KEY) || "[]");
+    const raw: any[] = JSON.parse(localStorage.getItem(KEY) || "[]");
+    return raw.map((i, idx) => ({
+      ...i,
+      lineId: i.lineId ?? `${i.skin?.id ?? "x"}-${idx}`,
+    }));
   } catch {
     return [];
   }
+};
+
+const DEFAULT_PREFS: CartPreferences = {
+  floatPreference: "cheapest",
+  priceAdjustmentPct: 0,
 };
 
 export function useCart() {
@@ -35,12 +55,21 @@ export function useCart() {
     window.dispatchEvent(new Event("cart:updated"));
   };
 
-  const add = (skin: Skin) => {
-    if (items.find((i) => i.skin.id === skin.id)) return;
-    persist([...items, { skin }]);
+  const add = (skin: Skin, preferences: CartPreferences = DEFAULT_PREFS) => {
+    const adjustedPrice = Math.round(skin.price * (1 + preferences.priceAdjustmentPct / 100));
+    const adjustedSkin: Skin = { ...skin, price: adjustedPrice };
+    const lineId = `${skin.id}-${preferences.floatPreference}-${preferences.exactFloatRequest ?? ""}-${preferences.stickerRequest ?? ""}-${Date.now()}`;
+    // dedupe identical preference for same skin
+    if (items.find((i) =>
+      i.skin.id === skin.id &&
+      i.preferences?.floatPreference === preferences.floatPreference &&
+      (i.preferences?.exactFloatRequest ?? "") === (preferences.exactFloatRequest ?? "") &&
+      (i.preferences?.stickerRequest ?? "") === (preferences.stickerRequest ?? "")
+    )) return;
+    persist([...items, { skin: adjustedSkin, preferences, lineId }]);
   };
 
-  const remove = (id: string) => persist(items.filter((i) => i.skin.id !== id));
+  const remove = (lineId: string) => persist(items.filter((i) => i.lineId !== lineId));
   const clear = () => persist([]);
 
   const total = items.reduce((s, i) => s + i.skin.price, 0);
