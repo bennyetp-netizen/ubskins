@@ -7,6 +7,7 @@ import { formatMNT, wearLabel, wearColor } from "@/data/skins";
 import { calcPrepayment, mntToUsd } from "@/data/payment";
 import SkinCard from "@/components/SkinCard";
 import FloatPreference from "@/components/FloatPreference";
+import MarketPriceReference from "@/components/MarketPriceReference";
 import { useCart, type CartPreferences } from "@/hooks/useCart";
 import { useSkin, useSkins } from "@/hooks/useSkins";
 import { toast } from "sonner";
