@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, ShieldCheck, LogIn, MousePointerClick, CreditCard, Send, Sparkles, Gauge, Lock } from "lucide-react";
+import { ArrowRight, ShieldCheck, LogIn, MousePointerClick, CreditCard, Send, Sparkles, Gauge, Lock, BadgeCheck, CheckCircle2, Wallet, Truck, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import SkinCard from "@/components/SkinCard";
@@ -46,29 +46,57 @@ const Index = () => {
       toast.error(e instanceof Error ? e.message : "Алдаа гарлаа");
     }
   };
+  const trustBadges = [
+    { icon: BadgeCheck, label: "Float Checked" },
+    { icon: CheckCircle2, label: "Trade Verified" },
+    { icon: Wallet, label: "Storepay Available" },
+    { icon: Truck, label: "Secure Delivery" },
+  ];
+
+  const recentActivity = [
+    { user: "bataa_mn", action: "худалдаж авлаа", item: "AK-47 | Redline (FT)" },
+    { user: "tsetsegee", action: "хүлээн авлаа", item: "★ Karambit | Doppler" },
+    { user: "khangai99", action: "захиаллаа", item: "AWP | Asiimov (FT)" },
+    { user: "munkhuu", action: "худалдаж авлаа", item: "M4A4 | Howl (MW)" },
+    { user: "anar_cs", action: "хүлээн авлаа", item: "★ Butterfly | Fade" },
+    { user: "saruul", action: "худалдаж авлаа", item: "Glock-18 | Fade" },
+    { user: "temuujin", action: "захиаллаа", item: "USP-S | Kill Confirmed" },
+    { user: "dorj_gg", action: "хүлээн авлаа", item: "★ Bayonet | Tiger Tooth" },
+  ];
+
   return (
     <>
       {/* Hero */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden border-b border-border/50">
+        {/* Animated gradient + image background */}
+        <div className="absolute inset-0 -z-10 animated-gradient-bg" />
         <div className="absolute inset-0 -z-10">
-          <img src={heroBg} alt="" width={1920} height={1024} className="h-full w-full object-cover opacity-50" />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/70 to-background" />
-          <div className="absolute inset-0 bg-grid opacity-30" />
+          <img src={heroBg} alt="" width={1920} height={1024} className="h-full w-full object-cover opacity-25 mix-blend-luminosity" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/60 to-background" />
+          <div className="absolute inset-0 bg-grid opacity-20" />
+          {/* Floating glow orbs */}
+          <div className="absolute -left-32 top-20 h-80 w-80 rounded-full bg-primary/30 blur-3xl animate-orb" />
+          <div className="absolute right-0 top-1/3 h-96 w-96 rounded-full bg-accent/20 blur-3xl animate-orb" style={{ animationDelay: "-5s" }} />
+          <div className="absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-primary/20 blur-3xl animate-orb" style={{ animationDelay: "-9s" }} />
         </div>
 
-        <div className="container relative grid gap-10 py-20 md:py-32 lg:grid-cols-2 lg:items-center">
+        <div className="container relative grid gap-12 py-16 md:py-24 lg:grid-cols-[1.15fr_1fr] lg:items-center">
           <div className="animate-fade-in-up">
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary backdrop-blur">
-              <Sparkles className="h-3.5 w-3.5" />
-              Монголын анхны CS2 скиний дэлгүүр
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
+              </span>
+              Live Marketplace · Монголд №1
             </div>
             <h1 className="font-display text-4xl font-bold leading-[1.05] tracking-tight md:text-6xl lg:text-7xl">
-              CS2 скинээ <span className="text-gradient-primary">төгрөгөөр</span>,
+              Монголын <span className="text-gradient-primary">CS2 Skin</span>
               <br />
-              Storepay-р <span className="text-accent">хуваан төлөөд</span> аваарай
+              Marketplace
             </h1>
             <p className="mt-5 max-w-xl text-base text-muted-foreground md:text-lg">
-              Найдвартай шууд худалдаа. Gamble биш. Steam-р нэвтрээд, дуртай скинээ сонгоод, төгрөгөөр төлж, хэдхэн минутад trade offer хүлээн ав.
+              Steam skin-үүдээ <span className="text-foreground font-medium">аюулгүй, хурдан, local payment</span>-тай аваарай.
+              Storepay, QPay, банкны шилжүүлэг — бүгд төгрөгөөр.
             </p>
             <p className="mt-3 max-w-xl text-sm font-semibold text-orange-400 md:text-base">
               💰 Урьдчилгаа 30% төлөөд скинээ захиалуулаарай!
@@ -77,51 +105,98 @@ const Index = () => {
             <div className="mt-8 flex flex-wrap gap-3">
               <Link to="/shop">
                 <Button variant="hero" size="xl">
-                  Скин үзэх <ArrowRight className="ml-1" />
+                  Shop Skins <ArrowRight className="ml-1" />
                 </Button>
               </Link>
-              <Button variant="steam" size="xl" onClick={handleSteam}>
-                <LogIn className="mr-1" />
-                Steam-р нэвтрэх
-              </Button>
+              <Link to="/account">
+                <Button variant="steam" size="xl">
+                  Sell Skins
+                </Button>
+              </Link>
             </div>
 
-            <div className="mt-10 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-accent" /> 100% албан ёсны</div>
-              <div className="flex items-center gap-2"><Gauge className="h-4 w-4 text-primary" /> 5 мин хүргэлт</div>
-              <div className="flex items-center gap-2"><Lock className="h-4 w-4 text-primary" /> Steam OpenID</div>
-            </div>
-          </div>
-
-          {/* visual */}
-          <div className="relative hidden lg:block">
-            <div className="relative aspect-square">
-              <div className="absolute inset-10 rounded-full bg-primary/20 blur-3xl" />
-              <div className="absolute inset-20 rounded-full bg-accent/20 blur-3xl" />
-              {featured[0] && (
-                <img
-                  src={featured[0].image}
-                  alt="Featured skin"
-                  className="relative animate-float-slow drop-shadow-[0_20px_60px_hsl(186_100%_50%/0.4)]"
-                />
-              )}
+            {/* Trust indicator chips */}
+            <div className="mt-8 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {trustBadges.map((b) => (
+                <div
+                  key={b.label}
+                  className="glass-card group flex items-center gap-2 rounded-xl px-3 py-2.5 transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-[0_0_20px_hsl(186_100%_50%/0.25)]"
+                >
+                  <b.icon className="h-4 w-4 shrink-0 text-primary transition-transform group-hover:scale-110" />
+                  <span className="text-xs font-medium text-foreground/90">{b.label}</span>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* Trust */}
-      <section className="container py-16">
-        <div className="grid gap-4 md:grid-cols-3">
-          {trust.map((t) => (
-            <div key={t.title} className="rounded-2xl border border-border bg-gradient-card p-6">
-              <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <t.icon className="h-5 w-5" />
+          {/* Right column: skin showcase + live ticker */}
+          <div className="relative">
+            {/* Premium knife/glove showcase */}
+            <div className="relative mx-auto aspect-square max-w-md">
+              <div className="absolute inset-8 rounded-full bg-primary/25 blur-3xl animate-pulse" />
+              <div className="absolute inset-16 rounded-full bg-accent/20 blur-3xl" />
+              <div className="glass-card absolute inset-0 rounded-3xl p-6 shadow-[0_30px_80px_-20px_hsl(186_100%_50%/0.45)]">
+                {featured[0] ? (
+                  <>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/15 px-2.5 py-1 font-semibold text-accent">
+                        <Sparkles className="h-3 w-3" /> Featured
+                      </span>
+                      <span className="text-muted-foreground">Live · Verified</span>
+                    </div>
+                    <div className="relative mt-2 flex h-[70%] items-center justify-center">
+                      <img
+                        src={featured[0].image}
+                        alt={featured[0].name}
+                        className="max-h-full animate-float-slow drop-shadow-[0_20px_60px_hsl(186_100%_50%/0.6)]"
+                      />
+                    </div>
+                    <div className="mt-2">
+                      <div className="truncate font-display text-lg font-semibold">{featured[0].name}</div>
+                      <div className="mt-1 flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">Float Checked · Trade Verified</span>
+                        <span className="font-display text-lg font-bold text-gradient-primary">
+                          {new Intl.NumberFormat("mn-MN").format(featured[0].price)}₮
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex h-full items-center justify-center text-muted-foreground">Loading…</div>
+                )}
               </div>
-              <h3 className="font-display text-lg font-semibold">{t.title}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{t.desc}</p>
             </div>
-          ))}
+
+            {/* Live activity ticker */}
+            <div className="glass-card mt-6 overflow-hidden rounded-2xl">
+              <div className="flex items-center justify-between border-b border-border/50 px-4 py-2.5">
+                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-foreground/90">
+                  <Activity className="h-3.5 w-3.5 text-accent" />
+                  Recent Purchases
+                </div>
+                <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" />
+                  LIVE
+                </span>
+              </div>
+              <div className="relative h-32 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_15%,black_85%,transparent)]">
+                <div className="animate-ticker">
+                  {[...recentActivity, ...recentActivity].map((a, i) => (
+                    <div key={i} className="flex items-center gap-3 px-4 py-2 text-xs">
+                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[10px] font-bold text-primary">
+                        {a.user.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="min-w-0 flex-1 truncate">
+                        <span className="font-medium text-foreground">{a.user}</span>
+                        <span className="text-muted-foreground"> {a.action} </span>
+                        <span className="font-medium text-primary">{a.item}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
