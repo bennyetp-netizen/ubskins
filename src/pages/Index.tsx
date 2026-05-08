@@ -34,10 +34,10 @@ const Index = () => {
     }
   };
   const trustBadges = [
-    { icon: BadgeCheck, label: "Float Checked" },
-    { icon: CheckCircle2, label: "Trade Verified" },
-    { icon: Wallet, label: "Storepay Available" },
-    { icon: Truck, label: "Secure Delivery" },
+    { icon: BadgeCheck, label: "Float шалгасан" },
+    { icon: CheckCircle2, label: "Trade баталгаажсан" },
+    { icon: Wallet, label: "Storepay-р авах" },
+    { icon: Truck, label: "Найдвартай хүргэлт" },
   ];
 
   const recentActivity = [
@@ -74,7 +74,7 @@ const Index = () => {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
               </span>
-              Live Marketplace · Монголд №1
+              Шууд маркет · Монголд №1
             </div>
             <h1 className="font-display text-4xl font-bold leading-[1.05] tracking-tight md:text-6xl lg:text-7xl">
               Монголын <span className="text-gradient-primary">CS2 Skin</span>
@@ -92,12 +92,12 @@ const Index = () => {
             <div className="mt-8 flex flex-wrap gap-3">
               <Link to="/shop">
                 <Button variant="hero" size="xl">
-                  Shop Skins <ArrowRight className="ml-1" />
+                  Скин үзэх <ArrowRight className="ml-1" />
                 </Button>
               </Link>
               <Link to="/account">
                 <Button variant="steam" size="xl">
-                  Sell Skins
+                  Скин зарах
                 </Button>
               </Link>
             </div>
@@ -127,9 +127,9 @@ const Index = () => {
                   <>
                     <div className="flex items-center justify-between text-xs">
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/15 px-2.5 py-1 font-semibold text-accent">
-                        <Sparkles className="h-3 w-3" /> Featured
+                        <Sparkles className="h-3 w-3" /> Онцлох
                       </span>
-                      <span className="text-muted-foreground">Live · Verified</span>
+                      <span className="text-muted-foreground">Шууд · Баталгаажсан</span>
                     </div>
                     <div className="relative mt-2 flex h-[70%] items-center justify-center">
                       <img
@@ -141,7 +141,7 @@ const Index = () => {
                     <div className="mt-2">
                       <div className="truncate font-display text-lg font-semibold">{featured[0].name}</div>
                       <div className="mt-1 flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">Float Checked · Trade Verified</span>
+                        <span className="text-xs text-muted-foreground">Float шалгасан · Trade баталгаажсан</span>
                         <span className="font-display text-lg font-bold text-gradient-primary">
                           {new Intl.NumberFormat("mn-MN").format(featured[0].price)}₮
                         </span>
@@ -159,11 +159,11 @@ const Index = () => {
               <div className="flex items-center justify-between border-b border-border/50 px-4 py-2.5">
                 <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-foreground/90">
                   <Activity className="h-3.5 w-3.5 text-accent" />
-                  Recent Purchases
+                  Сүүлд худалдан авалт
                 </div>
                 <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" />
-                  LIVE
+                  ШУУД
                 </span>
               </div>
               <div className="relative h-32 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_15%,black_85%,transparent)]">
@@ -202,12 +202,12 @@ const Index = () => {
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[
-            { icon: Wallet, title: "Local Payments", desc: "QPay, Storepay, банкны шилжүүлэг — төгрөгөөр л шууд төл." },
-            { icon: Zap, title: "Fast Delivery", desc: "Төлбөр баталгаажсан тэр даруйд trade offer илгээнэ." },
-            { icon: BadgeCheck, title: "Float Checked", desc: "Скин бүрийн float-ыг гар аргаар шалгана." },
-            { icon: ShieldCheck, title: "Trade Verified", desc: "Албан Steam trade — scam, fake account-аас хамгаалагдсан." },
-            { icon: Headphones, title: "Mongolian Support", desc: "Монгол хэлээр 24/7 чат, утсаар тусална." },
-            { icon: CreditCard, title: "Storepay Available", desc: "Хүүгүй 4 хуваан төлбөр — өнөөдөр л скинээ ав." },
+            { icon: Wallet, title: "Local төлбөр", desc: "QPay, Storepay, банкны шилжүүлэг — төгрөгөөр л шууд төл." },
+            { icon: Zap, title: "Шуурхай хүргэлт", desc: "Төлбөр баталгаажсан тэр даруйд trade offer илгээнэ." },
+            { icon: BadgeCheck, title: "Float шалгасан", desc: "Скин бүрийн float-ыг гар аргаар шалгана." },
+            { icon: ShieldCheck, title: "Trade баталгаажсан", desc: "Албан Steam trade — scam, fake account-аас хамгаалагдсан." },
+            { icon: Headphones, title: "Монгол support", desc: "Монгол хэлээр 24/7 чат, утсаар тусална." },
+            { icon: CreditCard, title: "Storepay-р авах", desc: "Хүүгүй 4 хуваан төлбөр — өнөөдөр л скинээ ав." },
           ].map((f, i) => (
             <div
               key={f.title}
@@ -302,7 +302,7 @@ const Index = () => {
               <p className="mt-2 text-sm text-foreground/90">"{r.text}"</p>
               <div className="mt-4 flex items-center justify-between rounded-lg border border-border/60 bg-secondary/40 px-3 py-2">
                 <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-accent" /> Delivery confirmed
+                  <CheckCircle2 className="h-3.5 w-3.5 text-accent" /> Хүргэлт баталгаажсан
                 </span>
                 <span className="truncate text-xs font-medium text-primary">{r.item}</span>
               </div>
@@ -312,13 +312,13 @@ const Index = () => {
 
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/40 px-3 py-1.5">
-            <Globe2 className="h-3.5 w-3.5 text-primary" /> Steam OpenID Verified
+            <Globe2 className="h-3.5 w-3.5 text-primary" /> Steam OpenID баталгаажсан
           </span>
           <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/40 px-3 py-1.5">
-            <Lock className="h-3.5 w-3.5 text-primary" /> SSL Secured
+            <Lock className="h-3.5 w-3.5 text-primary" /> SSL хамгаалалттай
           </span>
           <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/40 px-3 py-1.5">
-            <MessageCircle className="h-3.5 w-3.5 text-primary" /> Discord Community
+            <MessageCircle className="h-3.5 w-3.5 text-primary" /> Discord нийгэмлэг
           </span>
         </div>
       </section>

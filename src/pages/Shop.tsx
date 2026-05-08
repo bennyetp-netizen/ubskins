@@ -47,8 +47,8 @@ const Shop = () => {
   return (
     <div className="container py-10">
       <div className="mb-6">
-        <h1 className="font-display text-3xl font-bold md:text-4xl">CS2 Skin Marketplace</h1>
-        <p className="mt-1 text-muted-foreground">Бэлэн скин эсвэл захиалгаар · Float Checked · Trade Verified</p>
+        <h1 className="font-display text-3xl font-bold md:text-4xl">CS2 Скин Маркет</h1>
+        <p className="mt-1 text-muted-foreground">Бэлэн скин эсвэл захиалгаар · Float шалгасан · Trade баталгаажсан</p>
       </div>
 
       <div className="glass-card mb-5 flex flex-col gap-3 rounded-2xl p-3 sm:flex-row sm:items-center">
@@ -171,7 +171,7 @@ const Shop = () => {
             </p>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span className="inline-flex items-center gap-1 rounded-full border border-border bg-secondary/40 px-2 py-1">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" /> Live inventory
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" /> Шууд агуулах
               </span>
             </div>
           </div>
