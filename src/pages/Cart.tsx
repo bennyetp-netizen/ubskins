@@ -44,7 +44,7 @@ const Cart = () => {
 
     setSubmitting(true);
     try {
-      const rows = items.map(({ skin }) => {
+      const rows = items.map(({ skin, preferences }) => {
         const deposit = itemDeposit(skin);
         return {
           user_id: user.id,
@@ -60,6 +60,10 @@ const Cart = () => {
           product_type: skin.productType,
           deposit_amount: deposit,
           remaining_amount: skin.price - deposit,
+          float_preference: preferences?.floatPreference ?? "cheapest",
+          price_adjustment_pct: preferences?.priceAdjustmentPct ?? 0,
+          exact_float_request: preferences?.exactFloatRequest?.trim() || null,
+          sticker_request: preferences?.stickerRequest?.trim() || null,
         };
       });
 
