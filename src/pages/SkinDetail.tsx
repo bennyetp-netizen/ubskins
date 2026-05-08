@@ -73,6 +73,12 @@ const SkinDetail = () => {
           <div className="mt-3 flex flex-wrap gap-2">
             <Badge variant="outline" className="border-primary/40 bg-primary/10 text-primary">{skin.rarity}</Badge>
             <Badge variant="outline" className={`border-current/40 bg-background ${wearColor[skin.wear]}`}>{wearLabel[skin.wear]}</Badge>
+            <Badge variant="outline" className="gap-1 border-sky-400/40 bg-sky-400/10 text-sky-300">
+              <BadgeCheck className="h-3 w-3" /> Float Checked
+            </Badge>
+            <Badge variant="outline" className="gap-1 border-emerald-400/40 bg-emerald-400/10 text-emerald-300">
+              <Repeat className="h-3 w-3" /> Trade Verified
+            </Badge>
           </div>
 
           {/* Product type banner */}
