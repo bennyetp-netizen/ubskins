@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, ShieldCheck, LogIn, MousePointerClick, CreditCard, Send, Sparkles, Gauge, Lock, BadgeCheck, CheckCircle2, Wallet, Truck, Activity, Star, MessageCircle, Headphones, Zap, Globe2, Quote, ShoppingBag, Package } from "lucide-react";
+import { ArrowRight, ShieldCheck, LogIn, CreditCard, Send, Sparkles, Lock, BadgeCheck, CheckCircle2, Wallet, Truck, Activity, Star, MessageCircle, Headphones, Zap, Globe2, Quote, ShoppingBag, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import SkinCard from "@/components/SkinCard";
@@ -8,17 +8,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSkins } from "@/hooks/useSkins";
 import { toast } from "sonner";
 
-const steps = [
-  { icon: LogIn, title: "Steam-р нэвтэрнэ", desc: "Steam OpenID-р найдвартай нэвтэрч, trade URL-аа холбоно." },
-  { icon: MousePointerClick, title: "Скинээ сонгоно", desc: "Зэвсэг, wear, float, үнээр шүүж тохирох скинээ ол." },
-  { icon: CreditCard, title: "Storepay/QPay-р төлнө", desc: "Төгрөгөөр шууд эсвэл 4 хуваан хүүгүй төлбөр." },
-  { icon: Send, title: "Trade offer хүлээн авна", desc: "Төлбөр баталгаажмагц Steam trade offer автоматаар очно." },
-];
-
-const trust = [
-  { icon: ShieldCheck, title: "Gamble биш", desc: "Case opening, betting, jackpot үгүй. Зөвхөн шууд худалдаа." },
-  { icon: Gauge, title: "Шуурхай хүргэлт", desc: "Төлбөр баталгаажсаны дараа дунджаар 5 минутад trade offer." },
-  { icon: Lock, title: "Найдвартай төлбөр", desc: "QPay, Storepay, банкны шилжүүлэг — албан ёсны интеграц." },
+const faqs = [
+  { q: "Storepay-р яаж худалдан авах вэ?", a: "Buy with Storepay товчийг дарж дансаараа нэвтэрснээр үнийн дүнг 4 хувааж, хүүгүй төлнө. Эхний төлбөр шууд төлөгдөнө." },
+  { q: "Хэдийд скин минийх болох вэ?", a: "Төлбөр баталгаажсаны дараа Steam trade offer-р хүргэгдэнэ. Та Steam-д trade offer-оо хүлээн авч баталгаажуулаарай." },
+  { q: "Энэ gambling уу?", a: "Үгүй. Манай платформ дээр case opening, roulette, jackpot, betting байхгүй. Зөвхөн store inventory-оос шууд скин худалдаалдаг." },
+  { q: "Trade hold хэр удаан байх вэ?", a: "Steam Mobile Authenticator идэвхжүүлсэн бол шууд. Үгүй бол Valve-н нөхцөлөөр 7-15 хоног." },
+  { q: "Үнэ юунд тулгуурладаг вэ?", a: "Steam Market болон third-party-н дундаж үнэд тулгуурлан, MNT ханшаар тооцон тогтоодог." },
 ];
 
 const faqs = [
