@@ -166,18 +166,13 @@ const Shop = () => {
 
         <div>
           <div className="mb-4 flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">{filtered.length} скин олдсон</p>
-            <div className="flex items-center gap-2">
-              <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
-              <select
-                value={sort}
-                onChange={(e) => setSort(e.target.value as typeof sort)}
-                className="rounded-lg border border-border bg-secondary px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="price-asc">Үнэ: бага → их</option>
-                <option value="price-desc">Үнэ: их → бага</option>
-                <option value="float-asc">Float: сайн → муу</option>
-              </select>
+            <p className="text-sm text-muted-foreground">
+              <span className="font-semibold text-foreground">{filtered.length}</span> скин олдсон
+            </p>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="inline-flex items-center gap-1 rounded-full border border-border bg-secondary/40 px-2 py-1">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" /> Live inventory
+              </span>
             </div>
           </div>
 
