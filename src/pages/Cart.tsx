@@ -251,8 +251,8 @@ const Cart = () => {
             </div>
 
             <div className="mt-4 rounded-xl border border-primary/25 bg-primary/5 p-3 text-[11px] leading-relaxed text-muted-foreground">
-              ⚠️ Final price may slightly change depending on float, pattern, and market availability.
-              We will confirm the exact skin before delivery.
+              ⚠️ Эцсийн үнэ нь float, хээ болон зах зээлийн нөөцөөс хамаарч бага зэрэг өөрчлөгдөж болно.
+              Хүргэхээс өмнө бид яг ямар скин болохыг танд баталгаажуулна.
             </div>
 
             <Button
