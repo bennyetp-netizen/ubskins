@@ -7,6 +7,7 @@ import { formatMNT, wearLabel, wearColor } from "@/data/skins";
 import { calcPrepayment, mntToUsd } from "@/data/payment";
 import SkinCard from "@/components/SkinCard";
 import FloatPreference from "@/components/FloatPreference";
+import MarketPriceReference from "@/components/MarketPriceReference";
 import { useCart, type CartPreferences } from "@/hooks/useCart";
 import { useSkin, useSkins } from "@/hooks/useSkins";
 import { toast } from "sonner";
@@ -181,6 +182,8 @@ const SkinDetail = () => {
               </Button>
             </div>
           </div>
+
+          <MarketPriceReference finalPriceMnt={adjustedPrice} />
 
           {skin.description && (
             <div className="mt-5 rounded-xl border border-border bg-card/50 p-4 text-sm text-muted-foreground">
