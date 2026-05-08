@@ -16,14 +16,6 @@ const faqs = [
   { q: "Үнэ юунд тулгуурладаг вэ?", a: "Steam Market болон third-party-н дундаж үнэд тулгуурлан, MNT ханшаар тооцон тогтоодог." },
 ];
 
-const faqs = [
-  { q: "Storepay-р яаж худалдан авах вэ?", a: "Buy with Storepay товчийг дарж дансаараа нэвтэрснээр үнийн дүнг 4 хувааж, хүүгүй төлнө. Эхний төлбөр шууд төлөгдөнө." },
-  { q: "Хэдийд скин минийх болох вэ?", a: "Төлбөр баталгаажсаны дараа Steam trade offer-р хүргэгдэнэ. Та Steam-д trade offer-оо хүлээн авч баталгаажуулаарай." },
-  { q: "Энэ gambling уу?", a: "Үгүй. Манай платформ дээр case opening, roulette, jackpot, betting байхгүй. Зөвхөн store inventory-оос шууд скин худалдаалдаг." },
-  { q: "Trade hold хэр удаан байх вэ?", a: "Steam Mobile Authenticator идэвхжүүлсэн бол шууд. Үгүй бол Valve-н нөхцөлөөр 7-15 хоног." },
-  { q: "Үнэ юунд тулгуурладаг вэ?", a: "Steam Market болон third-party-н дундаж үнэд тулгуурлан, MNT ханшаар тооцон тогтоодог." },
-];
-
 const Index = () => {
   const { user, signInWithSteam } = useAuth();
   const { skins } = useSkins({ featuredOnly: true });
