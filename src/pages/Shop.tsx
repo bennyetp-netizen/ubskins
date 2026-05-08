@@ -46,9 +46,33 @@ const Shop = () => {
 
   return (
     <div className="container py-10">
-      <div className="mb-8">
-        <h1 className="font-display text-3xl font-bold md:text-4xl">Скин дэлгүүр</h1>
-        <p className="mt-1 text-muted-foreground">Бэлэн скин эсвэл захиалгаар авах боломжтой</p>
+      <div className="mb-6">
+        <h1 className="font-display text-3xl font-bold md:text-4xl">CS2 Skin Marketplace</h1>
+        <p className="mt-1 text-muted-foreground">Бэлэн скин эсвэл захиалгаар · Float Checked · Trade Verified</p>
+      </div>
+
+      <div className="glass-card mb-5 flex flex-col gap-3 rounded-2xl p-3 sm:flex-row sm:items-center">
+        <div className="relative flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="AK-47 Redline, Karambit Doppler, AWP Asiimov…"
+            className="h-11 border-transparent bg-secondary/40 pl-9 text-sm focus-visible:ring-primary/30"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as typeof sort)}
+            className="h-11 rounded-lg border border-border bg-secondary px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            <option value="price-asc">Үнэ ↑</option>
+            <option value="price-desc">Үнэ ↓</option>
+            <option value="float-asc">Float ↑</option>
+          </select>
+        </div>
       </div>
 
       <div className="mb-6 flex flex-wrap gap-2">
@@ -56,9 +80,9 @@ const Shop = () => {
           <button
             key={t.key}
             onClick={() => setTypeFilter(t.key)}
-            className={`rounded-full border px-4 py-1.5 text-xs font-medium transition-colors ${
+            className={`rounded-full border px-4 py-1.5 text-xs font-medium transition-all hover:-translate-y-0.5 ${
               typeFilter === t.key
-                ? "border-primary bg-primary/10 text-primary"
+                ? "border-primary bg-primary/10 text-primary shadow-[0_0_20px_hsl(186_100%_50%/0.25)]"
                 : "border-border bg-secondary/40 text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -69,12 +93,6 @@ const Shop = () => {
 
       <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
         <aside className="space-y-6 rounded-2xl border border-border bg-gradient-card p-5 lg:sticky lg:top-24 lg:self-start">
-          <div>
-            <label className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              <Search className="h-3.5 w-3.5" /> Хайх
-            </label>
-            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="AK-47, Asiimov..." />
-          </div>
 
           <div>
             <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Зэвсэг</p>
