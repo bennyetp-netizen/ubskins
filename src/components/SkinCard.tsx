@@ -56,6 +56,15 @@ const SkinCard = ({ skin }: Props) => {
           <span>Float {skin.float.toFixed(3)}</span>
         </div>
 
+        <div className="flex flex-wrap gap-1">
+          <span className="rounded-md border border-sky-400/30 bg-sky-400/10 px-1.5 py-0.5 text-[9px] font-semibold text-sky-300">
+            ✓ Float Checked
+          </span>
+          <span className="rounded-md border border-emerald-400/30 bg-emerald-400/10 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-300">
+            ⇄ Trade Verified
+          </span>
+        </div>
+
         <div className="mt-2 flex items-end justify-between border-t border-border/60 pt-3">
           <div>
             <p className="font-display text-lg font-bold text-foreground">

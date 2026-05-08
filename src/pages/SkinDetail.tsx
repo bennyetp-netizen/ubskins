@@ -1,11 +1,13 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ShieldCheck, Truck, Tag, Plus, Loader2, Globe2, ShoppingCart } from "lucide-react";
+import { useState } from "react";
+import { ArrowLeft, ShieldCheck, Truck, Tag, Loader2, Globe2, ShoppingCart, BadgeCheck, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatMNT, wearLabel, wearColor } from "@/data/skins";
 import { calcPrepayment, mntToUsd } from "@/data/payment";
 import SkinCard from "@/components/SkinCard";
-import { useCart } from "@/hooks/useCart";
+import FloatPreference from "@/components/FloatPreference";
+import { useCart, type CartPreferences } from "@/hooks/useCart";
 import { useSkin, useSkins } from "@/hooks/useSkins";
 import { toast } from "sonner";
 
@@ -15,6 +17,10 @@ const SkinDetail = () => {
   const { skin, loading } = useSkin(id);
   const { skins: all } = useSkins();
   const { add } = useCart();
+  const [prefs, setPrefs] = useState<CartPreferences>({
+    floatPreference: "cheapest",
+    priceAdjustmentPct: 0,
+  });
 
   if (loading) {
     return (
@@ -35,8 +41,10 @@ const SkinDetail = () => {
 
   const related = all.filter((s) => s.id !== skin.id && s.weapon === skin.weapon).slice(0, 4);
 
+  const adjustedPrice = Math.round(skin.price * (1 + prefs.priceAdjustmentPct / 100));
+
   const orderNow = () => {
-    add(skin);
+    add(skin, prefs);
     toast.success("Сагсанд нэмэгдлээ. Захиалга үүсгэх рүү шилжиж байна...");
     setTimeout(() => nav("/cart"), 500);
   };
@@ -65,6 +73,12 @@ const SkinDetail = () => {
           <div className="mt-3 flex flex-wrap gap-2">
             <Badge variant="outline" className="border-primary/40 bg-primary/10 text-primary">{skin.rarity}</Badge>
             <Badge variant="outline" className={`border-current/40 bg-background ${wearColor[skin.wear]}`}>{wearLabel[skin.wear]}</Badge>
+            <Badge variant="outline" className="gap-1 border-sky-400/40 bg-sky-400/10 text-sky-300">
+              <BadgeCheck className="h-3 w-3" /> Float Checked
+            </Badge>
+            <Badge variant="outline" className="gap-1 border-emerald-400/40 bg-emerald-400/10 text-emerald-300">
+              <Repeat className="h-3 w-3" /> Trade Verified
+            </Badge>
           </div>
 
           {/* Product type banner */}
@@ -123,24 +137,36 @@ const SkinDetail = () => {
             </div>
           </div>
 
+          {/* Float preference */}
+          <div className="mt-6">
+            <FloatPreference value={prefs} onChange={setPrefs} />
+          </div>
+
           {/* Price */}
           <div className="mt-6 rounded-2xl border border-border bg-gradient-card p-5">
             <div className="flex items-end justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">Үнэ</p>
-                <p className="font-display text-4xl font-bold text-gradient-primary">{formatMNT(skin.price)}</p>
-                <p className="mt-1 text-xs text-muted-foreground">≈ ${mntToUsd(skin.price)} USD</p>
+                <p className="font-display text-4xl font-bold text-gradient-primary">{formatMNT(adjustedPrice)}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  ≈ ${mntToUsd(adjustedPrice)} USD
+                  {prefs.priceAdjustmentPct > 0 && (
+                    <span className="ml-2 rounded-md bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold text-primary">
+                      +{prefs.priceAdjustmentPct}% float
+                    </span>
+                  )}
+                </p>
               </div>
               {skin.productType === "preorder" ? (
                 <div className="text-right">
                   <p className="text-xs text-muted-foreground">Урьдчилгаа (30%)</p>
-                  <p className="font-display text-lg font-semibold text-warning">{formatMNT(calcPrepayment(skin.price))}</p>
+                  <p className="font-display text-lg font-semibold text-warning">{formatMNT(calcPrepayment(adjustedPrice))}</p>
                   <p className="text-[10px] text-muted-foreground">үлдэгдлийг хүргэх үед</p>
                 </div>
               ) : (
                 <div className="text-right">
                   <p className="text-xs text-muted-foreground">Бүтэн төлбөр</p>
-                  <p className="font-display text-lg font-semibold text-emerald-400">{formatMNT(skin.price)}</p>
+                  <p className="font-display text-lg font-semibold text-emerald-400">{formatMNT(adjustedPrice)}</p>
                   <p className="text-[10px] text-muted-foreground">100% урьдчилан</p>
                 </div>
               )}
@@ -150,7 +176,7 @@ const SkinDetail = () => {
               <Button variant="hero" size="lg" onClick={orderNow}>
                 <Globe2 className="mr-1.5 h-4 w-4" /> Захиалга үүсгэх
               </Button>
-              <Button variant="outline" size="lg" onClick={() => { add(skin); toast.success("Сагсанд нэмэгдлээ"); }}>
+              <Button variant="outline" size="lg" onClick={() => { add(skin, prefs); toast.success("Сагсанд нэмэгдлээ"); }}>
                 <ShoppingCart className="mr-1.5 h-4 w-4" /> Сагсанд нэмэх
               </Button>
             </div>
