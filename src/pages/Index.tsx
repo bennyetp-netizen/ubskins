@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, ShieldCheck, LogIn, MousePointerClick, CreditCard, Send, Sparkles, Gauge, Lock } from "lucide-react";
+import { ArrowRight, ShieldCheck, LogIn, MousePointerClick, CreditCard, Send, Sparkles, Gauge, Lock, BadgeCheck, CheckCircle2, Wallet, Truck, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import SkinCard from "@/components/SkinCard";
