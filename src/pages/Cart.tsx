@@ -250,6 +250,11 @@ const Cart = () => {
               ))}
             </div>
 
+            <div className="mt-4 rounded-xl border border-primary/25 bg-primary/5 p-3 text-[11px] leading-relaxed text-muted-foreground">
+              ⚠️ Final price may slightly change depending on float, pattern, and market availability.
+              We will confirm the exact skin before delivery.
+            </div>
+
             <Button
               variant="hero"
               size="lg"
