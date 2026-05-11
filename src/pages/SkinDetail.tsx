@@ -162,9 +162,16 @@ const SkinDetail = () => {
                 <p className="font-display text-4xl font-bold text-gradient-primary">{formatMNT(adjustedPrice)}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   ≈ {formatCNY(mntToCny(adjustedPrice))} CNY (BUFF163)
-                  {prefs.priceAdjustmentPct > 0 && (
-                    <span className="ml-2 rounded-md bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold text-primary">
-                      +{prefs.priceAdjustmentPct}% float
+                  {prefs.priceAdjustmentPct !== 0 && (
+                    <span
+                      className={`ml-2 rounded-md px-1.5 py-0.5 text-[10px] font-bold ${
+                        prefs.priceAdjustmentPct > 0
+                          ? "bg-primary/15 text-primary"
+                          : "bg-emerald-500/15 text-emerald-400"
+                      }`}
+                    >
+                      {prefs.priceAdjustmentPct > 0 ? "+" : ""}
+                      {prefs.priceAdjustmentPct}% float
                     </span>
                   )}
                 </p>
