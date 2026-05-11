@@ -4,7 +4,7 @@ import { ArrowLeft, ShieldCheck, Truck, Tag, Loader2, Globe2, ShoppingCart, Badg
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatMNT, wearLabel, wearColor } from "@/data/skins";
-import { calcPrepayment, mntToUsd } from "@/data/payment";
+import { calcPrepayment, mntToCny, formatCNY } from "@/data/payment";
 import SkinCard from "@/components/SkinCard";
 import FloatPreference from "@/components/FloatPreference";
 import FloatBar from "@/components/FloatBar";
