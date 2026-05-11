@@ -164,7 +164,7 @@ const Cart = () => {
               <div className="flex justify-between font-display text-lg font-bold">
                 <span>Нийт</span><span className="text-gradient-primary">{formatMNT(total)}</span>
               </div>
-              <p className="text-right text-xs text-muted-foreground">≈ ${usdTotal} USD</p>
+              <p className="text-right text-xs text-muted-foreground">≈ {formatCNY(cnyTotal)} CNY (BUFF163)</p>
               {hasPreorder && hasReady ? (
                 <div className="mt-3 space-y-2">
                   <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3">
