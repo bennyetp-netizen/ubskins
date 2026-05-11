@@ -132,7 +132,20 @@ const SkinDetail = () => {
                   ? parseFloat(prefs.exactFloatRequest)
                   : skin.float
               }
-              onChange={(v) => setPrefs({ ...prefs, exactFloatRequest: v.toFixed(4) })}
+              onChange={(v) => {
+                // Float-based pricing: lower float = cleaner = higher price
+                let pct = 0;
+                if (v < 0.07) pct = 20;        // Factory New
+                else if (v < 0.15) pct = 10;   // Minimal Wear
+                else if (v < 0.38) pct = 0;    // Field-Tested (base)
+                else if (v < 0.45) pct = -5;   // Well-Worn
+                else pct = -10;                // Battle-Scarred
+                setPrefs({
+                  ...prefs,
+                  exactFloatRequest: v.toFixed(4),
+                  priceAdjustmentPct: pct,
+                });
+              }}
             />
           </div>
 
