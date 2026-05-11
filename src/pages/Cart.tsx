@@ -24,7 +24,7 @@ const Cart = () => {
     skin.productType === "preorder" ? calcPrepayment(skin.price) : skin.price;
   const totalDeposit = items.reduce((s, { skin }) => s + itemDeposit(skin), 0);
   const totalRemaining = total - totalDeposit;
-  const usdTotal = mntToUsd(total);
+  const cnyTotal = mntToCny(total);
   const hasPreorder = items.some(({ skin }) => skin.productType === "preorder");
   const hasReady = items.some(({ skin }) => skin.productType === "ready");
 
