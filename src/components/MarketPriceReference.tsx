@@ -44,13 +44,13 @@ const MarketPriceReference = ({ finalPriceMnt }: Props) => {
           <div className="group rounded-xl border border-border/60 bg-background/40 p-4 transition-all hover:border-sky-400/40 hover:bg-sky-500/5">
             <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               <span className="flex h-4 w-4 items-center justify-center rounded bg-sky-500/20 text-[9px] font-black text-sky-300">B</span>
-              BUFF Market Reference
+              BUFF163 Market Reference
             </div>
             <p className="mt-2 font-display text-2xl font-bold text-foreground/90">
-              ${buffUsd}
-              <span className="ml-1 text-xs font-medium text-muted-foreground">USD</span>
+              {formatCNY(buffCny)}
+              <span className="ml-1 text-xs font-medium text-muted-foreground">CNY</span>
             </p>
-            <p className="mt-0.5 text-[10px] text-muted-foreground">Олон улсын дундаж үнэ</p>
+            <p className="mt-0.5 text-[10px] text-muted-foreground">BUFF163 дундаж үнэ (юань)</p>
           </div>
 
           {/* UBskins final price */}
@@ -64,7 +64,7 @@ const MarketPriceReference = ({ finalPriceMnt }: Props) => {
               <p className="mt-2 font-display text-2xl font-bold text-gradient-primary">
                 {formatMNT(finalPriceMnt)}
               </p>
-              <p className="mt-0.5 text-[10px] text-muted-foreground">≈ ${finalUsd} USD · Монгол хүргэлттэй</p>
+              <p className="mt-0.5 text-[10px] text-muted-foreground">≈ {formatCNY(finalCny)} CNY · Монгол хүргэлттэй</p>
             </div>
           </div>
         </div>
