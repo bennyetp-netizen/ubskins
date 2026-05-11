@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { formatMNT, wearColor } from "@/data/skins";
-import { PAYMENTS, calcPrepayment, mntToUsd, type PaymentMethod } from "@/data/payment";
+import { PAYMENTS, calcPrepayment, mntToCny, formatCNY, type PaymentMethod } from "@/data/payment";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
