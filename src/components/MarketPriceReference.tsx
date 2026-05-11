@@ -1,6 +1,6 @@
 import { TrendingUp, Info, ShieldCheck, BadgeCheck, Repeat, Wallet, Smartphone } from "lucide-react";
 import { formatMNT } from "@/data/skins";
-import { mntToUsd } from "@/data/payment";
+import { mntToCny, formatCNY } from "@/data/payment";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Props {
@@ -8,13 +8,13 @@ interface Props {
 }
 
 // Local markup assumption used to estimate BUFF reference price from final MNT price.
-// Final = BUFF_USD * USD_RATE * (1 + LOCAL_MARKUP)
+// Final = BUFF_CNY * CNY_RATE * (1 + LOCAL_MARKUP)
 const LOCAL_MARKUP = 0.15;
 
 const MarketPriceReference = ({ finalPriceMnt }: Props) => {
-  const finalUsd = mntToUsd(finalPriceMnt);
-  const buffUsd = Math.max(1, Math.round(finalUsd / (1 + LOCAL_MARKUP)));
-  const diffPct = ((finalUsd - buffUsd) / buffUsd) * 100;
+  const finalCny = mntToCny(finalPriceMnt);
+  const buffCny = Math.max(1, Math.round(finalCny / (1 + LOCAL_MARKUP)));
+  const diffPct = ((finalCny - buffCny) / buffCny) * 100;
   const competitive = diffPct <= 18;
 
   return (
