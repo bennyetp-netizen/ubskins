@@ -23,9 +23,15 @@ export const calcPrepayment = (total: number) => {
   return Math.min(rounded, total);
 };
 
-// USD ханш (тогтмол ойролцоо)
+// USD ханш (тогтмол ойролцоо) - зөвхөн Wise/SWIFT/Payoneer гэх мэт олон улсын төлбөрт ашиглана
 export const USD_RATE = 3500;
 export const mntToUsd = (mnt: number) => Math.ceil(mnt / USD_RATE);
+
+// CNY (Юань) ханш — BUFF163 нь юань-аар арилждаг тул үндсэн харьцуулалтын валют
+// 1 CNY ≈ 490 MNT (ойролцоо, market rate-аас хамаарч өөрчлөгдөнө)
+export const CNY_RATE = 490;
+export const mntToCny = (mnt: number) => Math.ceil(mnt / CNY_RATE);
+export const formatCNY = (cny: number) => `¥${cny.toLocaleString("en-US")}`;
 
 // Хаан банкны дансны мэдээлэл
 export const KHAN_BANK = {

@@ -4,7 +4,7 @@ import { ArrowLeft, ShieldCheck, Truck, Tag, Loader2, Globe2, ShoppingCart, Badg
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatMNT, wearLabel, wearColor } from "@/data/skins";
-import { calcPrepayment, mntToUsd } from "@/data/payment";
+import { calcPrepayment, mntToCny, formatCNY } from "@/data/payment";
 import SkinCard from "@/components/SkinCard";
 import FloatPreference from "@/components/FloatPreference";
 import FloatBar from "@/components/FloatBar";
@@ -141,7 +141,7 @@ const SkinDetail = () => {
                 <p className="text-xs text-muted-foreground">Үнэ</p>
                 <p className="font-display text-4xl font-bold text-gradient-primary">{formatMNT(adjustedPrice)}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  ≈ ${mntToUsd(adjustedPrice)} USD
+                  ≈ {formatCNY(mntToCny(adjustedPrice))} CNY (BUFF163)
                   {prefs.priceAdjustmentPct > 0 && (
                     <span className="ml-2 rounded-md bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold text-primary">
                       +{prefs.priceAdjustmentPct}% float

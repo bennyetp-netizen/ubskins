@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { formatMNT, wearColor } from "@/data/skins";
-import { PAYMENTS, calcPrepayment, mntToUsd, type PaymentMethod } from "@/data/payment";
+import { PAYMENTS, calcPrepayment, mntToCny, formatCNY, type PaymentMethod } from "@/data/payment";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -24,7 +24,7 @@ const Cart = () => {
     skin.productType === "preorder" ? calcPrepayment(skin.price) : skin.price;
   const totalDeposit = items.reduce((s, { skin }) => s + itemDeposit(skin), 0);
   const totalRemaining = total - totalDeposit;
-  const usdTotal = mntToUsd(total);
+  const cnyTotal = mntToCny(total);
   const hasPreorder = items.some(({ skin }) => skin.productType === "preorder");
   const hasReady = items.some(({ skin }) => skin.productType === "ready");
 
@@ -164,7 +164,7 @@ const Cart = () => {
               <div className="flex justify-between font-display text-lg font-bold">
                 <span>Нийт</span><span className="text-gradient-primary">{formatMNT(total)}</span>
               </div>
-              <p className="text-right text-xs text-muted-foreground">≈ ${usdTotal} USD</p>
+              <p className="text-right text-xs text-muted-foreground">≈ {formatCNY(cnyTotal)} CNY (BUFF163)</p>
               {hasPreorder && hasReady ? (
                 <div className="mt-3 space-y-2">
                   <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3">
