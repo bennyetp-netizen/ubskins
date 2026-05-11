@@ -165,7 +165,8 @@ const Orders = () => {
             const isOpen = expanded === o.id;
             const payment = PAYMENTS[o.payment_method as PaymentMethod];
             const prepay = calcPrepayment(o.price_mnt);
-            const usd = mntToUsd(o.price_mnt);
+            const cny = mntToCny(o.price_mnt);
+            void cny;
 
             return (
               <div
