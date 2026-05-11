@@ -124,9 +124,16 @@ const SkinDetail = () => {
             </div>
           </div>
 
-          {/* Float visualization */}
+          {/* Float visualization — interactive: drag to pick desired float */}
           <div className="mt-4">
-            <FloatBar float={skin.float} />
+            <FloatBar
+              float={
+                prefs.exactFloatRequest && !isNaN(parseFloat(prefs.exactFloatRequest))
+                  ? parseFloat(prefs.exactFloatRequest)
+                  : skin.float
+              }
+              onChange={(v) => setPrefs({ ...prefs, exactFloatRequest: v.toFixed(4) })}
+            />
           </div>
 
           {/* Float preference */}
