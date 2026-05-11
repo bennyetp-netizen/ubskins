@@ -4,7 +4,7 @@ import { LogIn, Package, Clock, CheckCircle2, Truck, ShoppingBag, Copy, ChevronD
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatMNT } from "@/data/skins";
-import { PAYMENTS, calcPrepayment, mntToUsd, paymentLabel, type PaymentMethod } from "@/data/payment";
+import { PAYMENTS, calcPrepayment, mntToCny, paymentLabel, type PaymentMethod } from "@/data/payment";
 import ProductTypeBadge from "@/components/ProductTypeBadge";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
