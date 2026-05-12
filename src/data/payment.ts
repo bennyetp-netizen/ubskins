@@ -42,6 +42,18 @@ export const KHAN_BANK = {
 };
 
 export const PAYMENTS: Record<PaymentMethod, PaymentInfo> = {
+  qpay: {
+    id: "qpay",
+    label: "QPay (QR код)",
+    short: "QPay",
+    badge: "Шуурхай · Бүх банк · QR уншуулна",
+    fields: [],
+    notes: [
+      "Захиалга үүсгэсний дараа QR код автоматаар үүснэ.",
+      "Аль ч банкны апп-аар QR-г уншуулж төлбөрөө төлнө.",
+      "Төлбөр төлсний дараа захиалга автоматаар баталгаажна.",
+    ],
+  },
   bank: {
     id: "bank",
     label: "Хаан Банк (MNT)",
