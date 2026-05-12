@@ -27,6 +27,8 @@ interface OrderRow {
   remaining_amount?: number | null;
   deposit_paid?: boolean | null;
   remaining_paid?: boolean | null;
+  qpay_invoice_id?: string | null;
+  qpay_qr_image?: string | null;
 }
 
 const statusMap: Record<string, { label: string; color: string; icon: typeof Clock }> = {
