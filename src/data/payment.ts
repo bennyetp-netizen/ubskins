@@ -2,7 +2,7 @@
 // Үндсэн төлбөр: Хаан Банк (Монгол MNT шууд шилжүүлэг)
 // Олон улсын: Wise / Payoneer / SWIFT / USDT (нөөц сонголт)
 
-export type PaymentMethod = "bank" | "wise" | "payoneer" | "swift" | "usdt";
+export type PaymentMethod = "qpay" | "bank" | "wise" | "payoneer" | "swift" | "usdt";
 
 export interface PaymentInfo {
   id: PaymentMethod;
