@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatMNT } from "@/data/skins";
 import { PAYMENTS, calcPrepayment, mntToCny, paymentLabel, type PaymentMethod } from "@/data/payment";
 import ProductTypeBadge from "@/components/ProductTypeBadge";
+import QpayQrBox from "@/components/QpayQrBox";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -27,6 +28,8 @@ interface OrderRow {
   remaining_amount?: number | null;
   deposit_paid?: boolean | null;
   remaining_paid?: boolean | null;
+  qpay_invoice_id?: string | null;
+  qpay_qr_image?: string | null;
 }
 
 const statusMap: Record<string, { label: string; color: string; icon: typeof Clock }> = {
@@ -283,7 +286,25 @@ const Orders = () => {
                       </div>
                     )}
 
-                    {/* Account fields */}
+                    {o.payment_method === "qpay" ? (
+                      <QpayQrBox
+                        orderId={o.id}
+                        amount={
+                          (o.product_type === "preorder" ? o.deposit_amount : o.price_mnt) ??
+                          o.price_mnt
+                        }
+                        initialQrImage={o.qpay_qr_image}
+                        initialInvoiceId={o.qpay_invoice_id}
+                        paymentConfirmed={o.payment_confirmed}
+                        onPaid={() =>
+                          setOrders((prev) =>
+                            prev.map((x) =>
+                              x.id === o.id ? { ...x, payment_confirmed: true, status: "paid" } : x,
+                            ),
+                          )
+                        }
+                      />
+                    ) : (
                     <div className="space-y-2">
                       {payment.fields.map((f) => (
                         <div
@@ -309,6 +330,7 @@ const Orders = () => {
                         </div>
                       ))}
                     </div>
+                    )}
 
                     {/* Reference */}
                     {(() => {

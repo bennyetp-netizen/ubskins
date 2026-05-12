@@ -58,6 +58,9 @@ export type Database = {
           price_adjustment_pct: number
           price_mnt: number
           product_type: string
+          qpay_invoice_id: string | null
+          qpay_qr_image: string | null
+          qpay_qr_text: string | null
           remaining_amount: number | null
           remaining_paid: boolean
           skin_id: string
@@ -87,6 +90,9 @@ export type Database = {
           price_adjustment_pct?: number
           price_mnt: number
           product_type?: string
+          qpay_invoice_id?: string | null
+          qpay_qr_image?: string | null
+          qpay_qr_text?: string | null
           remaining_amount?: number | null
           remaining_paid?: boolean
           skin_id: string
@@ -116,6 +122,9 @@ export type Database = {
           price_adjustment_pct?: number
           price_mnt?: number
           product_type?: string
+          qpay_invoice_id?: string | null
+          qpay_qr_image?: string | null
+          qpay_qr_text?: string | null
           remaining_amount?: number | null
           remaining_paid?: boolean
           skin_id?: string

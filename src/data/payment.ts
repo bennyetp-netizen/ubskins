@@ -2,7 +2,7 @@
 // Үндсэн төлбөр: Хаан Банк (Монгол MNT шууд шилжүүлэг)
 // Олон улсын: Wise / Payoneer / SWIFT / USDT (нөөц сонголт)
 
-export type PaymentMethod = "bank" | "wise" | "payoneer" | "swift" | "usdt";
+export type PaymentMethod = "qpay" | "bank" | "wise" | "payoneer" | "swift" | "usdt";
 
 export interface PaymentInfo {
   id: PaymentMethod;
@@ -42,6 +42,18 @@ export const KHAN_BANK = {
 };
 
 export const PAYMENTS: Record<PaymentMethod, PaymentInfo> = {
+  qpay: {
+    id: "qpay",
+    label: "QPay (QR код)",
+    short: "QPay",
+    badge: "Шуурхай · Бүх банк · QR уншуулна",
+    fields: [],
+    notes: [
+      "Захиалга үүсгэсний дараа QR код автоматаар үүснэ.",
+      "Аль ч банкны апп-аар QR-г уншуулж төлбөрөө төлнө.",
+      "Төлбөр төлсний дараа захиалга автоматаар баталгаажна.",
+    ],
+  },
   bank: {
     id: "bank",
     label: "Хаан Банк (MNT)",
