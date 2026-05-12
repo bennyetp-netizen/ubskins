@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatMNT } from "@/data/skins";
 import { PAYMENTS, calcPrepayment, mntToCny, paymentLabel, type PaymentMethod } from "@/data/payment";
 import ProductTypeBadge from "@/components/ProductTypeBadge";
+import QpayQrBox from "@/components/QpayQrBox";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
