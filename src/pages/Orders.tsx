@@ -286,7 +286,25 @@ const Orders = () => {
                       </div>
                     )}
 
-                    {/* Account fields */}
+                    {o.payment_method === "qpay" ? (
+                      <QpayQrBox
+                        orderId={o.id}
+                        amount={
+                          (o.product_type === "preorder" ? o.deposit_amount : o.price_mnt) ??
+                          o.price_mnt
+                        }
+                        initialQrImage={o.qpay_qr_image}
+                        initialInvoiceId={o.qpay_invoice_id}
+                        paymentConfirmed={o.payment_confirmed}
+                        onPaid={() =>
+                          setOrders((prev) =>
+                            prev.map((x) =>
+                              x.id === o.id ? { ...x, payment_confirmed: true, status: "paid" } : x,
+                            ),
+                          )
+                        }
+                      />
+                    ) : (
                     <div className="space-y-2">
                       {payment.fields.map((f) => (
                         <div
@@ -312,6 +330,7 @@ const Orders = () => {
                         </div>
                       ))}
                     </div>
+                    )}
 
                     {/* Reference */}
                     {(() => {
