@@ -184,7 +184,7 @@ const Orders = () => {
                 <div className="flex flex-wrap items-center gap-4 p-4">
                   <div className="flex h-20 w-28 shrink-0 items-center justify-center rounded-xl bg-secondary/50">
                     {o.skin_image ? (
-                      <img src={o.skin_image} alt="" className="max-h-full object-contain" />
+                      <img src={o.skin_image} alt="" referrerPolicy="no-referrer" onError={(e) => { const i = e.currentTarget; if (!i.src.endsWith("/placeholder.svg")) i.src = "/placeholder.svg"; }} className="max-h-full object-contain" />
                     ) : (
                       <Package className="h-8 w-8 text-muted-foreground/40" />
                     )}
