@@ -114,7 +114,7 @@ const Cart = () => {
             return (
               <div key={lineId} className="flex gap-4 rounded-2xl border border-border bg-gradient-card p-4">
                 <div className="flex h-24 w-32 shrink-0 items-center justify-center rounded-xl bg-secondary/50">
-                  <img src={skin.image} alt={skin.name} className="max-h-full object-contain" />
+                  <img src={skin.image || "/placeholder.svg"} alt={skin.name} referrerPolicy="no-referrer" onError={(e) => { const i = e.currentTarget; if (!i.src.endsWith("/placeholder.svg")) i.src = "/placeholder.svg"; }} className="max-h-full object-contain" />
                 </div>
                 <div className="flex flex-1 flex-col justify-between">
                   <div>

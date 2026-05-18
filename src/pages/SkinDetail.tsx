@@ -62,7 +62,7 @@ const SkinDetail = () => {
         <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-secondary/40 to-background p-10">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,hsl(186_100%_50%/0.15),transparent_60%)]" />
           <div className="absolute inset-0 bg-grid opacity-20" />
-          <img src={skin.image} alt={`${skin.weaponName} | ${skin.name}`} className="relative mx-auto max-h-[420px] animate-float-slow object-contain" />
+          <img src={skin.image || "/placeholder.svg"} alt={`${skin.weaponName} | ${skin.name}`} referrerPolicy="no-referrer" onError={(e) => { const i = e.currentTarget; if (!i.src.endsWith("/placeholder.svg")) i.src = "/placeholder.svg"; }} className="relative mx-auto max-h-[420px] animate-float-slow object-contain" />
           {skin.statTrak && (
             <Badge className="absolute left-5 top-5 border-warning/30 bg-warning/10 text-warning hover:bg-warning/20">StatTrak™</Badge>
           )}

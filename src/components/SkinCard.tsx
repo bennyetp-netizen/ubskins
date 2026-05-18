@@ -20,9 +20,14 @@ const SkinCard = ({ skin }: Props) => {
       <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-gradient-to-br from-secondary/40 to-background p-6">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,hsl(186_100%_50%/0.12),transparent_60%)] opacity-0 transition-opacity group-hover:opacity-100" />
         <img
-          src={skin.image}
+          src={skin.image || "/placeholder.svg"}
           alt={`${skin.weaponName} | ${skin.name}`}
           loading="lazy"
+          referrerPolicy="no-referrer"
+          onError={(e) => {
+            const img = e.currentTarget;
+            if (!img.src.endsWith("/placeholder.svg")) img.src = "/placeholder.svg";
+          }}
           className="relative z-10 max-h-full w-auto object-contain transition-transform duration-500 group-hover:scale-110"
         />
         <div className="absolute left-3 top-3 flex flex-col gap-1.5">
