@@ -271,6 +271,43 @@ const Admin = () => {
     }
   };
 
+  const removeAllSkins = async () => {
+    if (skins.length === 0) return;
+    if (!confirm(`Нийт ${skins.length} скиний БҮГДИЙГ устгах уу? Энэ үйлдлийг буцаах боломжгүй!`)) return;
+    if (!confirm("Та үнэхээр итгэлтэй байна уу?")) return;
+    const { error } = await supabase.from("skins").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+    if (error) toast.error(error.message);
+    else {
+      toast.success(`${skins.length} скин устгагдлаа`);
+      loadSkins();
+    }
+  };
+
+  const removeOrder = async (id: string) => {
+    if (!confirm("Энэ захиалгыг устгах уу?")) return;
+    const { error } = await supabase.from("orders").delete().eq("id", id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Захиалга устгагдлаа");
+      loadOrders();
+    }
+  };
+
+  const removeAllOrders = async () => {
+    const list = orderFilter === "all" ? orders : orders.filter((o) => o.status === orderFilter);
+    if (list.length === 0) return;
+    const label = orderFilter === "all" ? "БҮХ" : `"${orderFilter}" төлөвтэй`;
+    if (!confirm(`${label} ${list.length} захиалгыг устгах уу? Энэ үйлдлийг буцаах боломжгүй!`)) return;
+    if (!confirm("Та үнэхээр итгэлтэй байна уу?")) return;
+    const ids = list.map((o) => o.id);
+    const { error } = await supabase.from("orders").delete().in("id", ids);
+    if (error) toast.error(error.message);
+    else {
+      toast.success(`${ids.length} захиалга устгагдлаа`);
+      loadOrders();
+    }
+  };
+
   const toggleActive = async (id: string, current: boolean) => {
     const { error } = await supabase.from("skins").update({ is_active: !current }).eq("id", id);
     if (error) toast.error(error.message);
@@ -341,6 +378,12 @@ const Admin = () => {
               );
             })}
           </div>
+          <div className="mb-3 flex justify-end">
+            <Button variant="outline" size="sm" onClick={removeAllOrders} className="border-destructive/40 text-destructive hover:bg-destructive/10">
+              <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+              {orderFilter === "all" ? "Бүх захиалга устгах" : "Шүүсэн захиалгыг устгах"}
+            </Button>
+          </div>
           <div className="overflow-x-auto rounded-2xl border border-border bg-gradient-card">
             <table className="w-full text-sm">
               <thead>
@@ -368,6 +411,7 @@ const Admin = () => {
                     return (
                     <tr key={o.id} className="border-b border-border/60 last:border-0 hover:bg-secondary/30 align-top">
                       <td className="px-4 py-3 font-mono text-xs font-bold text-primary">{o.order_number ?? o.id.slice(0, 8)}</td>
+
                       <td className="px-4 py-3"><ProductTypeBadge type={ptype} /></td>
                       <td className="px-4 py-3">
                         <p>{o.skin_name}</p>
@@ -421,6 +465,9 @@ const Admin = () => {
                               Хүргэгдсэн
                             </Button>
                           )}
+                          <Button size="sm" variant="outline" onClick={() => removeOrder(o.id)} className="border-destructive/40 text-destructive hover:bg-destructive/10">
+                            <Trash2 className="mr-1 h-3.5 w-3.5" /> Устгах
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -454,6 +501,9 @@ const Admin = () => {
                   <Button variant="outline" onClick={syncFromBuff} disabled={syncing}>
                     {syncing ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-1 h-4 w-4" />}
                     Sync Buff Skins
+                  </Button>
+                  <Button variant="outline" onClick={removeAllSkins} disabled={skins.length === 0} className="border-destructive/40 text-destructive hover:bg-destructive/10">
+                    <Trash2 className="mr-1 h-4 w-4" /> Бүх скин устгах
                   </Button>
                   <Button variant="hero" onClick={openNew}><Plus className="mr-1 h-4 w-4" /> Шинэ скин нэмэх</Button>
                 </div>
