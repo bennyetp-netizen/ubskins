@@ -271,6 +271,43 @@ const Admin = () => {
     }
   };
 
+  const removeAllSkins = async () => {
+    if (skins.length === 0) return;
+    if (!confirm(`Нийт ${skins.length} скиний БҮГДИЙГ устгах уу? Энэ үйлдлийг буцаах боломжгүй!`)) return;
+    if (!confirm("Та үнэхээр итгэлтэй байна уу?")) return;
+    const { error } = await supabase.from("skins").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+    if (error) toast.error(error.message);
+    else {
+      toast.success(`${skins.length} скин устгагдлаа`);
+      loadSkins();
+    }
+  };
+
+  const removeOrder = async (id: string) => {
+    if (!confirm("Энэ захиалгыг устгах уу?")) return;
+    const { error } = await supabase.from("orders").delete().eq("id", id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Захиалга устгагдлаа");
+      loadOrders();
+    }
+  };
+
+  const removeAllOrders = async () => {
+    const list = orderFilter === "all" ? orders : orders.filter((o) => o.status === orderFilter);
+    if (list.length === 0) return;
+    const label = orderFilter === "all" ? "БҮХ" : `"${orderFilter}" төлөвтэй`;
+    if (!confirm(`${label} ${list.length} захиалгыг устгах уу? Энэ үйлдлийг буцаах боломжгүй!`)) return;
+    if (!confirm("Та үнэхээр итгэлтэй байна уу?")) return;
+    const ids = list.map((o) => o.id);
+    const { error } = await supabase.from("orders").delete().in("id", ids);
+    if (error) toast.error(error.message);
+    else {
+      toast.success(`${ids.length} захиалга устгагдлаа`);
+      loadOrders();
+    }
+  };
+
   const toggleActive = async (id: string, current: boolean) => {
     const { error } = await supabase.from("skins").update({ is_active: !current }).eq("id", id);
     if (error) toast.error(error.message);
