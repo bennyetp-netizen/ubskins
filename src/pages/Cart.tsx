@@ -44,7 +44,7 @@ const Cart = () => {
 
     setSubmitting(true);
     try {
-      const rows = items.map(({ skin, preferences }) => {
+      const rows = items.map(({ skin }) => {
         const deposit = itemDeposit(skin);
         return {
           user_id: user.id,
@@ -60,10 +60,6 @@ const Cart = () => {
           product_type: skin.productType,
           deposit_amount: deposit,
           remaining_amount: skin.price - deposit,
-          float_preference: preferences?.floatPreference ?? "cheapest",
-          price_adjustment_pct: preferences?.priceAdjustmentPct ?? 0,
-          exact_float_request: preferences?.exactFloatRequest?.trim() || null,
-          sticker_request: preferences?.stickerRequest?.trim() || null,
         };
       });
 
@@ -106,11 +102,7 @@ const Cart = () => {
 
       <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
         <div className="space-y-3">
-          {items.map(({ skin, preferences, lineId }) => {
-            const tierLabel =
-              preferences?.floatPreference === "very_clean" ? "Very Clean Float (+10%)"
-              : preferences?.floatPreference === "clean" ? "Clean Float (+5%)"
-              : "Cheapest Available";
+          {items.map(({ skin, lineId }) => {
             return (
               <div key={lineId} className="flex gap-4 rounded-2xl border border-border bg-gradient-card p-4">
                 <div className="flex h-24 w-32 shrink-0 items-center justify-center rounded-xl bg-secondary/50">
@@ -121,21 +113,6 @@ const Cart = () => {
                     <p className="text-xs uppercase tracking-wider text-muted-foreground">{skin.weaponName}</p>
                     <p className="font-display font-semibold">{skin.name}</p>
                     <p className={`text-xs ${wearColor[skin.wear]}`}>{skin.wear} · Float {skin.float.toFixed(3)}</p>
-                    <div className="mt-1.5 flex flex-wrap gap-1.5">
-                      <span className="rounded-md border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
-                        {tierLabel}
-                      </span>
-                      {preferences?.exactFloatRequest && (
-                        <span className="rounded-md border border-border bg-secondary/40 px-1.5 py-0.5 text-[10px] text-muted-foreground">
-                          Float: {preferences.exactFloatRequest}
-                        </span>
-                      )}
-                      {preferences?.stickerRequest && (
-                        <span className="rounded-md border border-border bg-secondary/40 px-1.5 py-0.5 text-[10px] text-muted-foreground">
-                          Sticker: {preferences.stickerRequest}
-                        </span>
-                      )}
-                    </div>
                   </div>
                   <div className="flex items-end justify-between">
                     <p className="font-display text-lg font-bold">{formatMNT(skin.price)}</p>
