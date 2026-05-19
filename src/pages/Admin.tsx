@@ -378,6 +378,12 @@ const Admin = () => {
               );
             })}
           </div>
+          <div className="mb-3 flex justify-end">
+            <Button variant="outline" size="sm" onClick={removeAllOrders} className="border-destructive/40 text-destructive hover:bg-destructive/10">
+              <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+              {orderFilter === "all" ? "Бүх захиалга устгах" : "Шүүсэн захиалгыг устгах"}
+            </Button>
+          </div>
           <div className="overflow-x-auto rounded-2xl border border-border bg-gradient-card">
             <table className="w-full text-sm">
               <thead>
@@ -405,6 +411,7 @@ const Admin = () => {
                     return (
                     <tr key={o.id} className="border-b border-border/60 last:border-0 hover:bg-secondary/30 align-top">
                       <td className="px-4 py-3 font-mono text-xs font-bold text-primary">{o.order_number ?? o.id.slice(0, 8)}</td>
+
                       <td className="px-4 py-3"><ProductTypeBadge type={ptype} /></td>
                       <td className="px-4 py-3">
                         <p>{o.skin_name}</p>
