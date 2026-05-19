@@ -6,10 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { formatMNT, wearLabel, wearColor } from "@/data/skins";
 import { calcPrepayment, mntToCny, formatCNY } from "@/data/payment";
 import SkinCard from "@/components/SkinCard";
-import FloatPreference from "@/components/FloatPreference";
-import FloatBar from "@/components/FloatBar";
 import MarketPriceReference from "@/components/MarketPriceReference";
-import { useCart, type CartPreferences } from "@/hooks/useCart";
+import { useCart } from "@/hooks/useCart";
 import { useSkin, useSkins } from "@/hooks/useSkins";
 import { toast } from "sonner";
 
@@ -19,10 +17,6 @@ const SkinDetail = () => {
   const { skin, loading } = useSkin(id);
   const { skins: all } = useSkins();
   const { add } = useCart();
-  const [prefs, setPrefs] = useState<CartPreferences>({
-    floatPreference: "cheapest",
-    priceAdjustmentPct: 0,
-  });
 
   if (loading) {
     return (
@@ -43,10 +37,8 @@ const SkinDetail = () => {
 
   const related = all.filter((s) => s.id !== skin.id && s.weapon === skin.weapon).slice(0, 4);
 
-  const adjustedPrice = Math.round(skin.price * (1 + prefs.priceAdjustmentPct / 100));
-
   const orderNow = () => {
-    add(skin, prefs);
+    add(skin);
     toast.success("Сагсанд нэмэгдлээ. Захиалга үүсгэх рүү шилжиж байна...");
     setTimeout(() => nav("/cart"), 500);
   };
@@ -124,68 +116,26 @@ const SkinDetail = () => {
             </div>
           </div>
 
-          {/* Float visualization — interactive: drag to pick desired float */}
-          <div className="mt-4">
-            <FloatBar
-              float={
-                prefs.exactFloatRequest && !isNaN(parseFloat(prefs.exactFloatRequest))
-                  ? parseFloat(prefs.exactFloatRequest)
-                  : skin.float
-              }
-              onChange={(v) => {
-                // Float-based pricing: lower float = cleaner = higher price
-                let pct = 0;
-                if (v < 0.07) pct = 20;        // Factory New
-                else if (v < 0.15) pct = 10;   // Minimal Wear
-                else if (v < 0.38) pct = 0;    // Field-Tested (base)
-                else if (v < 0.45) pct = -5;   // Well-Worn
-                else pct = -10;                // Battle-Scarred
-                setPrefs({
-                  ...prefs,
-                  exactFloatRequest: v.toFixed(4),
-                  priceAdjustmentPct: pct,
-                });
-              }}
-            />
-          </div>
-
-          {/* Float preference */}
-          <div className="mt-6">
-            <FloatPreference value={prefs} onChange={setPrefs} />
-          </div>
-
           {/* Price */}
           <div className="mt-6 rounded-2xl border border-border bg-gradient-card p-5">
             <div className="flex items-end justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">Үнэ</p>
-                <p className="font-display text-4xl font-bold text-gradient-primary">{formatMNT(adjustedPrice)}</p>
+                <p className="font-display text-4xl font-bold text-gradient-primary">{formatMNT(skin.price)}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  ≈ {formatCNY(mntToCny(adjustedPrice))} CNY (BUFF163)
-                  {prefs.priceAdjustmentPct !== 0 && (
-                    <span
-                      className={`ml-2 rounded-md px-1.5 py-0.5 text-[10px] font-bold ${
-                        prefs.priceAdjustmentPct > 0
-                          ? "bg-primary/15 text-primary"
-                          : "bg-emerald-500/15 text-emerald-400"
-                      }`}
-                    >
-                      {prefs.priceAdjustmentPct > 0 ? "+" : ""}
-                      {prefs.priceAdjustmentPct}% float
-                    </span>
-                  )}
+                  ≈ {formatCNY(mntToCny(skin.price))} CNY (BUFF163)
                 </p>
               </div>
               {skin.productType === "preorder" ? (
                 <div className="text-right">
                   <p className="text-xs text-muted-foreground">Урьдчилгаа (30%)</p>
-                  <p className="font-display text-lg font-semibold text-warning">{formatMNT(calcPrepayment(adjustedPrice))}</p>
+                  <p className="font-display text-lg font-semibold text-warning">{formatMNT(calcPrepayment(skin.price))}</p>
                   <p className="text-[10px] text-muted-foreground">үлдэгдлийг хүргэх үед</p>
                 </div>
               ) : (
                 <div className="text-right">
                   <p className="text-xs text-muted-foreground">Бүтэн төлбөр</p>
-                  <p className="font-display text-lg font-semibold text-emerald-400">{formatMNT(adjustedPrice)}</p>
+                  <p className="font-display text-lg font-semibold text-emerald-400">{formatMNT(skin.price)}</p>
                   <p className="text-[10px] text-muted-foreground">100% урьдчилан</p>
                 </div>
               )}
@@ -195,13 +145,13 @@ const SkinDetail = () => {
               <Button variant="hero" size="lg" onClick={orderNow}>
                 <Globe2 className="mr-1.5 h-4 w-4" /> Захиалга үүсгэх
               </Button>
-              <Button variant="outline" size="lg" onClick={() => { add(skin, prefs); toast.success("Сагсанд нэмэгдлээ"); }}>
+              <Button variant="outline" size="lg" onClick={() => { add(skin); toast.success("Сагсанд нэмэгдлээ"); }}>
                 <ShoppingCart className="mr-1.5 h-4 w-4" /> Сагсанд нэмэх
               </Button>
             </div>
           </div>
 
-          <MarketPriceReference finalPriceMnt={adjustedPrice} />
+          <MarketPriceReference finalPriceMnt={skin.price} />
 
           {skin.description && (
             <div className="mt-5 rounded-xl border border-border bg-card/50 p-4 text-sm text-muted-foreground">

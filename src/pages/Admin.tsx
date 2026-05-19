@@ -416,29 +416,12 @@ const Admin = () => {
                       <td className="px-4 py-3 max-w-[320px]">
                          <p className="font-medium">{o.skin_name}</p>
                          <p className="text-[11px] text-muted-foreground">{o.payment_method}</p>
-                         {(o.float_preference || o.exact_float_request || o.sticker_request || o.price_adjustment_pct) ? (
+                         {o.wear && (
                            <div className="mt-1.5 space-y-0.5 rounded-md border border-primary/20 bg-primary/5 px-2 py-1.5 text-[11px]">
-                             {o.float_preference && (
-                               <p>
-                                 <span className="text-muted-foreground">Float сонголт:</span>{" "}
-                                 <span className="font-semibold text-primary">
-                                   {o.float_preference === "cheapest" ? "Cheapest" : o.float_preference === "clean" ? "Clean (+5%)" : o.float_preference === "very_clean" ? "Very Clean (+10%)" : o.float_preference}
-                                 </span>
-                                 {o.price_adjustment_pct ? <span className="text-muted-foreground"> · +{o.price_adjustment_pct}%</span> : null}
-                               </p>
-                             )}
-                             {o.exact_float_request && (
-                               <p><span className="text-muted-foreground">Float хүсэлт:</span> <span className="text-foreground">{o.exact_float_request}</span></p>
-                             )}
-                             {o.sticker_request && (
-                               <p><span className="text-muted-foreground">Стикер/Хээ:</span> <span className="text-foreground">{o.sticker_request}</span></p>
-                             )}
-                             {o.wear && (
-                               <p><span className="text-muted-foreground">Wear:</span> <span className="text-foreground">{o.wear}</span>{o.float_value ? <span className="text-muted-foreground"> ({o.float_value})</span> : null}</p>
-                             )}
+                              <p><span className="text-muted-foreground">Wear:</span> <span className="text-foreground">{o.wear}</span>{o.float_value ? <span className="text-muted-foreground"> ({o.float_value})</span> : null}</p>
                            </div>
-                         ) : null}
-                       </td>
+                         )}
+                        </td>
                       <td className="px-4 py-3 font-display font-semibold">{formatMNT(o.price_mnt)}</td>
                       <td className="px-4 py-3 text-xs">{o.phone ?? "—"}</td>
                       <td className="px-4 py-3"><Badge variant="outline">{o.status}</Badge></td>
