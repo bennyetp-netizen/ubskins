@@ -6,10 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { formatMNT, wearLabel, wearColor } from "@/data/skins";
 import { calcPrepayment, mntToCny, formatCNY } from "@/data/payment";
 import SkinCard from "@/components/SkinCard";
-import FloatPreference from "@/components/FloatPreference";
-import FloatBar from "@/components/FloatBar";
 import MarketPriceReference from "@/components/MarketPriceReference";
-import { useCart, type CartPreferences } from "@/hooks/useCart";
+import { useCart } from "@/hooks/useCart";
 import { useSkin, useSkins } from "@/hooks/useSkins";
 import { toast } from "sonner";
 
