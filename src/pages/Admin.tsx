@@ -465,6 +465,9 @@ const Admin = () => {
                               Хүргэгдсэн
                             </Button>
                           )}
+                          <Button size="sm" variant="outline" onClick={() => removeOrder(o.id)} className="border-destructive/40 text-destructive hover:bg-destructive/10">
+                            <Trash2 className="mr-1 h-3.5 w-3.5" /> Устгах
+                          </Button>
                         </div>
                       </td>
                     </tr>
