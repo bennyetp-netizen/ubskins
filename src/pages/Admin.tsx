@@ -502,6 +502,9 @@ const Admin = () => {
                     {syncing ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-1 h-4 w-4" />}
                     Sync Buff Skins
                   </Button>
+                  <Button variant="outline" onClick={removeAllSkins} disabled={skins.length === 0} className="border-destructive/40 text-destructive hover:bg-destructive/10">
+                    <Trash2 className="mr-1 h-4 w-4" /> Бүх скин устгах
+                  </Button>
                   <Button variant="hero" onClick={openNew}><Plus className="mr-1 h-4 w-4" /> Шинэ скин нэмэх</Button>
                 </div>
               </div>
