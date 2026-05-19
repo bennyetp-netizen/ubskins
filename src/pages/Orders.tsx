@@ -75,6 +75,39 @@ const Orders = () => {
       });
   }, [user, openId]);
 
+  // Realtime: instantly reflect payment status updates
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel(`orders-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "orders", filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          const updated = payload.new as unknown as OrderRow;
+          setOrders((prev) => {
+            const wasPaid = prev.find((o) => o.id === updated.id)?.payment_confirmed;
+            if (!wasPaid && updated.payment_confirmed) {
+              toast.success(`✅ ${updated.order_number ?? "Захиалга"} — Төлбөр баталгаажлаа!`);
+            }
+            return prev.map((o) => (o.id === updated.id ? { ...o, ...updated } : o));
+          });
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "orders", filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          const inserted = payload.new as unknown as OrderRow;
+          setOrders((prev) => (prev.some((o) => o.id === inserted.id) ? prev : [inserted, ...prev]));
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   const copy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast.success(`${label} хуулагдлаа`);
