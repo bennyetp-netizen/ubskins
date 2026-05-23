@@ -73,32 +73,48 @@ Deno.serve(async (req) => {
 
     const token = await getQpayToken();
 
+    const isRemaining = stage === "remaining";
+    const isPreorder = order.product_type === "preorder";
+
+    if (isRemaining && (!isPreorder || !order.deposit_paid)) {
+      return new Response(
+        JSON.stringify({ error: "Үлдэгдэл төлбөр зөвхөн урьдчилгаа төлсөн preorder дээр боломжтой" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const invField = isRemaining ? "qpay_remaining_invoice_id" : "qpay_invoice_id";
+    const qrImgField = isRemaining ? "qpay_remaining_qr_image" : "qpay_qr_image";
+    const qrTxtField = isRemaining ? "qpay_remaining_qr_text" : "qpay_qr_text";
+
     if (action === "create") {
       // If already created, return cached
-      if (order.qpay_invoice_id && order.qpay_qr_image) {
+      if (order[invField] && order[qrImgField]) {
         return new Response(
           JSON.stringify({
-            invoice_id: order.qpay_invoice_id,
-            qr_image: order.qpay_qr_image,
-            qr_text: order.qpay_qr_text,
+            invoice_id: order[invField],
+            qr_image: order[qrImgField],
+            qr_text: order[qrTxtField],
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
 
-      const amount =
-        (order.product_type === "preorder" ? order.deposit_amount : order.price_mnt) ??
-        order.price_mnt;
-      const callbackUrl = `${supabaseUrl}/functions/v1/qpay-callback?order_id=${order.id}`;
+      const amount = isRemaining
+        ? (order.remaining_amount ?? (order.price_mnt - (order.deposit_amount ?? 0)))
+        : (isPreorder ? (order.deposit_amount ?? order.price_mnt) : order.price_mnt);
+
+      const callbackUrl = `${supabaseUrl}/functions/v1/qpay-callback?order_id=${order.id}&stage=${stage}`;
+      const senderNo = (order.order_number ?? order.id.slice(0, 12)) + (isRemaining ? "-R" : "");
 
       const invRes = await fetch(`${QPAY_BASE}/invoice`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           invoice_code: QPAY_INVOICE_CODE,
-          sender_invoice_no: order.order_number ?? order.id.slice(0, 12),
+          sender_invoice_no: senderNo,
           invoice_receiver_code: "terminal",
-          invoice_description: `UBSkins ${order.skin_name}`,
+          invoice_description: `UBSkins ${order.skin_name}${isRemaining ? " (үлдэгдэл)" : ""}`,
           amount,
           callback_url: callbackUrl,
         }),
@@ -112,9 +128,9 @@ Deno.serve(async (req) => {
       await admin
         .from("orders")
         .update({
-          qpay_invoice_id: invJson.invoice_id,
-          qpay_qr_image: invJson.qr_image,
-          qpay_qr_text: invJson.qr_text,
+          [invField]: invJson.invoice_id,
+          [qrImgField]: invJson.qr_image,
+          [qrTxtField]: invJson.qr_text,
         })
         .eq("id", order.id);
 
@@ -129,7 +145,7 @@ Deno.serve(async (req) => {
     }
 
     if (action === "check") {
-      if (!order.qpay_invoice_id) {
+      if (!order[invField]) {
         return new Response(JSON.stringify({ paid: false, reason: "no_invoice" }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -139,7 +155,7 @@ Deno.serve(async (req) => {
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           object_type: "INVOICE",
-          object_id: order.qpay_invoice_id,
+          object_id: order[invField],
           offset: { page_number: 1, page_limit: 100 },
         }),
       });
@@ -147,17 +163,23 @@ Deno.serve(async (req) => {
       const paid = (checkJson?.count ?? 0) > 0 ||
         (Array.isArray(checkJson?.rows) && checkJson.rows.length > 0);
 
-      if (paid && !order.payment_confirmed) {
-        const isPreorder = order.product_type === "preorder";
-        await admin
-          .from("orders")
-          .update({
-            payment_confirmed: true,
-            deposit_paid: true,
-            remaining_paid: !isPreorder,
-            status: "paid",
-          })
-          .eq("id", order.id);
+      if (paid) {
+        if (isRemaining && !order.remaining_paid) {
+          await admin
+            .from("orders")
+            .update({ remaining_paid: true, status: "paid" })
+            .eq("id", order.id);
+        } else if (!isRemaining && !order.payment_confirmed) {
+          await admin
+            .from("orders")
+            .update({
+              payment_confirmed: true,
+              deposit_paid: true,
+              remaining_paid: !isPreorder,
+              status: "paid",
+            })
+            .eq("id", order.id);
+        }
       }
 
       return new Response(JSON.stringify({ paid, raw: checkJson }), {
