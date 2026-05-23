@@ -13,6 +13,7 @@ Deno.serve(async (req) => {
   try {
     const url = new URL(req.url);
     const orderId = url.searchParams.get("order_id");
+    const stage = (url.searchParams.get("stage") ?? "deposit") as "deposit" | "remaining";
     if (!orderId) {
       return new Response(JSON.stringify({ error: "order_id required" }), {
         status: 400,
@@ -27,7 +28,7 @@ Deno.serve(async (req) => {
 
     const { data: order } = await admin
       .from("orders")
-      .select("id, product_type, payment_confirmed")
+      .select("id, product_type, payment_confirmed, remaining_paid")
       .eq("id", orderId)
       .single();
 
@@ -38,8 +39,16 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (!order.payment_confirmed) {
-      const isPreorder = order.product_type === "preorder";
+    const isPreorder = order.product_type === "preorder";
+
+    if (stage === "remaining") {
+      if (!order.remaining_paid) {
+        await admin
+          .from("orders")
+          .update({ remaining_paid: true, status: "paid" })
+          .eq("id", order.id);
+      }
+    } else if (!order.payment_confirmed) {
       await admin
         .from("orders")
         .update({
