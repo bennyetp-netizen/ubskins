@@ -322,23 +322,53 @@ const Orders = () => {
                     )}
 
                     {o.payment_method === "qpay" ? (
-                      <QpayQrBox
-                        orderId={o.id}
-                        amount={
-                          (o.product_type === "preorder" ? o.deposit_amount : o.price_mnt) ??
-                          o.price_mnt
+                      (() => {
+                        const isPreorder = (o.product_type ?? "ready") === "preorder";
+                        const showRemaining = isPreorder && !!o.deposit_paid && !o.remaining_paid;
+                        if (showRemaining) {
+                          return (
+                            <div className="space-y-3">
+                              <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3 text-xs">
+                                ✅ 30% урьдчилгаа төлөгдсөн. Скин ирмэгц 70% үлдэгдлийг доорх QR-аар төлнө үү.
+                              </div>
+                              <QpayQrBox
+                                orderId={o.id}
+                                stage="remaining"
+                                amount={o.remaining_amount ?? (o.price_mnt - (o.deposit_amount ?? prepay))}
+                                initialQrImage={o.qpay_remaining_qr_image}
+                                initialInvoiceId={o.qpay_remaining_invoice_id}
+                                paymentConfirmed={!!o.remaining_paid}
+                                onPaid={() =>
+                                  setOrders((prev) =>
+                                    prev.map((x) =>
+                                      x.id === o.id ? { ...x, remaining_paid: true, status: "paid" } : x,
+                                    ),
+                                  )
+                                }
+                              />
+                            </div>
+                          );
                         }
-                        initialQrImage={o.qpay_qr_image}
-                        initialInvoiceId={o.qpay_invoice_id}
-                        paymentConfirmed={o.payment_confirmed}
-                        onPaid={() =>
-                          setOrders((prev) =>
-                            prev.map((x) =>
-                              x.id === o.id ? { ...x, payment_confirmed: true, status: "paid" } : x,
-                            ),
-                          )
-                        }
-                      />
+                        return (
+                          <QpayQrBox
+                            orderId={o.id}
+                            stage="deposit"
+                            amount={
+                              (isPreorder ? o.deposit_amount : o.price_mnt) ?? o.price_mnt
+                            }
+                            initialQrImage={o.qpay_qr_image}
+                            initialInvoiceId={o.qpay_invoice_id}
+                            paymentConfirmed={o.payment_confirmed}
+                            onPaid={() =>
+                              setOrders((prev) =>
+                                prev.map((x) =>
+                                  x.id === o.id ? { ...x, payment_confirmed: true, deposit_paid: true, status: "paid" } : x,
+                                ),
+                              )
+                            }
+                          />
+                        );
+                      })()
                     ) : (
                     <div className="space-y-2">
                       {payment.fields.map((f) => (
