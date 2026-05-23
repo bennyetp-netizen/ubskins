@@ -465,6 +465,29 @@ const Admin = () => {
                               </label>
                             </>
                           )}
+                          {!o.trade_hold_until && (o.payment_confirmed || o.remaining_paid) && o.status !== "delivered" && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-warning/40 text-warning hover:bg-warning/10"
+                              onClick={() => {
+                                const now = new Date();
+                                const until = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+                                updateOrder(o.id, {
+                                  buff_purchased_at: now.toISOString(),
+                                  trade_hold_until: until.toISOString(),
+                                  status: "trade_holding",
+                                });
+                              }}
+                            >
+                              🔒 Buff-аас авлаа (7 хоног hold)
+                            </Button>
+                          )}
+                          {o.trade_hold_until && o.status !== "delivered" && (
+                            <div className="rounded-md border border-warning/30 bg-warning/5 px-2 py-1 text-[10px] text-warning">
+                              Hold дуусах: {new Date(o.trade_hold_until).toLocaleString("mn-MN")}
+                            </div>
+                          )}
                           {o.status !== "delivered" && (
                             <Button size="sm" variant="outline" onClick={() => updateOrder(o.id, { status: "delivered" })}>
                               Хүргэгдсэн
