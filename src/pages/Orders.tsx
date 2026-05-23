@@ -39,9 +39,21 @@ interface OrderRow {
 const statusMap: Record<string, { label: string; color: string; icon: typeof Clock }> = {
   pending: { label: "Төлбөр хүлээж буй", color: "border-warning/40 bg-warning/10 text-warning", icon: Clock },
   paid: { label: "Төлөгдсөн", color: "border-primary/40 bg-primary/10 text-primary", icon: CheckCircle2 },
+  trade_holding: { label: "Steam 7 хоног hold", color: "border-warning/40 bg-warning/10 text-warning", icon: Clock },
   delivered: { label: "Хүргэгдсэн", color: "border-accent/40 bg-accent/10 text-accent", icon: Truck },
   cancelled: { label: "Цуцлагдсан", color: "border-destructive/40 bg-destructive/10 text-destructive", icon: Clock },
 };
+
+function formatHoldRemaining(until: string): string {
+  const ms = new Date(until).getTime() - Date.now();
+  if (ms <= 0) return "Дууссан — trade боломжтой";
+  const days = Math.floor(ms / 86400000);
+  const hours = Math.floor((ms % 86400000) / 3600000);
+  const mins = Math.floor((ms % 3600000) / 60000);
+  if (days > 0) return `${days} хоног ${hours} цаг`;
+  if (hours > 0) return `${hours} цаг ${mins} мин`;
+  return `${mins} мин`;
+}
 
 const Orders = () => {
   const { user, loading, signInWithSteam } = useAuth();
