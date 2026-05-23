@@ -11,10 +11,11 @@ interface Props {
   initialQrImage?: string | null;
   initialInvoiceId?: string | null;
   paymentConfirmed: boolean;
+  stage?: "deposit" | "remaining";
   onPaid?: () => void;
 }
 
-const QpayQrBox = ({ orderId, amount, initialQrImage, initialInvoiceId, paymentConfirmed, onPaid }: Props) => {
+const QpayQrBox = ({ orderId, amount, initialQrImage, initialInvoiceId, paymentConfirmed, stage = "deposit", onPaid }: Props) => {
   const [qrImage, setQrImage] = useState<string | null>(initialQrImage ?? null);
   const [invoiceId, setInvoiceId] = useState<string | null>(initialInvoiceId ?? null);
   const [loading, setLoading] = useState(false);
@@ -25,7 +26,7 @@ const QpayQrBox = ({ orderId, amount, initialQrImage, initialInvoiceId, paymentC
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("qpay-invoice", {
-        body: { action: "create", order_id: orderId },
+        body: { action: "create", order_id: orderId, stage },
       });
       if (error) throw error;
       if (data?.qr_image) {
