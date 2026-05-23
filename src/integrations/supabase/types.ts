@@ -43,6 +43,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          buff_purchased_at: string | null
           created_at: string
           deposit_amount: number | null
           deposit_paid: boolean
@@ -71,6 +72,7 @@ export type Database = {
           skin_name: string
           status: string
           sticker_request: string | null
+          trade_hold_until: string | null
           trade_offer_id: string | null
           trade_url: string | null
           updated_at: string
@@ -78,6 +80,7 @@ export type Database = {
           wear: string | null
         }
         Insert: {
+          buff_purchased_at?: string | null
           created_at?: string
           deposit_amount?: number | null
           deposit_paid?: boolean
@@ -106,6 +109,7 @@ export type Database = {
           skin_name: string
           status?: string
           sticker_request?: string | null
+          trade_hold_until?: string | null
           trade_offer_id?: string | null
           trade_url?: string | null
           updated_at?: string
@@ -113,6 +117,7 @@ export type Database = {
           wear?: string | null
         }
         Update: {
+          buff_purchased_at?: string | null
           created_at?: string
           deposit_amount?: number | null
           deposit_paid?: boolean
@@ -141,6 +146,7 @@ export type Database = {
           skin_name?: string
           status?: string
           sticker_request?: string | null
+          trade_hold_until?: string | null
           trade_offer_id?: string | null
           trade_url?: string | null
           updated_at?: string
