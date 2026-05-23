@@ -32,6 +32,8 @@ interface OrderRow {
   qpay_qr_image?: string | null;
   qpay_remaining_invoice_id?: string | null;
   qpay_remaining_qr_image?: string | null;
+  trade_hold_until?: string | null;
+  buff_purchased_at?: string | null;
 }
 
 const statusMap: Record<string, { label: string; color: string; icon: typeof Clock }> = {
