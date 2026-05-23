@@ -61,6 +61,9 @@ export type Database = {
           qpay_invoice_id: string | null
           qpay_qr_image: string | null
           qpay_qr_text: string | null
+          qpay_remaining_invoice_id: string | null
+          qpay_remaining_qr_image: string | null
+          qpay_remaining_qr_text: string | null
           remaining_amount: number | null
           remaining_paid: boolean
           skin_id: string
@@ -93,6 +96,9 @@ export type Database = {
           qpay_invoice_id?: string | null
           qpay_qr_image?: string | null
           qpay_qr_text?: string | null
+          qpay_remaining_invoice_id?: string | null
+          qpay_remaining_qr_image?: string | null
+          qpay_remaining_qr_text?: string | null
           remaining_amount?: number | null
           remaining_paid?: boolean
           skin_id: string
@@ -125,6 +131,9 @@ export type Database = {
           qpay_invoice_id?: string | null
           qpay_qr_image?: string | null
           qpay_qr_text?: string | null
+          qpay_remaining_invoice_id?: string | null
+          qpay_remaining_qr_image?: string | null
+          qpay_remaining_qr_text?: string | null
           remaining_amount?: number | null
           remaining_paid?: boolean
           skin_id?: string
