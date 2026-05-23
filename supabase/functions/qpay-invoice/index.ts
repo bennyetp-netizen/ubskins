@@ -49,8 +49,9 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const action = body.action as "create" | "check";
     const orderId = body.order_id as string;
-    if (!action || !orderId) {
-      return new Response(JSON.stringify({ error: "action & order_id required" }), {
+    const stage = (body.stage as "deposit" | "remaining") ?? "deposit";
+    if (!action || !orderId || (stage !== "deposit" && stage !== "remaining")) {
+      return new Response(JSON.stringify({ error: "action, order_id, stage required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
