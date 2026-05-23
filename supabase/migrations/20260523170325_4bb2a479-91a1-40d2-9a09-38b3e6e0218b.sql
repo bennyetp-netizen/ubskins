@@ -1,0 +1,1 @@
+UPDATE public.skins SET is_active = false WHERE is_active = true AND (image_url IS NULL OR image_url = '/placeholder.svg' OR image_url = '');
