@@ -273,6 +273,17 @@ const Orders = () => {
                         Steam Trade Offer харах →
                       </a>
                     )}
+                    {o.trade_hold_until && o.status !== "delivered" && (
+                      <div className="mt-2 rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-xs">
+                        <p className="font-display font-bold text-warning">
+                          🔒 Steam trade hold: {formatHoldRemaining(o.trade_hold_until)}
+                        </p>
+                        <p className="mt-0.5 text-[10px] text-muted-foreground">
+                          Скин Buff163-аас худалдан авагдсан. Steam дүрмээр 7 хоног үнгэрсний дараа trade offer илгээгдэнэ
+                          ({new Date(o.trade_hold_until).toLocaleString("mn-MN")}).
+                        </p>
+                      </div>
+                    )}
                   </div>
                   <div className="text-right">
                     <p className="font-display text-lg font-bold">{formatMNT(o.price_mnt)}</p>
