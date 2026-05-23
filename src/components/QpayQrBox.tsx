@@ -46,7 +46,7 @@ const QpayQrBox = ({ orderId, amount, initialQrImage, initialInvoiceId, paymentC
     setChecking(true);
     try {
       const { data, error } = await supabase.functions.invoke("qpay-invoice", {
-        body: { action: "check", order_id: orderId },
+        body: { action: "check", order_id: orderId, stage },
       });
       if (error) throw error;
       if (data?.paid) {
