@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Trash2, ShoppingBag, ShieldCheck, Globe2, Loader2, LogIn, Phone } from "lucide-react";
+import { Trash2, ShoppingBag, ShieldCheck, Globe2, Loader2, LogIn, Phone, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
