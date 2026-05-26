@@ -14,6 +14,7 @@ interface AdminOrderProps {
   items?: AdminOrderItem[]
   total?: number
   depositAmount?: number
+  paidAmount?: number
   paymentMethod?: string
   adminUrl?: string
 }
