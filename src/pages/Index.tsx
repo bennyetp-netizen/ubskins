@@ -86,7 +86,7 @@ const Index = () => {
               Storepay, QPay, банкны шилжүүлэг — бүгд төгрөгөөр.
             </p>
             <p className="mt-3 max-w-xl text-sm font-semibold text-orange-400 md:text-base">
-              💰 Урьдчилгаа 30% төлөөд скинээ захиалуулаарай!
+              💰 30% урьдчилгаа төлөөд скинээ захиалаад өдөрт нь аваарай!
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
@@ -356,7 +356,7 @@ const Index = () => {
         <div className="mb-6 flex items-end justify-between">
           <div>
             <h2 className="font-display text-3xl font-bold md:text-4xl">🟡 ЗАХИАЛГААР</h2>
-            <p className="mt-2 text-sm text-orange-400/90">Buff163-аас захиалгаар — 2-5 хоногт хүргэнэ</p>
+            <p className="mt-2 text-sm text-orange-400/90">Buff163-аас захиалгаар — өдөрт нь хүргэнэ</p>
           </div>
           <Link to="/shop" className="hidden text-sm text-primary hover:underline sm:inline">
             Бүгдийг үзэх →
