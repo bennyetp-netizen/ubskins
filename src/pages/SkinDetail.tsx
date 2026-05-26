@@ -88,7 +88,7 @@ const SkinDetail = () => {
           ) : (
             <div className="mt-4 rounded-xl border border-orange-500/40 bg-orange-500/10 p-4">
               <p className="font-display text-sm font-bold text-orange-400">
-                🟡 ЗАХИАЛГА — 2-5 хоногт хүргэнэ
+                🟡 ЗАХИАЛГА — өдөрт нь хүргэнэ
               </p>
               <p className="mt-1 text-xs text-orange-300/80">
                 Buff163-аас захиалгаар авна. 30% урьдчилгаа төлсний дараа худалдан авч, ирмэгц үлдэгдлийг төлж trade offer хүлээн авна.
@@ -111,7 +111,7 @@ const SkinDetail = () => {
                 {skin.productType === "ready" ? "Үлдэгдэл" : "Хүргэх"}
               </p>
               <p className="mt-1 font-display text-lg font-bold">
-                {skin.productType === "ready" ? (skin.stockQuantity || skin.stock) : "2-5 хоног"}
+                {skin.productType === "ready" ? (skin.stockQuantity || skin.stock) : "Өдөрт нь"}
               </p>
             </div>
           </div>
