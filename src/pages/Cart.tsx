@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Trash2, ShoppingBag, ShieldCheck, Globe2, Loader2, LogIn, Phone, Mail } from "lucide-react";
+import { X, ShoppingBag, ShieldCheck, Globe2, Loader2, LogIn, Phone, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +10,6 @@ import { formatMNT, wearColor } from "@/data/skins";
 import { PAYMENTS, calcPrepayment, mntToCny, formatCNY, type PaymentMethod } from "@/data/payment";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import SwipeableCartItem from "@/components/SwipeableCartItem";
 
 const Cart = () => {
   const { items, remove, clear, total } = useCart();
@@ -159,8 +158,16 @@ const Cart = () => {
         <div className="space-y-3">
           {items.map(({ skin, lineId }) => {
             return (
-              <SwipeableCartItem key={lineId} onDelete={() => remove(lineId)}>
-                <div className="flex gap-4 rounded-2xl border border-border bg-gradient-card p-4">
+                <div key={lineId} className="relative flex gap-4 rounded-2xl border border-border bg-gradient-card p-4 pr-12">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => remove(lineId)}
+                    aria-label="Устгах"
+                    className="absolute right-2 top-2 h-9 w-9 rounded-full"
+                  >
+                    <X className="h-5 w-5 text-muted-foreground" />
+                  </Button>
                   <div className="flex h-24 w-32 shrink-0 items-center justify-center rounded-xl bg-secondary/50">
                     <img src={skin.image || "/placeholder.svg"} alt={skin.name} referrerPolicy="no-referrer" onError={(e) => { const i = e.currentTarget; if (!i.src.endsWith("/placeholder.svg")) i.src = "/placeholder.svg"; }} className="max-h-full object-contain" />
                   </div>
@@ -172,13 +179,9 @@ const Cart = () => {
                     </div>
                     <div className="flex items-end justify-between">
                       <p className="font-display text-lg font-bold">{formatMNT(skin.price)}</p>
-                      <Button variant="ghost" size="icon" onClick={() => remove(lineId)} aria-label="Устгах">
-                        <Trash2 className="h-4 w-4 text-muted-foreground" />
-                      </Button>
                     </div>
                   </div>
                 </div>
-              </SwipeableCartItem>
             );
           })}
         </div>
