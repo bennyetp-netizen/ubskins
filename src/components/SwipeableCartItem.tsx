@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode, type PointerEvent } from "react";
 import { Trash2 } from "lucide-react";
 
 interface Props {
@@ -6,76 +6,91 @@ interface Props {
   onDelete: () => void;
 }
 
-const THRESHOLD = 100; // px to trigger delete
+const THRESHOLD = 80;
 
 export default function SwipeableCartItem({ children, onDelete }: Props) {
   const [dx, setDx] = useState(0);
+  const [dragging, setDragging] = useState(false);
   const [removing, setRemoving] = useState(false);
-  const startX = useRef<number | null>(null);
-  const dragging = useRef(false);
+  const startX = useRef(0);
+  const startY = useRef(0);
+  const axisLocked = useRef<"h" | "v" | null>(null);
+  const activeId = useRef<number | null>(null);
 
-  const onStart = (x: number) => {
-    startX.current = x;
-    dragging.current = true;
+  const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
+    if (removing) return;
+    startX.current = e.clientX;
+    startY.current = e.clientY;
+    axisLocked.current = null;
+    activeId.current = e.pointerId;
+    setDragging(true);
   };
-  const onMove = (x: number) => {
-    if (startX.current === null || !dragging.current) return;
-    const delta = x - startX.current;
-    // Allow swipe in either direction, but cap
-    setDx(Math.max(-300, Math.min(300, delta)));
+
+  const handlePointerMove = (e: PointerEvent<HTMLDivElement>) => {
+    if (!dragging || activeId.current !== e.pointerId) return;
+    const deltaX = e.clientX - startX.current;
+    const deltaY = e.clientY - startY.current;
+
+    if (axisLocked.current === null) {
+      if (Math.abs(deltaX) < 6 && Math.abs(deltaY) < 6) return;
+      axisLocked.current = Math.abs(deltaX) > Math.abs(deltaY) ? "h" : "v";
+      if (axisLocked.current === "h") {
+        try {
+          (e.currentTarget as Element).setPointerCapture(e.pointerId);
+        } catch {}
+      }
+    }
+
+    if (axisLocked.current === "h") {
+      e.preventDefault();
+      setDx(Math.max(-300, Math.min(300, deltaX)));
+    }
   };
-  const onEnd = () => {
-    if (!dragging.current) return;
-    dragging.current = false;
-    if (Math.abs(dx) > THRESHOLD) {
+
+  const finish = (e: PointerEvent<HTMLDivElement>) => {
+    if (activeId.current !== e.pointerId) return;
+    activeId.current = null;
+    const wasHorizontal = axisLocked.current === "h";
+    setDragging(false);
+    if (wasHorizontal && Math.abs(dx) > THRESHOLD) {
       setRemoving(true);
       setDx(dx > 0 ? 600 : -600);
       setTimeout(onDelete, 220);
     } else {
       setDx(0);
     }
-    startX.current = null;
   };
 
-  const opacity = removing ? 0 : Math.max(0.3, 1 - Math.abs(dx) / 250);
+  const opacity = removing ? 0 : Math.max(0.4, 1 - Math.abs(dx) / 300);
+  const showDeleteBg = Math.abs(dx) > 8;
 
   return (
     <div className="relative overflow-hidden rounded-2xl">
-      {/* Delete background */}
-      <div
-        className={`pointer-events-none absolute inset-0 flex items-center rounded-2xl ${
-          dx > 0 ? "justify-start pl-6" : "justify-end pr-6"
-        } ${Math.abs(dx) > THRESHOLD ? "bg-destructive/90" : "bg-destructive/40"}`}
-      >
-        <div className="flex items-center gap-2 text-destructive-foreground">
-          <Trash2 className="h-5 w-5" />
-          <span className="font-display text-sm font-semibold">Устгах</span>
+      {showDeleteBg && (
+        <div
+          className={`pointer-events-none absolute inset-0 flex items-center rounded-2xl transition-colors ${
+            dx > 0 ? "justify-start pl-6" : "justify-end pr-6"
+          } ${Math.abs(dx) > THRESHOLD ? "bg-destructive" : "bg-destructive/40"}`}
+        >
+          <div className="flex items-center gap-2 text-destructive-foreground">
+            <Trash2 className="h-5 w-5" />
+            <span className="font-display text-sm font-semibold">Устгах</span>
+          </div>
         </div>
-      </div>
+      )}
 
       <div
-        className="relative touch-pan-y select-none"
+        className="relative select-none"
         style={{
           transform: `translateX(${dx}px)`,
           opacity,
-          transition: dragging.current ? "none" : "transform 220ms ease, opacity 220ms ease",
+          transition: dragging ? "none" : "transform 220ms ease, opacity 220ms ease",
+          touchAction: "pan-y",
         }}
-        onTouchStart={(e) => onStart(e.touches[0].clientX)}
-        onTouchMove={(e) => onMove(e.touches[0].clientX)}
-        onTouchEnd={onEnd}
-        onTouchCancel={onEnd}
-        onPointerDown={(e) => {
-          if (e.pointerType === "mouse") onStart(e.clientX);
-        }}
-        onPointerMove={(e) => {
-          if (e.pointerType === "mouse" && dragging.current) onMove(e.clientX);
-        }}
-        onPointerUp={(e) => {
-          if (e.pointerType === "mouse") onEnd();
-        }}
-        onPointerCancel={(e) => {
-          if (e.pointerType === "mouse") onEnd();
-        }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={finish}
+        onPointerCancel={finish}
       >
         {children}
       </div>
