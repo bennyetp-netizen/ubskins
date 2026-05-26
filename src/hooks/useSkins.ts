@@ -15,12 +15,28 @@ export function useSkins(options: Options = {}) {
 
   const load = useCallback(async () => {
     setLoading(true);
-    let query = supabase.from("skins").select("*").order("created_at", { ascending: false });
-    if (!includeInactive) query = query.eq("is_active", true);
-    if (featuredOnly) query = query.eq("is_featured", true);
-    const { data, error } = await query;
-    if (error) setError(error.message);
-    else setSkins(((data ?? []) as SkinRow[]).map(mapSkinRow));
+    const PAGE = 1000;
+    let from = 0;
+    const all: SkinRow[] = [];
+    while (true) {
+      let query = supabase
+        .from("skins")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .range(from, from + PAGE - 1);
+      if (!includeInactive) query = query.eq("is_active", true);
+      if (featuredOnly) query = query.eq("is_featured", true);
+      const { data, error } = await query;
+      if (error) {
+        setError(error.message);
+        break;
+      }
+      const rows = (data ?? []) as SkinRow[];
+      all.push(...rows);
+      if (rows.length < PAGE) break;
+      from += PAGE;
+    }
+    setSkins(all.map(mapSkinRow));
     setLoading(false);
   }, [featuredOnly, includeInactive]);
 
