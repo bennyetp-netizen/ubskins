@@ -86,7 +86,7 @@ const Index = () => {
               Storepay, QPay, банкны шилжүүлэг — бүгд төгрөгөөр.
             </p>
             <p className="mt-3 max-w-xl text-sm font-semibold text-orange-400 md:text-base">
-              💰 Урьдчилгаа 30% төлөөд скинээ захиалуулаарай!
+              💰 30% урьдчилгаа төлөөд скинээ захиалаад өдөрт нь аваарай!
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
