@@ -57,7 +57,7 @@ const Shop = () => {
       if (q && !`${s.weaponName} ${s.name}`.toLowerCase().includes(q.toLowerCase())) return false;
       if (weapons.length && !weapons.some((w) => s.weapon.toLowerCase().includes(w.toLowerCase()))) return false;
       if (wears.length && !wears.includes(s.wear)) return false;
-      if (s.price > maxPrice) return false;
+      if (s.price > maxPrice || s.price < minPrice) return false;
       return true;
     });
     list = [...list].sort((a, b) =>
