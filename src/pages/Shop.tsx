@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Search, SlidersHorizontal, Loader2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Search, SlidersHorizontal, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
@@ -7,18 +7,43 @@ import SkinCard from "@/components/SkinCard";
 import { type Wear } from "@/data/skins";
 import { useSkins } from "@/hooks/useSkins";
 
+const PAGE_SIZE = 12;
+const STATE_KEY = "shop:state";
+
+type SavedState = {
+  q: string;
+  typeFilter: "all" | "ready" | "preorder";
+  weapons: string[];
+  wears: Wear[];
+  maxPrice: number;
+  sort: "price-asc" | "price-desc" | "float-asc";
+  page: number;
+  scrollY: number;
+};
+
+const readSaved = (): Partial<SavedState> => {
+  try {
+    return JSON.parse(sessionStorage.getItem(STATE_KEY) || "{}");
+  } catch {
+    return {};
+  }
+};
+
 const weaponOptions = ["AK-47", "AWP", "M4A4", "M4A1-S", "Desert Eagle", "USP-S", "Glock-18", "Knife", "Gloves"];
 const wearOptions: Wear[] = ["FN", "MW", "FT", "WW", "BS"];
 type TypeFilter = "all" | "ready" | "preorder";
 
 const Shop = () => {
   const { skins, loading } = useSkins();
-  const [q, setQ] = useState("");
-  const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
-  const [weapons, setWeapons] = useState<string[]>([]);
-  const [wears, setWears] = useState<Wear[]>([]);
-  const [maxPrice, setMaxPrice] = useState(5000000);
-  const [sort, setSort] = useState<"price-asc" | "price-desc" | "float-asc">("price-asc");
+  const saved = useRef<Partial<SavedState>>(readSaved()).current;
+  const [q, setQ] = useState(saved.q ?? "");
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>(saved.typeFilter ?? "all");
+  const [weapons, setWeapons] = useState<string[]>(saved.weapons ?? []);
+  const [wears, setWears] = useState<Wear[]>(saved.wears ?? []);
+  const [maxPrice, setMaxPrice] = useState(saved.maxPrice ?? 5000000);
+  const [sort, setSort] = useState<"price-asc" | "price-desc" | "float-asc">(saved.sort ?? "price-asc");
+  const [page, setPage] = useState(saved.page ?? 1);
+  const restoredScroll = useRef(false);
 
   const filtered = useMemo(() => {
     let list = skins.filter((s) => {
@@ -34,6 +59,47 @@ const Shop = () => {
     );
     return list;
   }, [skins, q, typeFilter, weapons, wears, maxPrice, sort]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  // Reset to page 1 when filters change (but not on initial mount/restore)
+  const isFirstFilterChange = useRef(true);
+  useEffect(() => {
+    if (isFirstFilterChange.current) {
+      isFirstFilterChange.current = false;
+      return;
+    }
+    setPage(1);
+  }, [q, typeFilter, weapons, wears, maxPrice, sort]);
+
+  // Restore scroll position after data loaded
+  useEffect(() => {
+    if (loading || restoredScroll.current) return;
+    if (typeof saved.scrollY === "number") {
+      window.scrollTo({ top: saved.scrollY, behavior: "instant" as ScrollBehavior });
+    }
+    restoredScroll.current = true;
+  }, [loading, saved.scrollY]);
+
+  // Persist state on navigation away
+  useEffect(() => {
+    const save = () => {
+      const state: SavedState = { q, typeFilter, weapons, wears, maxPrice, sort, page: currentPage, scrollY: window.scrollY };
+      sessionStorage.setItem(STATE_KEY, JSON.stringify(state));
+    };
+    window.addEventListener("beforeunload", save);
+    return () => {
+      save();
+      window.removeEventListener("beforeunload", save);
+    };
+  }, [q, typeFilter, weapons, wears, maxPrice, sort, currentPage]);
+
+  const goToPage = (p: number) => {
+    setPage(p);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const toggle = <T,>(arr: T[], v: T, set: (n: T[]) => void) =>
     set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
@@ -185,11 +251,55 @@ const Shop = () => {
               {skins.length === 0 ? "Одоогоор скин нэмэгдээгүй байна." : "Скин олдсонгүй. Шүүлтүүрээ өөрчилнө үү."}
             </div>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {filtered.map((s) => (
-                <SkinCard key={s.id} skin={s} />
-              ))}
-            </div>
+            <>
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {paginated.map((s) => (
+                  <SkinCard key={s.id} skin={s} />
+                ))}
+              </div>
+
+              {totalPages > 1 && (
+                <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => goToPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                    .map((p, idx, arr) => (
+                      <span key={p} className="flex items-center gap-2">
+                        {idx > 0 && arr[idx - 1] !== p - 1 && (
+                          <span className="text-muted-foreground">…</span>
+                        )}
+                        <Button
+                          variant={p === currentPage ? "default" : "outline"}
+                          size="sm"
+                          className="min-w-9"
+                          onClick={() => goToPage(p)}
+                        >
+                          {p}
+                        </Button>
+                      </span>
+                    ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => goToPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+
+              <p className="mt-4 text-center text-xs text-muted-foreground">
+                Хуудас {currentPage} / {totalPages} · Нийт {filtered.length} скин
+              </p>
+            </>
           )}
         </div>
       </div>
