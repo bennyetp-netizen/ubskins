@@ -35,12 +35,15 @@ type TypeFilter = "all" | "ready" | "preorder";
 
 const Shop = () => {
   const { skins, loading } = useSkins();
-  const [q, setQ] = useState("");
-  const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
-  const [weapons, setWeapons] = useState<string[]>([]);
-  const [wears, setWears] = useState<Wear[]>([]);
-  const [maxPrice, setMaxPrice] = useState(5000000);
-  const [sort, setSort] = useState<"price-asc" | "price-desc" | "float-asc">("price-asc");
+  const saved = useRef<Partial<SavedState>>(readSaved()).current;
+  const [q, setQ] = useState(saved.q ?? "");
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>(saved.typeFilter ?? "all");
+  const [weapons, setWeapons] = useState<string[]>(saved.weapons ?? []);
+  const [wears, setWears] = useState<Wear[]>(saved.wears ?? []);
+  const [maxPrice, setMaxPrice] = useState(saved.maxPrice ?? 5000000);
+  const [sort, setSort] = useState<"price-asc" | "price-desc" | "float-asc">(saved.sort ?? "price-asc");
+  const [page, setPage] = useState(saved.page ?? 1);
+  const restoredScroll = useRef(false);
 
   const filtered = useMemo(() => {
     let list = skins.filter((s) => {
@@ -56,6 +59,47 @@ const Shop = () => {
     );
     return list;
   }, [skins, q, typeFilter, weapons, wears, maxPrice, sort]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  // Reset to page 1 when filters change (but not on initial mount/restore)
+  const isFirstFilterChange = useRef(true);
+  useEffect(() => {
+    if (isFirstFilterChange.current) {
+      isFirstFilterChange.current = false;
+      return;
+    }
+    setPage(1);
+  }, [q, typeFilter, weapons, wears, maxPrice, sort]);
+
+  // Restore scroll position after data loaded
+  useEffect(() => {
+    if (loading || restoredScroll.current) return;
+    if (typeof saved.scrollY === "number") {
+      window.scrollTo({ top: saved.scrollY, behavior: "instant" as ScrollBehavior });
+    }
+    restoredScroll.current = true;
+  }, [loading, saved.scrollY]);
+
+  // Persist state on navigation away
+  useEffect(() => {
+    const save = () => {
+      const state: SavedState = { q, typeFilter, weapons, wears, maxPrice, sort, page: currentPage, scrollY: window.scrollY };
+      sessionStorage.setItem(STATE_KEY, JSON.stringify(state));
+    };
+    window.addEventListener("beforeunload", save);
+    return () => {
+      save();
+      window.removeEventListener("beforeunload", save);
+    };
+  }, [q, typeFilter, weapons, wears, maxPrice, sort, currentPage]);
+
+  const goToPage = (p: number) => {
+    setPage(p);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const toggle = <T,>(arr: T[], v: T, set: (n: T[]) => void) =>
     set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
