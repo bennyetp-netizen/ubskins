@@ -224,12 +224,34 @@ const Orders = () => {
               <div
                 key={o.id}
                 id={`order-${o.id}`}
-                className={`rounded-2xl border bg-gradient-card transition-colors ${
+                className={`relative rounded-2xl border bg-gradient-card transition-colors ${
                   o.id === openId
                     ? "border-primary shadow-[0_0_0_3px_hsl(var(--primary)/0.2)]"
                     : "border-border hover:border-primary/30"
                 }`}
               >
+                {o.status === "pending" && (
+                  <button
+                    type="button"
+                    aria-label="Захиалга устгах"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      if (!confirm("Энэ захиалгыг устгах уу?")) return;
+                      const prev = orders;
+                      setOrders((list) => list.filter((x) => x.id !== o.id));
+                      const { error } = await supabase.from("orders").delete().eq("id", o.id);
+                      if (error) {
+                        setOrders(prev);
+                        toast.error("Устгаж чадсангүй");
+                      } else {
+                        toast.success("Захиалга устгагдлаа");
+                      }
+                    }}
+                    className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-background/80 text-muted-foreground hover:bg-destructive hover:text-destructive-foreground"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
                 <div className="flex flex-wrap items-center gap-4 p-4">
                   <div className="flex h-20 w-28 shrink-0 items-center justify-center rounded-xl bg-secondary/50">
                     {o.skin_image ? (
