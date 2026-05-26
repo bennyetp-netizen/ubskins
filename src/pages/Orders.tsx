@@ -409,7 +409,15 @@ const Orders = () => {
                             onPaid={() =>
                               setOrders((prev) =>
                                 prev.map((x) =>
-                                  x.id === o.id ? { ...x, payment_confirmed: true, deposit_paid: true, status: "paid" } : x,
+                                  x.id === o.id
+                                    ? {
+                                        ...x,
+                                        payment_confirmed: true,
+                                        deposit_paid: true,
+                                        // For preorders keep status "pending" so the remaining-payment UI stays visible
+                                        status: (x.product_type ?? "ready") === "preorder" ? "pending" : "paid",
+                                      }
+                                    : x,
                                 ),
                               )
                             }
