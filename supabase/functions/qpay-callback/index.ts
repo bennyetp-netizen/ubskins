@@ -113,7 +113,8 @@ Deno.serve(async (req) => {
           payment_confirmed: true,
           deposit_paid: true,
           remaining_paid: !isPreorder,
-          status: "paid",
+          // Preorder: keep "pending" so user still sees UI for the 70% remaining payment
+          status: isPreorder ? "pending" : "paid",
         })
         .eq("id", order.id);
     }
