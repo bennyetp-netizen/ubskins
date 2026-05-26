@@ -1,11 +1,33 @@
-import { useMemo, useState } from "react";
-import { Search, SlidersHorizontal, Loader2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Search, SlidersHorizontal, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import SkinCard from "@/components/SkinCard";
 import { type Wear } from "@/data/skins";
 import { useSkins } from "@/hooks/useSkins";
+
+const PAGE_SIZE = 12;
+const STATE_KEY = "shop:state";
+
+type SavedState = {
+  q: string;
+  typeFilter: "all" | "ready" | "preorder";
+  weapons: string[];
+  wears: Wear[];
+  maxPrice: number;
+  sort: "price-asc" | "price-desc" | "float-asc";
+  page: number;
+  scrollY: number;
+};
+
+const readSaved = (): Partial<SavedState> => {
+  try {
+    return JSON.parse(sessionStorage.getItem(STATE_KEY) || "{}");
+  } catch {
+    return {};
+  }
+};
 
 const weaponOptions = ["AK-47", "AWP", "M4A4", "M4A1-S", "Desert Eagle", "USP-S", "Glock-18", "Knife", "Gloves"];
 const wearOptions: Wear[] = ["FN", "MW", "FT", "WW", "BS"];
