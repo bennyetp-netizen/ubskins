@@ -480,7 +480,7 @@ const Admin = () => {
                                 });
                               }}
                             >
-                              🔒 Buff-аас авлаа (7 хоног hold)
+                              🔒 Худалдан авлаа (7 хоног hold)
                             </Button>
                           )}
                           {o.trade_hold_until && o.status !== "delivered" && (
