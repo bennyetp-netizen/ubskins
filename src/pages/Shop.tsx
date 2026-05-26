@@ -100,7 +100,7 @@ const Shop = () => {
       save();
       window.removeEventListener("beforeunload", save);
     };
-  }, [q, typeFilter, weapons, wears, maxPrice, sort, currentPage]);
+  }, [q, typeFilter, weapons, wears, minPrice, maxPrice, sort, currentPage]);
 
   const goToPage = (p: number) => {
     setPage(p);
