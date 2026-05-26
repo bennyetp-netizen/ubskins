@@ -97,6 +97,28 @@ const Cart = () => {
             },
           },
         });
+
+        // Notify admin
+        await supabase.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "admin-order-notification",
+            templateData: {
+              orderNumber,
+              customerEmail: email.trim().toLowerCase(),
+              customerPhone: phone.trim(),
+              customerName: user?.user_metadata?.display_name || "",
+              items: items.map(({ skin }) => ({
+                name: `${skin.weaponName} | ${skin.name}`,
+                price: skin.price,
+                wear: `${skin.wear} · Float ${skin.float.toFixed(3)}`,
+              })),
+              total,
+              depositAmount: totalDeposit,
+              paymentMethod: method,
+              adminUrl: `${window.location.origin}/admin`,
+            },
+          },
+        });
       } catch (mailErr) {
         console.warn("email send failed", mailErr);
       }
