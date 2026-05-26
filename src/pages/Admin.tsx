@@ -685,7 +685,7 @@ const Admin = () => {
                   }`}
                 >
                   <p className="font-display text-sm font-semibold text-orange-400">🟡 ЗАХИАЛГА</p>
-                  <p className="text-[11px] text-muted-foreground">Buff163-аас · 30% урьдчилгаа</p>
+                  <p className="text-[11px] text-muted-foreground">Захиалгаар · 30% урьдчилгаа</p>
                 </button>
               </div>
             </div>
