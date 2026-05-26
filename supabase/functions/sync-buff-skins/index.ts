@@ -237,7 +237,7 @@ Deno.serve(async (req) => {
 
     if (mode === "all" || mode === "weapon") {
       await new Promise((r) => setTimeout(r, 3000));
-      weaponItems = await fetchPages(`${BUFF_BASE}&category=weapon&min_price=1&max_price=3000`, PAGES_WEAPONS);
+      weaponItems = await fetchPages(`${BUFF_BASE}&category=weapon&min_price=1&max_price=5000`, PAGES_WEAPONS);
       console.log(`Зэвсэг: ${weaponItems.length} item татсан`);
     }
 
