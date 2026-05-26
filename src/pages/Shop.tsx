@@ -251,11 +251,55 @@ const Shop = () => {
               {skins.length === 0 ? "Одоогоор скин нэмэгдээгүй байна." : "Скин олдсонгүй. Шүүлтүүрээ өөрчилнө үү."}
             </div>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {filtered.map((s) => (
-                <SkinCard key={s.id} skin={s} />
-              ))}
-            </div>
+            <>
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {paginated.map((s) => (
+                  <SkinCard key={s.id} skin={s} />
+                ))}
+              </div>
+
+              {totalPages > 1 && (
+                <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => goToPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                    .map((p, idx, arr) => (
+                      <span key={p} className="flex items-center gap-2">
+                        {idx > 0 && arr[idx - 1] !== p - 1 && (
+                          <span className="text-muted-foreground">…</span>
+                        )}
+                        <Button
+                          variant={p === currentPage ? "default" : "outline"}
+                          size="sm"
+                          className="min-w-9"
+                          onClick={() => goToPage(p)}
+                        >
+                          {p}
+                        </Button>
+                      </span>
+                    ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => goToPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+
+              <p className="mt-4 text-center text-xs text-muted-foreground">
+                Хуудас {currentPage} / {totalPages} · Нийт {filtered.length} скин
+              </p>
+            </>
           )}
         </div>
       </div>
