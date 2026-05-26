@@ -17,6 +17,7 @@ const Cart = () => {
   const nav = useNavigate();
   const [method, setMethod] = useState<PaymentMethod>("bank");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   // Per-item deposit: ready=100% (no deposit), preorder=30%
