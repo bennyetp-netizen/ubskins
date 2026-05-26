@@ -114,6 +114,7 @@ const Cart = () => {
               })),
               total,
               depositAmount: totalDeposit,
+              paidAmount: totalDeposit,
               paymentMethod: method,
               adminUrl: `${window.location.origin}/admin`,
             },

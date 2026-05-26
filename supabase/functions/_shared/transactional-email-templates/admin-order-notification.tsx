@@ -14,6 +14,7 @@ interface AdminOrderProps {
   items?: AdminOrderItem[]
   total?: number
   depositAmount?: number
+  paidAmount?: number
   paymentMethod?: string
   adminUrl?: string
 }
@@ -29,12 +30,16 @@ const AdminOrderNotification = ({
   items = [],
   total = 0,
   depositAmount = 0,
+  paidAmount,
   paymentMethod = 'bank',
   adminUrl = 'https://ubskins.mn/admin',
-}: AdminOrderProps) => (
+}: AdminOrderProps) => {
+  const paid = typeof paidAmount === 'number' ? paidAmount : (depositAmount || total)
+  const remaining = Math.max(0, total - paid)
+  return (
   <Html>
     <Head />
-    <Preview>Шинэ захиалга {orderNumber} — {fmt(total)}</Preview>
+    <Preview>Шинэ захиалга {orderNumber} — төлсөн {fmt(paid)}</Preview>
     <Body style={body}>
       <Container style={container}>
         <Heading style={h1}>🛒 Шинэ захиалга</Heading>
@@ -59,9 +64,12 @@ const AdminOrderNotification = ({
             </div>
           ))}
           <Hr style={hr} />
-          <Text style={row}><strong>Нийт:</strong> {fmt(total)}</Text>
-          {depositAmount > 0 && depositAmount < total && (
-            <Text style={row}><strong>Урьдчилгаа:</strong> {fmt(depositAmount)}</Text>
+          <Text style={row}>Нийт үнэ: {fmt(total)}</Text>
+          <Text style={{ ...row, fontSize: '16px' }}>
+            <strong>💰 Төлсөн дүн: {fmt(paid)}</strong>
+          </Text>
+          {remaining > 0 && (
+            <Text style={row}>Үлдэгдэл: <strong>{fmt(remaining)}</strong></Text>
           )}
           <Text style={row}>Төлбөр: <strong>{paymentMethod === 'qpay' ? 'QPay' : 'Хаан банк'}</strong></Text>
         </Section>
@@ -72,7 +80,8 @@ const AdminOrderNotification = ({
       </Container>
     </Body>
   </Html>
-)
+  )
+}
 
 const body = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif', margin: 0, padding: 0 }
 const container = { maxWidth: '560px', margin: '0 auto', padding: '32px 24px' }
@@ -89,8 +98,10 @@ const link = { color: '#0F172A', textDecoration: 'underline' }
 
 export const template = {
   component: AdminOrderNotification,
-  subject: (d: AdminOrderProps) =>
-    `🛒 Шинэ захиалга ${d?.orderNumber ?? ''} — ${fmt(d?.total ?? 0)}`,
+  subject: (d: AdminOrderProps) => {
+    const paid = typeof d?.paidAmount === 'number' ? d.paidAmount : (d?.depositAmount || d?.total || 0)
+    return `🛒 Шинэ захиалга ${d?.orderNumber ?? ''} — төлсөн ${fmt(paid)}`
+  },
   displayName: 'Админд захиалга мэдэгдэх',
   to: 'bennyetp@gmail.com',
   previewData: {
@@ -100,7 +111,8 @@ export const template = {
     customerName: 'Болд',
     items: [{ name: 'AK-47 | Redline', price: 250000, wear: 'Field-Tested · Float 0.150' }],
     total: 250000,
-    depositAmount: 250000,
+    depositAmount: 125000,
+    paidAmount: 125000,
     paymentMethod: 'bank',
     adminUrl: 'https://ubskins.mn/admin',
   },
