@@ -15,11 +15,16 @@ type SavedState = {
   typeFilter: "all" | "ready" | "preorder";
   weapons: string[];
   wears: Wear[];
+  minPrice: number;
   maxPrice: number;
   sort: "price-asc" | "price-desc" | "float-asc";
   page: number;
   scrollY: number;
 };
+
+const PRICE_MIN = 0;
+const PRICE_MAX = 5000000;
+const PRICE_STEP = 50000;
 
 const readSaved = (): Partial<SavedState> => {
   try {
@@ -40,7 +45,8 @@ const Shop = () => {
   const [typeFilter, setTypeFilter] = useState<TypeFilter>(saved.typeFilter ?? "all");
   const [weapons, setWeapons] = useState<string[]>(saved.weapons ?? []);
   const [wears, setWears] = useState<Wear[]>(saved.wears ?? []);
-  const [maxPrice, setMaxPrice] = useState(saved.maxPrice ?? 5000000);
+  const [minPrice, setMinPrice] = useState(saved.minPrice ?? PRICE_MIN);
+  const [maxPrice, setMaxPrice] = useState(saved.maxPrice ?? PRICE_MAX);
   const [sort, setSort] = useState<"price-asc" | "price-desc" | "float-asc">(saved.sort ?? "price-asc");
   const [page, setPage] = useState(saved.page ?? 1);
   const restoredScroll = useRef(false);
@@ -51,14 +57,14 @@ const Shop = () => {
       if (q && !`${s.weaponName} ${s.name}`.toLowerCase().includes(q.toLowerCase())) return false;
       if (weapons.length && !weapons.some((w) => s.weapon.toLowerCase().includes(w.toLowerCase()))) return false;
       if (wears.length && !wears.includes(s.wear)) return false;
-      if (s.price > maxPrice) return false;
+      if (s.price > maxPrice || s.price < minPrice) return false;
       return true;
     });
     list = [...list].sort((a, b) =>
       sort === "price-asc" ? a.price - b.price : sort === "price-desc" ? b.price - a.price : a.float - b.float
     );
     return list;
-  }, [skins, q, typeFilter, weapons, wears, maxPrice, sort]);
+  }, [skins, q, typeFilter, weapons, wears, minPrice, maxPrice, sort]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -72,7 +78,7 @@ const Shop = () => {
       return;
     }
     setPage(1);
-  }, [q, typeFilter, weapons, wears, maxPrice, sort]);
+  }, [q, typeFilter, weapons, wears, minPrice, maxPrice, sort]);
 
   // Restore scroll position after data loaded
   useEffect(() => {
@@ -86,7 +92,7 @@ const Shop = () => {
   // Persist state on navigation away
   useEffect(() => {
     const save = () => {
-      const state: SavedState = { q, typeFilter, weapons, wears, maxPrice, sort, page: currentPage, scrollY: window.scrollY };
+      const state: SavedState = { q, typeFilter, weapons, wears, minPrice, maxPrice, sort, page: currentPage, scrollY: window.scrollY };
       sessionStorage.setItem(STATE_KEY, JSON.stringify(state));
     };
     window.addEventListener("beforeunload", save);
@@ -94,7 +100,7 @@ const Shop = () => {
       save();
       window.removeEventListener("beforeunload", save);
     };
-  }, [q, typeFilter, weapons, wears, maxPrice, sort, currentPage]);
+  }, [q, typeFilter, weapons, wears, minPrice, maxPrice, sort, currentPage]);
 
   const goToPage = (p: number) => {
     setPage(p);
@@ -200,18 +206,27 @@ const Shop = () => {
 
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Дээд үнэ</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Үнийн хязгаар</p>
               <span className="text-xs text-foreground">
-                {new Intl.NumberFormat("mn-MN").format(maxPrice)}₮
+                {new Intl.NumberFormat("mn-MN").format(minPrice)}₮ – {new Intl.NumberFormat("mn-MN").format(maxPrice)}₮
               </span>
             </div>
             <Slider
-              value={[maxPrice]}
-              onValueChange={(v) => setMaxPrice(v[0])}
-              min={100000}
-              max={5000000}
-              step={50000}
+              value={[minPrice, maxPrice]}
+              onValueChange={(v) => {
+                const [lo, hi] = v;
+                setMinPrice(Math.min(lo, hi));
+                setMaxPrice(Math.max(lo, hi));
+              }}
+              min={PRICE_MIN}
+              max={PRICE_MAX}
+              step={PRICE_STEP}
+              minStepsBetweenThumbs={1}
             />
+            <div className="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
+              <span>Доод</span>
+              <span>Дээд</span>
+            </div>
           </div>
 
           <Button
@@ -222,7 +237,8 @@ const Shop = () => {
               setQ("");
               setWeapons([]);
               setWears([]);
-              setMaxPrice(5000000);
+              setMinPrice(PRICE_MIN);
+              setMaxPrice(PRICE_MAX);
               setTypeFilter("all");
             }}
           >
