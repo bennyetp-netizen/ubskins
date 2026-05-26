@@ -103,8 +103,21 @@ Deno.serve(async (req) => {
     // 4) Create / find the Supabase auth user (we use a synthetic email derived from Steam ID)
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
     const syntheticEmail = `steam_${steamId}@steam.skinhub.local`;
-    // Use a deterministic-ish password derived from steam id + service-side salt; users never see this.
-    const syntheticPassword = `steam-${steamId}-${SERVICE_ROLE_KEY.slice(0, 16)}`;
+    // Derive an UNPREDICTABLE password via HMAC-SHA256 over the full service-role
+    // secret. The signature half of the JWT is high-entropy and never exposed to
+    // clients, so attackers cannot reconstruct this from public information.
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      "raw",
+      enc.encode(SERVICE_ROLE_KEY),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"],
+    );
+    const sig = await crypto.subtle.sign("HMAC", key, enc.encode(`steam:${steamId}`));
+    const syntheticPassword = `s2-${Array.from(new Uint8Array(sig))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("")}`;
 
     const userMetadata = {
       steam_id: steamId,
@@ -121,7 +134,13 @@ Deno.serve(async (req) => {
     if (existing) {
       userId = existing.id;
       // Refresh their metadata so display name / avatar stays current
-      await admin.auth.admin.updateUserById(existing.id, { user_metadata: userMetadata });
+      // Refresh metadata AND rotate password to the new HMAC-derived value so
+      // legacy accounts created with the old predictable scheme cannot be
+      // logged into using the leaked formula.
+      await admin.auth.admin.updateUserById(existing.id, {
+        user_metadata: userMetadata,
+        password: syntheticPassword,
+      });
     } else {
       const { data: created, error: createErr } = await admin.auth.admin.createUser({
         email: syntheticEmail,

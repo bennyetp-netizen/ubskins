@@ -1,7 +1,7 @@
 project_id = "dsatymimraxujqyhqccv"
 
 [functions.sync-buff-skins]
-verify_jwt = false
+verify_jwt = true
 
 [functions.process-email-queue]
 verify_jwt = true

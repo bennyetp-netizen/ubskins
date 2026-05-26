@@ -72,10 +72,41 @@ Deno.serve(async (req) => {
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
     const BUFF_COOKIE = Deno.env.get("BUFF_COOKIE") ?? "";
     if (!BUFF_COOKIE) throw new Error("BUFF_COOKIE secret тохируулагдаагүй байна");
 
+    // Require an authenticated admin user. Prevents anyone from triggering
+    // expensive Buff API calls and overwriting curated skin data.
+    const authHeader = req.headers.get("Authorization") ?? "";
+    if (!authHeader.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const userClient = createClient(SUPABASE_URL, ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: userData, error: userErr } = await userClient.auth.getUser();
+    if (userErr || !userData.user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     const sb = createClient(SUPABASE_URL, SERVICE_KEY);
+    const { data: isAdmin } = await sb.rpc("has_role", {
+      _user_id: userData.user.id,
+      _role: "admin",
+    });
+    if (!isAdmin) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
 
     // 1) CNY → MNT ханш татах
     const rateRes = await fetch(RATE_URL);
