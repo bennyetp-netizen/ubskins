@@ -92,7 +92,7 @@ const Shop = () => {
   // Persist state on navigation away
   useEffect(() => {
     const save = () => {
-      const state: SavedState = { q, typeFilter, weapons, wears, maxPrice, sort, page: currentPage, scrollY: window.scrollY };
+      const state: SavedState = { q, typeFilter, weapons, wears, minPrice, maxPrice, sort, page: currentPage, scrollY: window.scrollY };
       sessionStorage.setItem(STATE_KEY, JSON.stringify(state));
     };
     window.addEventListener("beforeunload", save);
