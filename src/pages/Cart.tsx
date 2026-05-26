@@ -72,8 +72,34 @@ const Cart = () => {
       const { data: inserted, error } = await supabase
         .from("orders")
         .insert(rows as any)
-        .select("id");
+        .select("id, order_number");
       if (error) throw error;
+
+      // Fire confirmation email (best-effort, don't block UX)
+      try {
+        const orderNumber = (inserted?.[0] as any)?.order_number || "";
+        await supabase.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "order-confirmation",
+            recipientEmail: email.trim().toLowerCase(),
+            templateData: {
+              orderNumber,
+              customerName: user?.user_metadata?.display_name || "",
+              items: items.map(({ skin }) => ({
+                name: `${skin.weaponName} | ${skin.name}`,
+                price: skin.price,
+                wear: `${skin.wear} · Float ${skin.float.toFixed(3)}`,
+              })),
+              total,
+              depositAmount: totalDeposit,
+              paymentMethod: method,
+              ordersUrl: `${window.location.origin}/orders`,
+            },
+          },
+        });
+      } catch (mailErr) {
+        console.warn("email send failed", mailErr);
+      }
 
       toast.success("✅ Захиалга амжилттай! Төлбөрийн заавар руу шилжиж байна...");
       clear();
