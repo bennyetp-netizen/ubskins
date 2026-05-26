@@ -202,6 +202,28 @@ const Cart = () => {
             </p>
           </div>
 
+          {/* Email */}
+          <div className="rounded-2xl border border-border bg-gradient-card p-5">
+            <Label htmlFor="email" className="flex items-center gap-2 font-display text-base font-semibold">
+              <Mail className="h-4 w-4 text-accent" /> И-мэйл хаяг
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="mt-2"
+            />
+            <p className="mt-1.5 text-[11px] text-muted-foreground">
+              Захиалга баталгаажсан болон скин ирсэн мэдэгдлийг и-мэйлээр илгээнэ.
+            </p>
+          </div>
+
+
+
           {/* Payment method picker */}
           <div className="rounded-2xl border border-border bg-gradient-card p-5">
             <div className="mb-3 flex items-center gap-2">
