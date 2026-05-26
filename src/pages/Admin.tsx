@@ -494,7 +494,7 @@ const Admin = () => {
                                   onCheckedChange={(v) =>
                                     updateOrder(o.id, {
                                       deposit_paid: v,
-                                      status: v && !o.remaining_paid ? "paid" : (o.remaining_paid ? "delivered" : "pending"),
+                                      status: o.remaining_paid ? "delivered" : "pending",
                                     })
                                   }
                                 />
