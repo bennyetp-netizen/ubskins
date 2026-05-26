@@ -426,7 +426,7 @@ const Admin = () => {
                       <td className="px-4 py-3 font-mono text-xs font-bold text-primary">{o.order_number ?? o.id.slice(0, 8)}</td>
 
                       <td className="px-4 py-3"><ProductTypeBadge type={ptype} /></td>
-                      <td className="px-4 py-3 max-w-[320px]">
+                      <td className="px-4 py-3 max-w-[360px]">
                          <p className="font-medium">{o.skin_name}</p>
                          <p className="text-[11px] text-muted-foreground">{o.payment_method}</p>
                          {o.wear && (
@@ -434,6 +434,39 @@ const Admin = () => {
                               <p><span className="text-muted-foreground">Wear:</span> <span className="text-foreground">{o.wear}</span>{o.float_value ? <span className="text-muted-foreground"> ({o.float_value})</span> : null}</p>
                            </div>
                          )}
+                         {(() => {
+                           const p = profiles[o.user_id];
+                           if (!p) return null;
+                           return (
+                             <div className="mt-1.5 space-y-1 rounded-md border border-sky-400/30 bg-sky-500/5 px-2 py-1.5 text-[11px]">
+                               {p.display_name && <p className="font-semibold text-sky-300">{p.display_name}</p>}
+                               {p.trade_url ? (
+                                 <div className="flex items-center gap-1.5">
+                                   <a href={p.trade_url} target="_blank" rel="noreferrer" className="truncate text-sky-300 underline hover:text-sky-200" title={p.trade_url}>
+                                     Trade URL
+                                   </a>
+                                   <button
+                                     type="button"
+                                     className="rounded border border-sky-400/40 px-1.5 py-0.5 text-[10px] hover:bg-sky-500/10"
+                                     onClick={() => { navigator.clipboard.writeText(p.trade_url!); toast.success("Trade URL хууллаа"); }}
+                                   >
+                                     Copy
+                                   </button>
+                                 </div>
+                               ) : (
+                                 <p className="text-destructive">Trade URL байхгүй</p>
+                               )}
+                               {p.profile_url && (
+                                 <a href={p.profile_url} target="_blank" rel="noreferrer" className="block truncate text-muted-foreground underline hover:text-foreground">
+                                   Steam profile
+                                 </a>
+                               )}
+                               {p.steam_id && (
+                                 <p className="text-[10px] text-muted-foreground">SteamID: {p.steam_id}</p>
+                               )}
+                             </div>
+                           );
+                         })()}
                         </td>
                       <td className="px-4 py-3 font-display font-semibold">{formatMNT(o.price_mnt)}</td>
                       <td className="px-4 py-3 text-xs">{o.phone ?? "—"}</td>
