@@ -15,11 +15,16 @@ type SavedState = {
   typeFilter: "all" | "ready" | "preorder";
   weapons: string[];
   wears: Wear[];
+  minPrice: number;
   maxPrice: number;
   sort: "price-asc" | "price-desc" | "float-asc";
   page: number;
   scrollY: number;
 };
+
+const PRICE_MIN = 0;
+const PRICE_MAX = 5000000;
+const PRICE_STEP = 50000;
 
 const readSaved = (): Partial<SavedState> => {
   try {
