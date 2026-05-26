@@ -206,18 +206,27 @@ const Shop = () => {
 
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Дээд үнэ</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Үнийн хязгаар</p>
               <span className="text-xs text-foreground">
-                {new Intl.NumberFormat("mn-MN").format(maxPrice)}₮
+                {new Intl.NumberFormat("mn-MN").format(minPrice)}₮ – {new Intl.NumberFormat("mn-MN").format(maxPrice)}₮
               </span>
             </div>
             <Slider
-              value={[maxPrice]}
-              onValueChange={(v) => setMaxPrice(v[0])}
-              min={100000}
-              max={5000000}
-              step={50000}
+              value={[minPrice, maxPrice]}
+              onValueChange={(v) => {
+                const [lo, hi] = v;
+                setMinPrice(Math.min(lo, hi));
+                setMaxPrice(Math.max(lo, hi));
+              }}
+              min={PRICE_MIN}
+              max={PRICE_MAX}
+              step={PRICE_STEP}
+              minStepsBetweenThumbs={1}
             />
+            <div className="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
+              <span>Доод</span>
+              <span>Дээд</span>
+            </div>
           </div>
 
           <Button
@@ -228,7 +237,8 @@ const Shop = () => {
               setQ("");
               setWeapons([]);
               setWears([]);
-              setMaxPrice(5000000);
+              setMinPrice(PRICE_MIN);
+              setMaxPrice(PRICE_MAX);
               setTypeFilter("all");
             }}
           >
