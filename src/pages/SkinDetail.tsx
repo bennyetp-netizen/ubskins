@@ -111,7 +111,7 @@ const SkinDetail = () => {
                 {skin.productType === "ready" ? "Үлдэгдэл" : "Хүргэх"}
               </p>
               <p className="mt-1 font-display text-lg font-bold">
-                {skin.productType === "ready" ? (skin.stockQuantity || skin.stock) : "2-5 хоног"}
+                {skin.productType === "ready" ? (skin.stockQuantity || skin.stock) : "Өдөрт нь"}
               </p>
             </div>
           </div>
