@@ -30,9 +30,13 @@ const AdminOrderNotification = ({
   items = [],
   total = 0,
   depositAmount = 0,
+  paidAmount,
   paymentMethod = 'bank',
   adminUrl = 'https://ubskins.mn/admin',
-}: AdminOrderProps) => (
+}: AdminOrderProps) => {
+  const paid = typeof paidAmount === 'number' ? paidAmount : (depositAmount || total)
+  const remaining = Math.max(0, total - paid)
+  return (
   <Html>
     <Head />
     <Preview>Шинэ захиалга {orderNumber} — {fmt(total)}</Preview>
