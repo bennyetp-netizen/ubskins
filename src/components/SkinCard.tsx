@@ -79,7 +79,7 @@ const SkinCard = ({ skin }: Props) => {
               {skin.productType === "ready" ? (
                 <span className="text-emerald-400">Өнөөдөр хүргэнэ</span>
               ) : (
-                <span className="text-orange-400">2-5 хоног</span>
+                <span className="text-orange-400">өдөрт нь</span>
               )}
             </p>
           </div>
