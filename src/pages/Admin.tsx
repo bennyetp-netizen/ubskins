@@ -113,9 +113,22 @@ const Admin = () => {
     setLoading(false);
   };
 
+  const [profiles, setProfiles] = useState<Record<string, { steam_id: string | null; profile_url: string | null; trade_url: string | null; display_name: string | null }>>({});
+
   const loadOrders = async () => {
     const { data } = await supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(500);
-    setOrders(data ?? []);
+    const list = data ?? [];
+    setOrders(list);
+    const userIds = Array.from(new Set(list.map((o: any) => o.user_id).filter(Boolean)));
+    if (userIds.length) {
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("user_id, steam_id, profile_url, trade_url, display_name")
+        .in("user_id", userIds);
+      const map: Record<string, any> = {};
+      (profs ?? []).forEach((p: any) => { map[p.user_id] = p; });
+      setProfiles(map);
+    }
   };
 
   const setOrderStatus = async (id: string, status: string, payment_confirmed?: boolean) => {
