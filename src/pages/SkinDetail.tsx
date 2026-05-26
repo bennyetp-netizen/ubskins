@@ -91,7 +91,7 @@ const SkinDetail = () => {
                 🟡 ЗАХИАЛГА — өдөрт нь хүргэнэ
               </p>
               <p className="mt-1 text-xs text-orange-300/80">
-                Buff163-аас захиалгаар авна. 30% урьдчилгаа төлсний дараа худалдан авч, ирмэгц үлдэгдлийг төлж trade offer хүлээн авна.
+                Захиалгаар авна. 30% урьдчилгаа төлсний дараа худалдан авч, ирмэгц үлдэгдлийг төлж trade offer хүлээн авна.
               </p>
             </div>
           )}
@@ -123,7 +123,7 @@ const SkinDetail = () => {
                 <p className="text-xs text-muted-foreground">Үнэ</p>
                 <p className="font-display text-4xl font-bold text-gradient-primary">{formatMNT(skin.price)}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  ≈ {formatCNY(mntToCny(skin.price))} CNY (BUFF163)
+                  ≈ {formatCNY(mntToCny(skin.price))} CNY
                 </p>
               </div>
               {skin.productType === "preorder" ? (

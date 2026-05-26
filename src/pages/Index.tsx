@@ -356,7 +356,7 @@ const Index = () => {
         <div className="mb-6 flex items-end justify-between">
           <div>
             <h2 className="font-display text-3xl font-bold md:text-4xl">🟡 ЗАХИАЛГААР</h2>
-            <p className="mt-2 text-sm text-orange-400/90">Buff163-аас захиалгаар — өдөрт нь хүргэнэ</p>
+            <p className="mt-2 text-sm text-orange-400/90">Захиалгаар — өдөрт нь хүргэнэ</p>
           </div>
           <Link to="/shop" className="hidden text-sm text-primary hover:underline sm:inline">
             Бүгдийг үзэх →

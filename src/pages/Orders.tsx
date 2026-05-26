@@ -279,7 +279,7 @@ const Orders = () => {
                           🔒 Steam trade hold: {formatHoldRemaining(o.trade_hold_until)}
                         </p>
                         <p className="mt-0.5 text-[10px] text-muted-foreground">
-                          Скин Buff163-аас худалдан авагдсан. Steam дүрмээр 7 хоног үнгэрсний дараа trade offer илгээгдэнэ
+                          Скин худалдан авагдсан. Steam дүрмээр 7 хоног үнгэрсний дараа trade offer илгээгдэнэ
                           ({new Date(o.trade_hold_until).toLocaleString("mn-MN")}).
                         </p>
                       </div>

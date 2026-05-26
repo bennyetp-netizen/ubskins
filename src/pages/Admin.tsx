@@ -96,7 +96,7 @@ const Admin = () => {
       const { data, error } = await supabase.functions.invoke("sync-buff-skins");
       if (error) throw error;
       if (!data?.success) throw new Error(data?.error ?? "Тодорхойгүй алдаа");
-      toast.success(`Buff163-аас ${data.upserted}/${data.items_received} скин шинэчлэгдлээ. Ханш: 1¥ = ${Number(data.rate_cny_mnt).toFixed(2)}₮`);
+      toast.success(`${data.upserted}/${data.items_received} скин шинэчлэгдлээ. Ханш: 1¥ = ${Number(data.rate_cny_mnt).toFixed(2)}₮`);
       loadSkins();
     } catch (e: any) {
       toast.error(e.message ?? "Sync хийхэд алдаа гарлаа");
@@ -480,7 +480,7 @@ const Admin = () => {
                                 });
                               }}
                             >
-                              🔒 Buff-аас авлаа (7 хоног hold)
+                              🔒 Худалдан авлаа (7 хоног hold)
                             </Button>
                           )}
                           {o.trade_hold_until && o.status !== "delivered" && (
@@ -528,7 +528,7 @@ const Admin = () => {
                 <div className="flex flex-wrap gap-2">
                   <Button variant="outline" onClick={syncFromBuff} disabled={syncing}>
                     {syncing ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-1 h-4 w-4" />}
-                    Sync Buff Skins
+                    Скин шинэчлэх
                   </Button>
                   <Button variant="outline" onClick={removeAllSkins} disabled={skins.length === 0} className="border-destructive/40 text-destructive hover:bg-destructive/10">
                     <Trash2 className="mr-1 h-4 w-4" /> Бүх скин устгах
@@ -685,7 +685,7 @@ const Admin = () => {
                   }`}
                 >
                   <p className="font-display text-sm font-semibold text-orange-400">🟡 ЗАХИАЛГА</p>
-                  <p className="text-[11px] text-muted-foreground">Buff163-аас · 30% урьдчилгаа</p>
+                  <p className="text-[11px] text-muted-foreground">Захиалгаар · 30% урьдчилгаа</p>
                 </button>
               </div>
             </div>
