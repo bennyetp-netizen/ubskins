@@ -42,6 +42,10 @@ const Cart = () => {
       toast.error("Утасны дугаараа зөв оруулна уу");
       return;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      toast.error("И-мэйл хаягаа зөв оруулна уу");
+      return;
+    }
 
     setSubmitting(true);
     try {
