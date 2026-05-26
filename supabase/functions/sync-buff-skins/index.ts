@@ -15,8 +15,23 @@ const BUFF_BASE =
   "https://buff.163.com/api/market/goods?game=csgo&page_size=80&sort_by=sell_num.desc";
 const PAGES_WEAPONS = 5; // weapons: 5 × 80 = 400
 const PAGES_KNIVES = 10;  // knives: 10 × 80 = 800
+const PAGES_PER_WEAPON = 8; // priority weapons: 8 × 80 = 640 тус бүр
+const PAGES_GLOVES = 10; // gloves: 10 × 80 = 800
 const BUFF_KNIFE_BASE =
   "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category_group=knife&sort_by=sell_num.desc&min_price=1&max_price=10000";
+const BUFF_GLOVES_BASE =
+  "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category_group=hand&sort_by=sell_num.desc&min_price=1&max_price=20000";
+// Тэргүүлэх зэвсгүүд: AWP, Deagle, USP-S, Glock, M4A4, M4A1-S, AK-47
+// Buff163 category кодууд
+const PRIORITY_WEAPONS = [
+  "weapon_awp",
+  "weapon_deagle",
+  "weapon_usp_silencer",
+  "weapon_glock",
+  "weapon_m4a4",
+  "weapon_m4a1_silencer",
+  "weapon_ak47",
+];
 const RATE_URL = "https://open.er-api.com/v6/latest/CNY"; // free, түлхүүр шаардахгүй
 const MARGIN = 1.10;
 
@@ -167,20 +182,42 @@ Deno.serve(async (req) => {
       return items;
     }
 
-    // mode=knife → зөвхөн хутга, mode=weapon → зөвхөн зэвсэг, default → хоёулаа
+    // mode=knife → зөвхөн хутга, mode=weapon → зөвхөн зэвсэг,
+    // mode=gloves → зөвхөн бээлий, mode=priority → зөвхөн тэргүүлэх зэвсгүүд,
+    // default (all) → бүгд
     const url = new URL(req.url);
     const mode = url.searchParams.get("mode") ?? "all";
 
     let knifeItems: any[] = [];
     let weaponItems: any[] = [];
+    let glovesItems: any[] = [];
+    let priorityItems: any[] = [];
 
     if (mode === "all" || mode === "knife") {
       knifeItems = await fetchPages(BUFF_KNIFE_BASE, PAGES_KNIVES);
       console.log(`Хутга: ${knifeItems.length} item татсан`);
     }
 
-    if (mode === "all" || mode === "weapon") {
+    if (mode === "all" || mode === "gloves") {
       if (knifeItems.length > 0) await new Promise((r) => setTimeout(r, 3000));
+      glovesItems = await fetchPages(BUFF_GLOVES_BASE, PAGES_GLOVES);
+      console.log(`Бээлий: ${glovesItems.length} item татсан`);
+    }
+
+    if (mode === "all" || mode === "priority") {
+      for (const cat of PRIORITY_WEAPONS) {
+        await new Promise((r) => setTimeout(r, 3000));
+        const items = await fetchPages(
+          `${BUFF_BASE}&category=${cat}&min_price=1&max_price=5000`,
+          PAGES_PER_WEAPON,
+        );
+        console.log(`${cat}: ${items.length} item татсан`);
+        priorityItems.push(...items);
+      }
+    }
+
+    if (mode === "all" || mode === "weapon") {
+      await new Promise((r) => setTimeout(r, 3000));
       weaponItems = await fetchPages(`${BUFF_BASE}&category=weapon&min_price=1&max_price=3000`, PAGES_WEAPONS);
       console.log(`Зэвсэг: ${weaponItems.length} item татсан`);
     }
@@ -188,7 +225,7 @@ Deno.serve(async (req) => {
     // Давхардлыг buff_id-аар арилгах
     const seenIds = new Set<string>();
     const allItems: any[] = [];
-    for (const it of [...knifeItems, ...weaponItems]) {
+    for (const it of [...knifeItems, ...glovesItems, ...priorityItems, ...weaponItems]) {
       const id = String(it?.id ?? "");
       if (id && !seenIds.has(id)) {
         seenIds.add(id);
@@ -209,8 +246,10 @@ Deno.serve(async (req) => {
 
       const { weapon, skin } = cleanName(fullName);
 
-      const isKnife = KNIFE_KEYWORDS.some((k) => fullName.toLowerCase().includes(k));
-      const maxCny = isKnife ? 10000 : 3000;
+      const lowerName = fullName.toLowerCase();
+      const isKnife = KNIFE_KEYWORDS.some((k) => lowerName.includes(k));
+      const isGloves = GLOVES_KEYWORDS.some((k) => lowerName.includes(k));
+      const maxCny = isKnife ? 10000 : isGloves ? 20000 : 5000;
       if (cnyPrice < 1 || cnyPrice > maxCny) {
         skippedFilter++;
         continue;
