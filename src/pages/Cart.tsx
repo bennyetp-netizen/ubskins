@@ -10,6 +10,7 @@ import { formatMNT, wearColor } from "@/data/skins";
 import { PAYMENTS, calcPrepayment, mntToCny, formatCNY, type PaymentMethod } from "@/data/payment";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import SwipeableCartItem from "@/components/SwipeableCartItem";
 
 const Cart = () => {
   const { items, remove, clear, total } = useCart();
