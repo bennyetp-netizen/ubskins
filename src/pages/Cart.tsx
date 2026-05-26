@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Trash2, ShoppingBag, ShieldCheck, Globe2, Loader2, LogIn, Phone } from "lucide-react";
+import { Trash2, ShoppingBag, ShieldCheck, Globe2, Loader2, LogIn, Phone, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,7 @@ const Cart = () => {
   const nav = useNavigate();
   const [method, setMethod] = useState<PaymentMethod>("bank");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   // Per-item deposit: ready=100% (no deposit), preorder=30%
@@ -41,6 +42,10 @@ const Cart = () => {
       toast.error("Утасны дугаараа зөв оруулна уу");
       return;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      toast.error("И-мэйл хаягаа зөв оруулна уу");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -56,6 +61,7 @@ const Cart = () => {
           price_mnt: skin.price,
           payment_method: method,
           phone: phone.trim(),
+          email: email.trim().toLowerCase(),
           status: "pending" as const,
           product_type: skin.productType,
           deposit_amount: deposit,
@@ -195,6 +201,28 @@ const Cart = () => {
               Захиалга баталгаажихад тантай холбогдоход хэрэгтэй.
             </p>
           </div>
+
+          {/* Email */}
+          <div className="rounded-2xl border border-border bg-gradient-card p-5">
+            <Label htmlFor="email" className="flex items-center gap-2 font-display text-base font-semibold">
+              <Mail className="h-4 w-4 text-accent" /> И-мэйл хаяг
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="mt-2"
+            />
+            <p className="mt-1.5 text-[11px] text-muted-foreground">
+              Захиалга баталгаажсан болон скин ирсэн мэдэгдлийг и-мэйлээр илгээнэ.
+            </p>
+          </div>
+
+
 
           {/* Payment method picker */}
           <div className="rounded-2xl border border-border bg-gradient-card p-5">
