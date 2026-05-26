@@ -13,16 +13,15 @@ const corsHeaders = {
 //          min/max price → 1-3000 CNY (хямдаас дундаж хүртэл)
 const BUFF_BASE =
   "https://buff.163.com/api/market/goods?game=csgo&page_size=80&sort_by=sell_num.desc";
-const PAGES_WEAPONS = 5; // weapons: 5 × 80 = 400
-const PAGES_KNIVES = 10;  // knives: 10 × 80 = 800
-const PAGES_PER_WEAPON = 8; // priority weapons: 8 × 80 = 640 тус бүр
-const PAGES_GLOVES = 10; // gloves: 10 × 80 = 800
+const PAGES_WEAPONS = 12; // weapons: 12 × 80 = 960
+const PAGES_KNIVES = 15;  // knives: 15 × 80 = 1200
+const PAGES_PER_WEAPON = 15; // priority weapons: 15 × 80 = 1200 тус бүр
+const PAGES_GLOVES = 20; // gloves: 20 × 80 = 1600
 const BUFF_KNIFE_BASE =
-  "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category_group=knife&sort_by=sell_num.desc&min_price=1&max_price=10000";
+  "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category_group=knife&sort_by=sell_num.desc&min_price=1&max_price=20000";
 const BUFF_GLOVES_BASE =
-  "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category_group=hand&sort_by=sell_num.desc&min_price=1&max_price=20000";
-// Тэргүүлэх зэвсгүүд: AWP, Deagle, USP-S, Glock, M4A4, M4A1-S, AK-47
-// Buff163 category кодууд
+  "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category_group=hand&sort_by=sell_num.desc&min_price=1&max_price=30000";
+// Тэргүүлэх зэвсгүүд
 const PRIORITY_WEAPONS = [
   "weapon_awp",
   "weapon_deagle",
@@ -31,6 +30,26 @@ const PRIORITY_WEAPONS = [
   "weapon_m4a4",
   "weapon_m4a1_silencer",
   "weapon_ak47",
+  "weapon_knife", // generic knife category fallback
+  "weapon_p250",
+  "weapon_famas",
+  "weapon_galilar",
+  "weapon_aug",
+  "weapon_sg556",
+  "weapon_ssg08",
+  "weapon_mp9",
+  "weapon_mp7",
+  "weapon_p90",
+  "weapon_ump45",
+  "weapon_mac10",
+  "weapon_nova",
+  "weapon_xm1014",
+  "weapon_five_seven",
+  "weapon_tec9",
+  "weapon_cz75a",
+  "weapon_revolver",
+  "weapon_hkp2000",
+  "weapon_elite",
 ];
 const RATE_URL = "https://open.er-api.com/v6/latest/CNY"; // free, түлхүүр шаардахгүй
 const MARGIN = 1.10;
