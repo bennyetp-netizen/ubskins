@@ -26,7 +26,7 @@ const ProductTypeBadge = ({ type, className = "", withSubLabel = false }: Props)
         🟡 ЗАХИАЛГА
       </Badge>
       {withSubLabel && (
-        <span className="text-[10px] font-medium text-orange-400/80">2-5 хоногт хүргэнэ</span>
+        <span className="text-[10px] font-medium text-orange-400/80">өдөрт нь хүргэнэ</span>
       )}
     </div>
   );
