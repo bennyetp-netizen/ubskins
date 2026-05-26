@@ -227,7 +227,7 @@ Deno.serve(async (req) => {
       for (const cat of PRIORITY_WEAPONS) {
         await new Promise((r) => setTimeout(r, 3000));
         const items = await fetchPages(
-          `${BUFF_BASE}&category=${cat}&min_price=1&max_price=5000`,
+          `${BUFF_BASE}&category=${cat}&min_price=1&max_price=10000`,
           PAGES_PER_WEAPON,
         );
         console.log(`${cat}: ${items.length} item татсан`);
