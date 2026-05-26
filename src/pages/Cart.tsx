@@ -61,6 +61,7 @@ const Cart = () => {
           price_mnt: skin.price,
           payment_method: method,
           phone: phone.trim(),
+          email: email.trim().toLowerCase(),
           status: "pending" as const,
           product_type: skin.productType,
           deposit_amount: deposit,
