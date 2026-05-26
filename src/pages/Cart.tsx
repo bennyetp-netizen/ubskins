@@ -159,27 +159,30 @@ const Cart = () => {
         <div className="space-y-3">
           {items.map(({ skin, lineId }) => {
             return (
-              <div key={lineId} className="flex gap-4 rounded-2xl border border-border bg-gradient-card p-4">
-                <div className="flex h-24 w-32 shrink-0 items-center justify-center rounded-xl bg-secondary/50">
-                  <img src={skin.image || "/placeholder.svg"} alt={skin.name} referrerPolicy="no-referrer" onError={(e) => { const i = e.currentTarget; if (!i.src.endsWith("/placeholder.svg")) i.src = "/placeholder.svg"; }} className="max-h-full object-contain" />
-                </div>
-                <div className="flex flex-1 flex-col justify-between">
-                  <div>
-                    <p className="text-xs uppercase tracking-wider text-muted-foreground">{skin.weaponName}</p>
-                    <p className="font-display font-semibold">{skin.name}</p>
-                    <p className={`text-xs ${wearColor[skin.wear]}`}>{skin.wear} · Float {skin.float.toFixed(3)}</p>
+              <SwipeableCartItem key={lineId} onDelete={() => remove(lineId)}>
+                <div className="flex gap-4 rounded-2xl border border-border bg-gradient-card p-4">
+                  <div className="flex h-24 w-32 shrink-0 items-center justify-center rounded-xl bg-secondary/50">
+                    <img src={skin.image || "/placeholder.svg"} alt={skin.name} referrerPolicy="no-referrer" onError={(e) => { const i = e.currentTarget; if (!i.src.endsWith("/placeholder.svg")) i.src = "/placeholder.svg"; }} className="max-h-full object-contain" />
                   </div>
-                  <div className="flex items-end justify-between">
-                    <p className="font-display text-lg font-bold">{formatMNT(skin.price)}</p>
-                    <Button variant="ghost" size="icon" onClick={() => remove(lineId)} aria-label="Устгах">
-                      <Trash2 className="h-4 w-4 text-muted-foreground" />
-                    </Button>
+                  <div className="flex flex-1 flex-col justify-between">
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-muted-foreground">{skin.weaponName}</p>
+                      <p className="font-display font-semibold">{skin.name}</p>
+                      <p className={`text-xs ${wearColor[skin.wear]}`}>{skin.wear} · Float {skin.float.toFixed(3)}</p>
+                    </div>
+                    <div className="flex items-end justify-between">
+                      <p className="font-display text-lg font-bold">{formatMNT(skin.price)}</p>
+                      <Button variant="ghost" size="icon" onClick={() => remove(lineId)} aria-label="Устгах">
+                        <Trash2 className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </SwipeableCartItem>
             );
           })}
         </div>
+
 
         {/* Summary + Payment selection */}
         <div className="space-y-4">
