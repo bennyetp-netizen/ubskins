@@ -98,8 +98,10 @@ const link = { color: '#0F172A', textDecoration: 'underline' }
 
 export const template = {
   component: AdminOrderNotification,
-  subject: (d: AdminOrderProps) =>
-    `🛒 Шинэ захиалга ${d?.orderNumber ?? ''} — ${fmt(d?.total ?? 0)}`,
+  subject: (d: AdminOrderProps) => {
+    const paid = typeof d?.paidAmount === 'number' ? d.paidAmount : (d?.depositAmount || d?.total || 0)
+    return `🛒 Шинэ захиалга ${d?.orderNumber ?? ''} — төлсөн ${fmt(paid)}`
+  },
   displayName: 'Админд захиалга мэдэгдэх',
   to: 'bennyetp@gmail.com',
   previewData: {
@@ -109,7 +111,8 @@ export const template = {
     customerName: 'Болд',
     items: [{ name: 'AK-47 | Redline', price: 250000, wear: 'Field-Tested · Float 0.150' }],
     total: 250000,
-    depositAmount: 250000,
+    depositAmount: 125000,
+    paidAmount: 125000,
     paymentMethod: 'bank',
     adminUrl: 'https://ubskins.mn/admin',
   },
