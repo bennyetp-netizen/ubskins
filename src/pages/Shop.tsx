@@ -78,7 +78,7 @@ const Shop = () => {
       return;
     }
     setPage(1);
-  }, [q, typeFilter, weapons, wears, maxPrice, sort]);
+  }, [q, typeFilter, weapons, wears, minPrice, maxPrice, sort]);
 
   // Restore scroll position after data loaded
   useEffect(() => {
