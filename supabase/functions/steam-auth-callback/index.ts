@@ -134,7 +134,13 @@ Deno.serve(async (req) => {
     if (existing) {
       userId = existing.id;
       // Refresh their metadata so display name / avatar stays current
-      await admin.auth.admin.updateUserById(existing.id, { user_metadata: userMetadata });
+      // Refresh metadata AND rotate password to the new HMAC-derived value so
+      // legacy accounts created with the old predictable scheme cannot be
+      // logged into using the leaked formula.
+      await admin.auth.admin.updateUserById(existing.id, {
+        user_metadata: userMetadata,
+        password: syntheticPassword,
+      });
     } else {
       const { data: created, error: createErr } = await admin.auth.admin.createUser({
         email: syntheticEmail,
