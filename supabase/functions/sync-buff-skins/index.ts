@@ -268,7 +268,7 @@ Deno.serve(async (req) => {
       const lowerName = fullName.toLowerCase();
       const isKnife = KNIFE_KEYWORDS.some((k) => lowerName.includes(k));
       const isGloves = GLOVES_KEYWORDS.some((k) => lowerName.includes(k));
-      const maxCny = isKnife ? 10000 : isGloves ? 20000 : 5000;
+      const maxCny = isKnife ? 20000 : isGloves ? 30000 : 10000;
       if (cnyPrice < 1 || cnyPrice > maxCny) {
         skippedFilter++;
         continue;
