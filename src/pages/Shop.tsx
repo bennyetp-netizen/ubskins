@@ -64,7 +64,7 @@ const Shop = () => {
       sort === "price-asc" ? a.price - b.price : sort === "price-desc" ? b.price - a.price : a.float - b.float
     );
     return list;
-  }, [skins, q, typeFilter, weapons, wears, maxPrice, sort]);
+  }, [skins, q, typeFilter, weapons, wears, minPrice, maxPrice, sort]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
