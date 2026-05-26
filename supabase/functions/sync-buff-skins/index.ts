@@ -182,20 +182,42 @@ Deno.serve(async (req) => {
       return items;
     }
 
-    // mode=knife → зөвхөн хутга, mode=weapon → зөвхөн зэвсэг, default → хоёулаа
+    // mode=knife → зөвхөн хутга, mode=weapon → зөвхөн зэвсэг,
+    // mode=gloves → зөвхөн бээлий, mode=priority → зөвхөн тэргүүлэх зэвсгүүд,
+    // default (all) → бүгд
     const url = new URL(req.url);
     const mode = url.searchParams.get("mode") ?? "all";
 
     let knifeItems: any[] = [];
     let weaponItems: any[] = [];
+    let glovesItems: any[] = [];
+    let priorityItems: any[] = [];
 
     if (mode === "all" || mode === "knife") {
       knifeItems = await fetchPages(BUFF_KNIFE_BASE, PAGES_KNIVES);
       console.log(`Хутга: ${knifeItems.length} item татсан`);
     }
 
-    if (mode === "all" || mode === "weapon") {
+    if (mode === "all" || mode === "gloves") {
       if (knifeItems.length > 0) await new Promise((r) => setTimeout(r, 3000));
+      glovesItems = await fetchPages(BUFF_GLOVES_BASE, PAGES_GLOVES);
+      console.log(`Бээлий: ${glovesItems.length} item татсан`);
+    }
+
+    if (mode === "all" || mode === "priority") {
+      for (const cat of PRIORITY_WEAPONS) {
+        await new Promise((r) => setTimeout(r, 3000));
+        const items = await fetchPages(
+          `${BUFF_BASE}&category=${cat}&min_price=1&max_price=5000`,
+          PAGES_PER_WEAPON,
+        );
+        console.log(`${cat}: ${items.length} item татсан`);
+        priorityItems.push(...items);
+      }
+    }
+
+    if (mode === "all" || mode === "weapon") {
+      await new Promise((r) => setTimeout(r, 3000));
       weaponItems = await fetchPages(`${BUFF_BASE}&category=weapon&min_price=1&max_price=3000`, PAGES_WEAPONS);
       console.log(`Зэвсэг: ${weaponItems.length} item татсан`);
     }
@@ -203,7 +225,7 @@ Deno.serve(async (req) => {
     // Давхардлыг buff_id-аар арилгах
     const seenIds = new Set<string>();
     const allItems: any[] = [];
-    for (const it of [...knifeItems, ...weaponItems]) {
+    for (const it of [...knifeItems, ...glovesItems, ...priorityItems, ...weaponItems]) {
       const id = String(it?.id ?? "");
       if (id && !seenIds.has(id)) {
         seenIds.add(id);
@@ -224,8 +246,10 @@ Deno.serve(async (req) => {
 
       const { weapon, skin } = cleanName(fullName);
 
-      const isKnife = KNIFE_KEYWORDS.some((k) => fullName.toLowerCase().includes(k));
-      const maxCny = isKnife ? 10000 : 3000;
+      const lowerName = fullName.toLowerCase();
+      const isKnife = KNIFE_KEYWORDS.some((k) => lowerName.includes(k));
+      const isGloves = GLOVES_KEYWORDS.some((k) => lowerName.includes(k));
+      const maxCny = isKnife ? 10000 : isGloves ? 20000 : 5000;
       if (cnyPrice < 1 || cnyPrice > maxCny) {
         skippedFilter++;
         continue;
