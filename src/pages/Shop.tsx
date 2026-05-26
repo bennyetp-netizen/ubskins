@@ -45,7 +45,8 @@ const Shop = () => {
   const [typeFilter, setTypeFilter] = useState<TypeFilter>(saved.typeFilter ?? "all");
   const [weapons, setWeapons] = useState<string[]>(saved.weapons ?? []);
   const [wears, setWears] = useState<Wear[]>(saved.wears ?? []);
-  const [maxPrice, setMaxPrice] = useState(saved.maxPrice ?? 5000000);
+  const [minPrice, setMinPrice] = useState(saved.minPrice ?? PRICE_MIN);
+  const [maxPrice, setMaxPrice] = useState(saved.maxPrice ?? PRICE_MAX);
   const [sort, setSort] = useState<"price-asc" | "price-desc" | "float-asc">(saved.sort ?? "price-asc");
   const [page, setPage] = useState(saved.page ?? 1);
   const restoredScroll = useRef(false);
