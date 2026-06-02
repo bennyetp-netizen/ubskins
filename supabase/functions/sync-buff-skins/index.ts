@@ -264,6 +264,17 @@ Deno.serve(async (req) => {
       console.log(`Зэвсэг: ${weaponItems.length} item татсан`);
     }
 
+    if (mode === "all" || mode === "stickers") {
+      await new Promise((r) => setTimeout(r, 3000));
+      const rawStickers = await fetchPages(BUFF_STICKER_BASE, PAGES_STICKERS);
+      // Зөвхөн Mongolia багийн стикерүүдийг үлдээх
+      stickerItems = rawStickers.filter((it: any) => {
+        const n = String(it?.name ?? "").toLowerCase();
+        return n.includes("mongolia");
+      });
+      console.log(`Стикер (Mongolia): ${stickerItems.length} / ${rawStickers.length} item`);
+    }
+
     // Давхардлыг buff_id-аар арилгах
     const seenIds = new Set<string>();
     const allItems: any[] = [];
