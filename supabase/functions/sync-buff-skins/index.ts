@@ -144,14 +144,30 @@ Deno.serve(async (req) => {
     }
 
 
-    // 1) CNY → MNT ханш татах
-    const rateRes = await fetch(RATE_URL);
-    const rateJson = await rateRes.json();
-    const cnyToMnt = rateJson?.rates?.MNT;
-    if (!cnyToMnt) throw new Error("Ханшийн API алдаа: " + JSON.stringify(rateJson));
+    // 1) CNY → MNT ханш татах — Монгол банкны ханш (monxansh нь Монголбанкны өдөр тутмын ханшийг JSON-оор өгдөг)
+    let cnyToMnt: number | null = null;
+    let rateSource = "mongolbank";
+    try {
+      const mbRes = await fetch("https://monxansh.appspot.com/xansh.json");
+      const mbJson = await mbRes.json();
+      // monxansh формат: { "CNY": { "rate": "...", ... }, ... }
+      const r = Number(mbJson?.CNY?.rate ?? mbJson?.cny?.rate);
+      if (r && r > 0) cnyToMnt = r;
+    } catch (e) {
+      console.warn("Mongolbank rate fetch failed:", e);
+    }
+    if (!cnyToMnt) {
+      // Fallback
+      const rateRes = await fetch(FALLBACK_RATE_URL);
+      const rateJson = await rateRes.json();
+      cnyToMnt = Number(rateJson?.rates?.MNT);
+      rateSource = "open.er-api.com";
+      if (!cnyToMnt) throw new Error("Ханшийн API алдаа: " + JSON.stringify(rateJson));
+    }
+    console.log(`CNY→MNT ханш: ${cnyToMnt} (${rateSource})`);
 
     await sb.from("exchange_rates").upsert(
-      { base: "CNY", quote: "MNT", rate: cnyToMnt, source: "open.er-api.com", updated_at: new Date().toISOString() },
+      { base: "CNY", quote: "MNT", rate: cnyToMnt, source: rateSource, updated_at: new Date().toISOString() },
       { onConflict: "base,quote" },
     );
 
