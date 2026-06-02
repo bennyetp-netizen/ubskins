@@ -100,9 +100,17 @@ Deno.serve(async (req) => {
         );
       }
 
-      const amount = isRemaining
-        ? (order.remaining_amount ?? (order.price_mnt - (order.deposit_amount ?? 0)))
+      const rawAmount = isRemaining
+        ? (order.remaining_amount ?? ((order.price_mnt ?? 0) - (order.deposit_amount ?? 0)))
         : (isPreorder ? (order.deposit_amount ?? order.price_mnt) : order.price_mnt);
+      const amount = Number(rawAmount);
+      if (!amount || amount < 1 || !isFinite(amount)) {
+        console.error("Invalid invoice amount", { rawAmount, order_id: order.id, stage });
+        return new Response(
+          JSON.stringify({ error: `Төлбөрийн дүн буруу байна (${rawAmount}). Захиалгын үнийг шалгана уу.` }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
 
       const callbackUrl = `${supabaseUrl}/functions/v1/qpay-callback?order_id=${order.id}&stage=${stage}`;
       const senderNo = (order.order_number ?? order.id.slice(0, 12)) + (isRemaining ? "-R" : "");
