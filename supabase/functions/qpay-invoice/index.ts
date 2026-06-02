@@ -100,9 +100,17 @@ Deno.serve(async (req) => {
         );
       }
 
-      const amount = isRemaining
-        ? (order.remaining_amount ?? (order.price_mnt - (order.deposit_amount ?? 0)))
+      const rawAmount = isRemaining
+        ? (order.remaining_amount ?? ((order.price_mnt ?? 0) - (order.deposit_amount ?? 0)))
         : (isPreorder ? (order.deposit_amount ?? order.price_mnt) : order.price_mnt);
+      const amount = Number(rawAmount);
+      if (!amount || amount < 1 || !isFinite(amount)) {
+        console.error("Invalid invoice amount", { rawAmount, order_id: order.id, stage });
+        return new Response(
+          JSON.stringify({ error: `Төлбөрийн дүн буруу байна (${rawAmount}). Захиалгын үнийг шалгана уу.` }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
 
       const callbackUrl = `${supabaseUrl}/functions/v1/qpay-callback?order_id=${order.id}&stage=${stage}`;
       const senderNo = (order.order_number ?? order.id.slice(0, 12)) + (isRemaining ? "-R" : "");
@@ -121,8 +129,11 @@ Deno.serve(async (req) => {
       });
       const invJson = await invRes.json();
       if (!invRes.ok) {
-        console.error("QPay invoice err", invJson);
-        throw new Error(invJson?.message || "QPay invoice failed");
+        console.error("QPay invoice err", JSON.stringify(invJson));
+        const msg = typeof invJson?.message === "string"
+          ? invJson.message
+          : JSON.stringify(invJson?.message ?? invJson?.error ?? invJson);
+        throw new Error(`QPay invoice failed: ${msg}`);
       }
 
       await admin
