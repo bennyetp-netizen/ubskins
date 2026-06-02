@@ -233,6 +233,7 @@ Deno.serve(async (req) => {
     let weaponItems: any[] = [];
     let glovesItems: any[] = [];
     let priorityItems: any[] = [];
+    let stickerItems: any[] = [];
 
     if (mode === "all" || mode === "knife") {
       knifeItems = await fetchPages(BUFF_KNIFE_BASE, PAGES_KNIVES);
