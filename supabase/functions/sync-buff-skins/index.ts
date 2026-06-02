@@ -51,8 +51,10 @@ const PRIORITY_WEAPONS = [
   "weapon_hkp2000",
   "weapon_elite",
 ];
-const RATE_URL = "https://open.er-api.com/v6/latest/CNY"; // free, түлхүүр шаардахгүй
-const MARGIN = 1.10;
+// Монгол банкны (Mongol Bank) албан ёсны CNY→MNT ханш
+const RATE_URL = "https://api.mongolbank.mn/json/get/exchange_rate?currency=CNY";
+const FALLBACK_RATE_URL = "https://open.er-api.com/v6/latest/CNY";
+const MARGIN = 1.017; // 1.70% margin
 
 // Хутга бүх төрлөөр (Karambit, Bayonet, Butterfly, Flip, Huntsman гэх мэт)
 const KNIFE_KEYWORDS = ["knife", "karambit", "bayonet", "daggers", "★"];
@@ -142,14 +144,30 @@ Deno.serve(async (req) => {
     }
 
 
-    // 1) CNY → MNT ханш татах
-    const rateRes = await fetch(RATE_URL);
-    const rateJson = await rateRes.json();
-    const cnyToMnt = rateJson?.rates?.MNT;
-    if (!cnyToMnt) throw new Error("Ханшийн API алдаа: " + JSON.stringify(rateJson));
+    // 1) CNY → MNT ханш татах — Монгол банкны ханш (monxansh нь Монголбанкны өдөр тутмын ханшийг JSON-оор өгдөг)
+    let cnyToMnt: number | null = null;
+    let rateSource = "mongolbank";
+    try {
+      const mbRes = await fetch("https://monxansh.appspot.com/xansh.json");
+      const mbJson = await mbRes.json();
+      // monxansh формат: { "CNY": { "rate": "...", ... }, ... }
+      const r = Number(mbJson?.CNY?.rate ?? mbJson?.cny?.rate);
+      if (r && r > 0) cnyToMnt = r;
+    } catch (e) {
+      console.warn("Mongolbank rate fetch failed:", e);
+    }
+    if (!cnyToMnt) {
+      // Fallback
+      const rateRes = await fetch(FALLBACK_RATE_URL);
+      const rateJson = await rateRes.json();
+      cnyToMnt = Number(rateJson?.rates?.MNT);
+      rateSource = "open.er-api.com";
+      if (!cnyToMnt) throw new Error("Ханшийн API алдаа: " + JSON.stringify(rateJson));
+    }
+    console.log(`CNY→MNT ханш: ${cnyToMnt} (${rateSource})`);
 
     await sb.from("exchange_rates").upsert(
-      { base: "CNY", quote: "MNT", rate: cnyToMnt, source: "open.er-api.com", updated_at: new Date().toISOString() },
+      { base: "CNY", quote: "MNT", rate: cnyToMnt, source: rateSource, updated_at: new Date().toISOString() },
       { onConflict: "base,quote" },
     );
 
