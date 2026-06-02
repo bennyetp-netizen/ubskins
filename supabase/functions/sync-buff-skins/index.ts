@@ -333,6 +333,44 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Mongolia стикерүүдийг тусад нь боловсруулах (wear, weapon_type өөр)
+    for (const it of stickerItems) {
+      const fullName: string = it?.name ?? "";
+      const buffId = String(it?.id ?? "");
+      const cnyPrice = Number(it?.sell_min_price ?? 0);
+      if (!buffId || !cnyPrice) continue;
+      if (cnyPrice < 0.1 || cnyPrice > 50000) {
+        skippedFilter++;
+        continue;
+      }
+
+      // "Sticker | Mongolia (Foil) | Antwerp 2022"
+      const parts = fullName.split("|").map((p) => p.trim());
+      const skinName = parts.slice(1).join(" | ") || fullName;
+      const image = it?.goods_info?.icon_url ?? it?.goods_info?.original_icon_url ?? null;
+      const rarity = detectRarity(it?.goods_info?.info?.tags);
+      const rawMnt = cnyPrice * cnyToMnt * MARGIN;
+      const priceMnt = Math.round(rawMnt / 100) * 100;
+
+      batch.push({
+        buff_id: buffId,
+        name: skinName,
+        weapon: "Sticker",
+        weapon_type: "Sticker",
+        game: "CS2",
+        wear: null,
+        buff_price_cny: cnyPrice,
+        price_mnt: priceMnt,
+        image_url: image,
+        rarity,
+        stock: 1,
+        is_active: true,
+        is_available: true,
+        last_synced_at: new Date().toISOString(),
+      });
+    }
+
+
     // Batch upsert 50 бүрээр
     const BATCH_SIZE = 50;
     for (let i = 0; i < batch.length; i += BATCH_SIZE) {
