@@ -21,6 +21,10 @@ const BUFF_KNIFE_BASE =
   "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category_group=knife&sort_by=sell_num.desc&min_price=1&max_price=20000";
 const BUFF_GLOVES_BASE =
   "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category_group=hand&sort_by=sell_num.desc&min_price=1&max_price=30000";
+// Mongol багийн stickers (Antwerp, Paris, Copenhagen, Shanghai, Austin гэх мэт)
+const BUFF_STICKER_BASE =
+  "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category=sticker_tournament_team&sort_by=sell_num.desc&min_price=0.1&max_price=50000";
+const PAGES_STICKERS = 30; // 30 × 80 = 2400 — Монгол стикерүүдийг олж авах
 // Тэргүүлэх зэвсгүүд
 const PRIORITY_WEAPONS = [
   "weapon_awp",
@@ -229,6 +233,7 @@ Deno.serve(async (req) => {
     let weaponItems: any[] = [];
     let glovesItems: any[] = [];
     let priorityItems: any[] = [];
+    let stickerItems: any[] = [];
 
     if (mode === "all" || mode === "knife") {
       knifeItems = await fetchPages(BUFF_KNIFE_BASE, PAGES_KNIVES);
@@ -257,6 +262,17 @@ Deno.serve(async (req) => {
       await new Promise((r) => setTimeout(r, 3000));
       weaponItems = await fetchPages(`${BUFF_BASE}&category=weapon&min_price=1&max_price=5000`, PAGES_WEAPONS);
       console.log(`Зэвсэг: ${weaponItems.length} item татсан`);
+    }
+
+    if (mode === "all" || mode === "stickers") {
+      await new Promise((r) => setTimeout(r, 3000));
+      const rawStickers = await fetchPages(BUFF_STICKER_BASE, PAGES_STICKERS);
+      // Зөвхөн Mongolia багийн стикерүүдийг үлдээх
+      stickerItems = rawStickers.filter((it: any) => {
+        const n = String(it?.name ?? "").toLowerCase();
+        return n.includes("mongolia");
+      });
+      console.log(`Стикер (Mongolia): ${stickerItems.length} / ${rawStickers.length} item`);
     }
 
     // Давхардлыг buff_id-аар арилгах
@@ -316,6 +332,44 @@ Deno.serve(async (req) => {
         last_synced_at: new Date().toISOString(),
       });
     }
+
+    // Mongolia стикерүүдийг тусад нь боловсруулах (wear, weapon_type өөр)
+    for (const it of stickerItems) {
+      const fullName: string = it?.name ?? "";
+      const buffId = String(it?.id ?? "");
+      const cnyPrice = Number(it?.sell_min_price ?? 0);
+      if (!buffId || !cnyPrice) continue;
+      if (cnyPrice < 0.1 || cnyPrice > 50000) {
+        skippedFilter++;
+        continue;
+      }
+
+      // "Sticker | Mongolia (Foil) | Antwerp 2022"
+      const parts = fullName.split("|").map((p) => p.trim());
+      const skinName = parts.slice(1).join(" | ") || fullName;
+      const image = it?.goods_info?.icon_url ?? it?.goods_info?.original_icon_url ?? null;
+      const rarity = detectRarity(it?.goods_info?.info?.tags);
+      const rawMnt = cnyPrice * cnyToMnt * MARGIN;
+      const priceMnt = Math.round(rawMnt / 100) * 100;
+
+      batch.push({
+        buff_id: buffId,
+        name: skinName,
+        weapon: "Sticker",
+        weapon_type: "Sticker",
+        game: "CS2",
+        wear: null,
+        buff_price_cny: cnyPrice,
+        price_mnt: priceMnt,
+        image_url: image,
+        rarity,
+        stock: 1,
+        is_active: true,
+        is_available: true,
+        last_synced_at: new Date().toISOString(),
+      });
+    }
+
 
     // Batch upsert 50 бүрээр
     const BATCH_SIZE = 50;
