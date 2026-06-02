@@ -51,8 +51,10 @@ const PRIORITY_WEAPONS = [
   "weapon_hkp2000",
   "weapon_elite",
 ];
-const RATE_URL = "https://open.er-api.com/v6/latest/CNY"; // free, түлхүүр шаардахгүй
-const MARGIN = 1.10;
+// Монгол банкны (Mongol Bank) албан ёсны CNY→MNT ханш
+const RATE_URL = "https://api.mongolbank.mn/json/get/exchange_rate?currency=CNY";
+const FALLBACK_RATE_URL = "https://open.er-api.com/v6/latest/CNY";
+const MARGIN = 1.017; // 1.70% margin
 
 // Хутга бүх төрлөөр (Karambit, Bayonet, Butterfly, Flip, Huntsman гэх мэт)
 const KNIFE_KEYWORDS = ["knife", "karambit", "bayonet", "daggers", "★"];
