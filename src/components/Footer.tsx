@@ -1,4 +1,4 @@
-import { Shield, Mail, MessageCircle } from "lucide-react";
+import { Shield, Mail, MessageCircle, Facebook } from "lucide-react";
 
 const Footer = () => (
   <footer className="border-t border-border/60 bg-card/40">
