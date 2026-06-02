@@ -321,6 +321,25 @@ const Orders = () => {
                   </div>
                 </div>
 
+                {/* Fully paid success banner */}
+                {o.status === "paid" && (
+                  <div className="border-t border-emerald-500/30 bg-emerald-500/10 p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/20">
+                        <CheckCircle2 className="h-6 w-6 text-emerald-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-display text-base font-bold text-emerald-400">
+                          ✅ Амжилттай төлөгдлөө!
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Таны төлбөр бүрэн баталгаажлаа. Скиныг Steam trade offer-ээр удахгүй илгээнэ.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Payment instructions */}
                 {isOpen && o.status === "pending" && payment && (
                   <div className="border-t border-border bg-background/40 p-5">
