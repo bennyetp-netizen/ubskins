@@ -21,6 +21,10 @@ const BUFF_KNIFE_BASE =
   "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category_group=knife&sort_by=sell_num.desc&min_price=1&max_price=20000";
 const BUFF_GLOVES_BASE =
   "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category_group=hand&sort_by=sell_num.desc&min_price=1&max_price=30000";
+// Mongol багийн stickers (Antwerp, Paris, Copenhagen, Shanghai, Austin гэх мэт)
+const BUFF_STICKER_BASE =
+  "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category=sticker_tournament_team&sort_by=sell_num.desc&min_price=0.1&max_price=50000";
+const PAGES_STICKERS = 30; // 30 × 80 = 2400 — Монгол стикерүүдийг олж авах
 // Тэргүүлэх зэвсгүүд
 const PRIORITY_WEAPONS = [
   "weapon_awp",
