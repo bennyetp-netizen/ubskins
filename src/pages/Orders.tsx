@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { LogIn, Package, Clock, CheckCircle2, Truck, ShoppingBag, Copy, ChevronDown, ChevronUp, Globe2, Banknote, X } from "lucide-react";
+import { LogIn, Package, Clock, CheckCircle2, Truck, ShoppingBag, Copy, ChevronDown, ChevronUp, Globe2, Banknote, X, Facebook } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatMNT } from "@/data/skins";
@@ -487,7 +487,27 @@ const Orders = () => {
                       ))}
                     </ul>
 
-                    <p className="mt-4 rounded-lg border border-border bg-secondary/40 p-3 text-xs text-muted-foreground">
+                    {/* Facebook contact */}
+                    <a
+                      href="https://www.facebook.com/profile.php?id=61590372189026"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-4 flex items-center gap-3 rounded-xl border border-[#1877F2]/30 bg-[#1877F2]/5 p-4 transition-colors hover:bg-[#1877F2]/10"
+                    >
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1877F2]/15">
+                        <Facebook className="h-5 w-5 text-[#1877F2]" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-[#1877F2]">
+                          📩 Facebook-р холбогдох — баримтаа явуулах
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">
+                          Скин авсаны дараа энд дарж бидэнтэй холбогдож, гүйлгээний баримтаа илгээнэ үү
+                        </p>
+                      </div>
+                    </a>
+
+                    <p className="mt-3 rounded-lg border border-border bg-secondary/40 p-3 text-xs text-muted-foreground">
                       Төлбөр шилжүүлсний дараа{" "}
                       <a
                         href="https://t.me/ubskins"
