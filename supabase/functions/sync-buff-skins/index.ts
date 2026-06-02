@@ -25,6 +25,11 @@ const BUFF_GLOVES_BASE =
 const BUFF_STICKER_BASE =
   "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category=sticker_tournament_team&sort_by=sell_num.desc&min_price=0.1&max_price=50000";
 const PAGES_STICKERS = 30; // 30 × 80 = 2400 — Монгол стикерүүдийг олж авах
+// Mongol тоглогчдын автограф стикерүүд (senzu, techno4k, mzinho, blitz, cobrazera, 910)
+const BUFF_PLAYER_STICKER_BASE =
+  "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category=sticker_tournament_player&sort_by=sell_num.desc&min_price=0.1&max_price=50000";
+const PAGES_PLAYER_STICKERS = 40; // 40 × 80 = 3200
+const MONGOL_PLAYERS = ["senzu", "techno4k", "mzinho", "blitz", "cobrazera", "910"];
 // Тэргүүлэх зэвсгүүд
 const PRIORITY_WEAPONS = [
   "weapon_awp",
@@ -268,12 +273,29 @@ Deno.serve(async (req) => {
       await new Promise((r) => setTimeout(r, 3000));
       const rawStickers = await fetchPages(BUFF_STICKER_BASE, PAGES_STICKERS);
       // Зөвхөн Mongolia багийн стикерүүдийг үлдээх
-      stickerItems = rawStickers.filter((it: any) => {
+      const teamStickers = rawStickers.filter((it: any) => {
         const n = String(it?.name ?? "").toLowerCase();
         return n.includes("mongolia");
       });
-      console.log(`Стикер (Mongolia): ${stickerItems.length} / ${rawStickers.length} item`);
+      console.log(`Стикер (Mongolia team): ${teamStickers.length} / ${rawStickers.length} item`);
+
+      // Mongol тоглогчдын автограф стикерүүд
+      await new Promise((r) => setTimeout(r, 3000));
+      const rawPlayerStickers = await fetchPages(BUFF_PLAYER_STICKER_BASE, PAGES_PLAYER_STICKERS);
+      const playerStickers = rawPlayerStickers.filter((it: any) => {
+        const full = String(it?.name ?? "");
+        // "Sticker | senzu (Foil) | Austin 2025" → player хэсэг 2-р хэсэгт
+        const parts = full.split("|").map((p) => p.trim().toLowerCase());
+        if (parts.length < 2) return false;
+        // player хэсгээс (Foil) гэх мэт хаалт авч хаях
+        const playerToken = parts[1].replace(/\s*\(.*?\)\s*/g, "").trim();
+        return MONGOL_PLAYERS.includes(playerToken);
+      });
+      console.log(`Стикер (Mongol тоглогчид): ${playerStickers.length} / ${rawPlayerStickers.length} item`);
+
+      stickerItems = [...teamStickers, ...playerStickers];
     }
+
 
     // Давхардлыг buff_id-аар арилгах
     const seenIds = new Set<string>();
