@@ -25,6 +25,11 @@ const BUFF_GLOVES_BASE =
 const BUFF_STICKER_BASE =
   "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category=sticker_tournament_team&sort_by=sell_num.desc&min_price=0.1&max_price=50000";
 const PAGES_STICKERS = 30; // 30 × 80 = 2400 — Монгол стикерүүдийг олж авах
+// Mongol тоглогчдын автограф стикерүүд (senzu, techno4k, mzinho, blitz, cobrazera, 910)
+const BUFF_PLAYER_STICKER_BASE =
+  "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category=sticker_tournament_player&sort_by=sell_num.desc&min_price=0.1&max_price=50000";
+const PAGES_PLAYER_STICKERS = 40; // 40 × 80 = 3200
+const MONGOL_PLAYERS = ["senzu", "techno4k", "mzinho", "blitz", "cobrazera", "910"];
 // Тэргүүлэх зэвсгүүд
 const PRIORITY_WEAPONS = [
   "weapon_awp",
