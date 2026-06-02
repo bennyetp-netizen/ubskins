@@ -129,8 +129,11 @@ Deno.serve(async (req) => {
       });
       const invJson = await invRes.json();
       if (!invRes.ok) {
-        console.error("QPay invoice err", invJson);
-        throw new Error(invJson?.message || "QPay invoice failed");
+        console.error("QPay invoice err", JSON.stringify(invJson));
+        const msg = typeof invJson?.message === "string"
+          ? invJson.message
+          : JSON.stringify(invJson?.message ?? invJson?.error ?? invJson);
+        throw new Error(`QPay invoice failed: ${msg}`);
       }
 
       await admin
