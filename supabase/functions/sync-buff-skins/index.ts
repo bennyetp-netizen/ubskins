@@ -273,12 +273,29 @@ Deno.serve(async (req) => {
       await new Promise((r) => setTimeout(r, 3000));
       const rawStickers = await fetchPages(BUFF_STICKER_BASE, PAGES_STICKERS);
       // Зөвхөн Mongolia багийн стикерүүдийг үлдээх
-      stickerItems = rawStickers.filter((it: any) => {
+      const teamStickers = rawStickers.filter((it: any) => {
         const n = String(it?.name ?? "").toLowerCase();
         return n.includes("mongolia");
       });
-      console.log(`Стикер (Mongolia): ${stickerItems.length} / ${rawStickers.length} item`);
+      console.log(`Стикер (Mongolia team): ${teamStickers.length} / ${rawStickers.length} item`);
+
+      // Mongol тоглогчдын автограф стикерүүд
+      await new Promise((r) => setTimeout(r, 3000));
+      const rawPlayerStickers = await fetchPages(BUFF_PLAYER_STICKER_BASE, PAGES_PLAYER_STICKERS);
+      const playerStickers = rawPlayerStickers.filter((it: any) => {
+        const full = String(it?.name ?? "");
+        // "Sticker | senzu (Foil) | Austin 2025" → player хэсэг 2-р хэсэгт
+        const parts = full.split("|").map((p) => p.trim().toLowerCase());
+        if (parts.length < 2) return false;
+        // player хэсгээс (Foil) гэх мэт хаалт авч хаях
+        const playerToken = parts[1].replace(/\s*\(.*?\)\s*/g, "").trim();
+        return MONGOL_PLAYERS.includes(playerToken);
+      });
+      console.log(`Стикер (Mongol тоглогчид): ${playerStickers.length} / ${rawPlayerStickers.length} item`);
+
+      stickerItems = [...teamStickers, ...playerStickers];
     }
+
 
     // Давхардлыг buff_id-аар арилгах
     const seenIds = new Set<string>();
