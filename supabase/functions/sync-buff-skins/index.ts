@@ -64,6 +64,8 @@ const PRIORITY_WEAPONS = [
 const RATE_URL = "https://api.mongolbank.mn/json/get/exchange_rate?currency=CNY";
 const FALLBACK_RATE_URL = "https://open.er-api.com/v6/latest/CNY";
 const MARGIN = 1.32; // 10% margin + 20% нэмэлт
+const MARGIN_HIGH = 1.32; // 500,000 MNT-оос доорх скинүүд
+const MARGIN_LOW = 1.15;  // 500,000 MNT-оос дээш скинүүд (15%)
 
 // Хутга бүх төрлөөр (Karambit, Bayonet, Butterfly, Flip, Huntsman гэх мэт)
 const KNIFE_KEYWORDS = ["knife", "karambit", "bayonet", "daggers", "★"];
@@ -334,8 +336,11 @@ Deno.serve(async (req) => {
       const wear = detectWear(fullName);
       const rarity = detectRarity(it?.goods_info?.info?.tags);
       const image = it?.goods_info?.icon_url ?? it?.goods_info?.original_icon_url ?? null;
-      const rawMnt = cnyPrice * cnyToMnt * MARGIN;
+      const rawMnt = cnyPrice * cnyToMnt * MARGIN_HIGH;
       const priceMnt = Math.round(rawMnt / 100) * 100;
+      const appliedMargin = priceMnt >= 500000 ? MARGIN_LOW : MARGIN_HIGH;
+      const adjustedRawMnt = cnyPrice * cnyToMnt * appliedMargin;
+      const finalPriceMnt = Math.round(adjustedRawMnt / 100) * 100;
 
       batch.push({
         buff_id: buffId,
@@ -345,7 +350,7 @@ Deno.serve(async (req) => {
         game: "CS2",
         wear,
         buff_price_cny: cnyPrice,
-        price_mnt: priceMnt,
+        price_mnt: finalPriceMnt,
         image_url: image,
         rarity,
         stock: 1,
@@ -371,8 +376,11 @@ Deno.serve(async (req) => {
       const skinName = parts.slice(1).join(" | ") || fullName;
       const image = it?.goods_info?.icon_url ?? it?.goods_info?.original_icon_url ?? null;
       const rarity = detectRarity(it?.goods_info?.info?.tags);
-      const rawMnt = cnyPrice * cnyToMnt * MARGIN;
+      const rawMnt = cnyPrice * cnyToMnt * MARGIN_HIGH;
       const priceMnt = Math.round(rawMnt / 100) * 100;
+      const appliedMargin = priceMnt >= 500000 ? MARGIN_LOW : MARGIN_HIGH;
+      const adjustedRawMnt = cnyPrice * cnyToMnt * appliedMargin;
+      const finalPriceMnt = Math.round(adjustedRawMnt / 100) * 100;
 
       batch.push({
         buff_id: buffId,
@@ -382,7 +390,7 @@ Deno.serve(async (req) => {
         game: "CS2",
         wear: null,
         buff_price_cny: cnyPrice,
-        price_mnt: priceMnt,
+        price_mnt: finalPriceMnt,
         image_url: image,
         rarity,
         stock: 1,
