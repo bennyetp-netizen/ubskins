@@ -390,7 +390,8 @@ const Orders = () => {
                     {o.payment_method === "qpay" ? (
                       (() => {
                         const isPreorder = (o.product_type ?? "ready") === "preorder";
-                        const showRemaining = isPreorder && !!o.deposit_paid && !o.remaining_paid;
+                        const remainingDue = o.remaining_amount ?? (o.price_mnt - (o.deposit_amount ?? prepay));
+                        const showRemaining = isPreorder && !!o.deposit_paid && !o.remaining_paid && remainingDue > 0;
                         if (showRemaining) {
                           return (
                             <div className="space-y-3">
