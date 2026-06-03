@@ -63,8 +63,7 @@ const PRIORITY_WEAPONS = [
 // Монгол банкны (Mongol Bank) албан ёсны CNY→MNT ханш
 const RATE_URL = "https://api.mongolbank.mn/json/get/exchange_rate?currency=CNY";
 const FALLBACK_RATE_URL = "https://open.er-api.com/v6/latest/CNY";
-const MARGIN = 1.32; // 10% margin + 20% нэмэлт
-const MARGIN_HIGH = 1.32; // 500,000 MNT-оос доорх скинүүд
+const MARGIN_HIGH = 1.10; // 500,000 MNT-оос доорх скинүүд (10%)
 const MARGIN_LOW = 1.15;  // 500,000 MNT-оос дээш скинүүд (15%)
 
 // Хутга бүх төрлөөр (Karambit, Bayonet, Butterfly, Flip, Huntsman гэх мэт)
