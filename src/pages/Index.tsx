@@ -260,68 +260,17 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Trust & Social Proof */}
+      {/* Trust & Social Proof — temporarily hidden */}
+      {false && (
       <section className="container py-16">
         <div className="mb-10 text-center">
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs text-accent">
             <Star className="h-3 w-3 fill-accent" /> Хэрэглэгчдийн сэтгэгдэл
           </div>
-          <h2 className="font-display text-3xl font-bold md:text-4xl">
-            <span className="text-gradient-primary">2,400+</span> хэрэглэгч итгэн ашигладаг
-          </h2>
-          <div className="mt-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5">
-              <span className="flex">{[...Array(5)].map((_, i) => <Star key={i} className="h-3.5 w-3.5 fill-warning text-warning" />)}</span>
-              <span className="font-semibold text-foreground">4.9/5</span> · 380+ үнэлгээ
-            </span>
-            <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-accent" /> 5,800+ амжилттай trade</span>
-            <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-primary" /> 0 scam report</span>
-          </div>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[
-            { name: "Tamir.B", handle: "Steam · Lvl 24", text: "AK Redline-аа 7 минутад авлаа. Storepay-р хуваагаад асуудалгүй. Recommend!", item: "AK-47 | Redline (FT)" },
-            { name: "Bilguun", handle: "Steam · Lvl 41", text: "Float-аа гар аргаар шалгаад баталгаажуулсан, яг хүссэн скин. Монгол support супер.", item: "★ Karambit | Doppler" },
-            { name: "Enkhjin", handle: "Steam · Lvl 18", text: "QPay-р шууд төлөөд 5 минутад trade offer ирлээ. Хамгийн найдвартай газар.", item: "AWP | Asiimov (FT)" },
-          ].map((r) => (
-            <div key={r.name} className="glass-card group relative overflow-hidden rounded-2xl p-6 transition-all hover:-translate-y-1 hover:border-primary/50">
-              <Quote className="absolute right-4 top-4 h-8 w-8 text-primary/20" />
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent font-bold text-primary-foreground">
-                  {r.name.charAt(0)}
-                </div>
-                <div>
-                  <div className="font-semibold">{r.name}</div>
-                  <div className="text-xs text-muted-foreground">{r.handle}</div>
-                </div>
-              </div>
-              <div className="mt-3 flex">
-                {[...Array(5)].map((_, i) => <Star key={i} className="h-3.5 w-3.5 fill-warning text-warning" />)}
-              </div>
-              <p className="mt-2 text-sm text-foreground/90">"{r.text}"</p>
-              <div className="mt-4 flex items-center justify-between rounded-lg border border-border/60 bg-secondary/40 px-3 py-2">
-                <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-accent" /> Хүргэлт баталгаажсан
-                </span>
-                <span className="truncate text-xs font-medium text-primary">{r.item}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-xs text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/40 px-3 py-1.5">
-            <Globe2 className="h-3.5 w-3.5 text-primary" /> Steam OpenID баталгаажсан
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/40 px-3 py-1.5">
-            <Lock className="h-3.5 w-3.5 text-primary" /> SSL хамгаалалттай
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/40 px-3 py-1.5">
-            <MessageCircle className="h-3.5 w-3.5 text-primary" /> Discord нийгэмлэг
-          </span>
         </div>
       </section>
+      )}
+
 
       {/* Ready (БЭЛЭН) section */}
       <section className="container py-12">
