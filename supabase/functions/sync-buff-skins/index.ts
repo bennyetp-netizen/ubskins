@@ -21,15 +21,18 @@ const BUFF_KNIFE_BASE =
   "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category_group=knife&sort_by=sell_num.desc&min_price=1&max_price=20000";
 const BUFF_GLOVES_BASE =
   "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category_group=hand&sort_by=sell_num.desc&min_price=1&max_price=30000";
-// Mongol багийн stickers (Antwerp, Paris, Copenhagen, Shanghai, Austin гэх мэт)
+// Tournament team stickers (бүх багуудын popular стикерүүд)
 const BUFF_STICKER_BASE =
   "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category=sticker_tournament_team&sort_by=sell_num.desc&min_price=0.1&max_price=50000";
-const PAGES_STICKERS = 30; // 30 × 80 = 2400 — Монгол стикерүүдийг олж авах
-// Mongol тоглогчдын автограф стикерүүд (senzu, techno4k, mzinho, blitz, cobrazera, 910)
+const PAGES_STICKERS = 30; // 30 × 80 = 2400
+// Player autograph stickers (бүх тоглогчдын popular стикерүүд)
 const BUFF_PLAYER_STICKER_BASE =
   "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category=sticker_tournament_player&sort_by=sell_num.desc&min_price=0.1&max_price=50000";
 const PAGES_PLAYER_STICKERS = 40; // 40 × 80 = 3200
-const MONGOL_PLAYERS = ["senzu", "techno4k", "mzinho", "blitz", "cobrazera", "910"];
+// Charms (keychains)
+const BUFF_CHARM_BASE =
+  "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category_group=charm&sort_by=sell_num.desc&min_price=0.1&max_price=50000";
+const PAGES_CHARMS = 20; // 20 × 80 = 1600
 // Тэргүүлэх зэвсгүүд
 const PRIORITY_WEAPONS = [
   "weapon_awp",
@@ -240,6 +243,7 @@ Deno.serve(async (req) => {
     let glovesItems: any[] = [];
     let priorityItems: any[] = [];
     let stickerItems: any[] = [];
+    let charmItems: any[] = [];
 
     if (mode === "all" || mode === "knife") {
       knifeItems = await fetchPages(BUFF_KNIFE_BASE, PAGES_KNIVES);
@@ -273,28 +277,20 @@ Deno.serve(async (req) => {
     if (mode === "all" || mode === "stickers") {
       await new Promise((r) => setTimeout(r, 3000));
       const rawStickers = await fetchPages(BUFF_STICKER_BASE, PAGES_STICKERS);
-      // Зөвхөн Mongolia багийн стикерүүдийг үлдээх
-      const teamStickers = rawStickers.filter((it: any) => {
-        const n = String(it?.name ?? "").toLowerCase();
-        return n.includes("mongolia");
-      });
-      console.log(`Стикер (Mongolia team): ${teamStickers.length} / ${rawStickers.length} item`);
+      console.log(`Стикер (team): ${rawStickers.length} item`);
 
-      // Mongol тоглогчдын автограф стикерүүд
+      // Player autograph стикерүүд (бүх popular)
       await new Promise((r) => setTimeout(r, 3000));
       const rawPlayerStickers = await fetchPages(BUFF_PLAYER_STICKER_BASE, PAGES_PLAYER_STICKERS);
-      const playerStickers = rawPlayerStickers.filter((it: any) => {
-        const full = String(it?.name ?? "");
-        // "Sticker | senzu (Foil) | Austin 2025" → player хэсэг 2-р хэсэгт
-        const parts = full.split("|").map((p) => p.trim().toLowerCase());
-        if (parts.length < 2) return false;
-        // player хэсгээс (Foil) гэх мэт хаалт авч хаях
-        const playerToken = parts[1].replace(/\s*\(.*?\)\s*/g, "").trim();
-        return MONGOL_PLAYERS.includes(playerToken);
-      });
-      console.log(`Стикер (Mongol тоглогчид): ${playerStickers.length} / ${rawPlayerStickers.length} item`);
+      console.log(`Стикер (player): ${rawPlayerStickers.length} item`);
 
-      stickerItems = [...teamStickers, ...playerStickers];
+      stickerItems = [...rawStickers, ...rawPlayerStickers];
+    }
+
+    if (mode === "all" || mode === "charms") {
+      await new Promise((r) => setTimeout(r, 3000));
+      charmItems = await fetchPages(BUFF_CHARM_BASE, PAGES_CHARMS);
+      console.log(`Charm: ${charmItems.length} item`);
     }
 
 
@@ -398,6 +394,47 @@ Deno.serve(async (req) => {
         last_synced_at: new Date().toISOString(),
       });
     }
+
+    // Charm-уудыг боловсруулах
+    for (const it of charmItems) {
+      const fullName: string = it?.name ?? "";
+      const buffId = String(it?.id ?? "");
+      const cnyPrice = Number(it?.sell_min_price ?? 0);
+      if (!buffId || !cnyPrice) continue;
+      if (cnyPrice < 0.1 || cnyPrice > 50000) {
+        skippedFilter++;
+        continue;
+      }
+
+      // "Charm | Lil' SAS" → name: "Lil' SAS"
+      const parts = fullName.split("|").map((p) => p.trim());
+      const skinName = parts.slice(1).join(" | ") || fullName;
+      const image = it?.goods_info?.icon_url ?? it?.goods_info?.original_icon_url ?? null;
+      const rarity = detectRarity(it?.goods_info?.info?.tags);
+      const rawMnt = cnyPrice * cnyToMnt * MARGIN_HIGH;
+      const priceMnt = Math.round(rawMnt / 100) * 100;
+      const appliedMargin = priceMnt >= 500000 ? MARGIN_LOW : MARGIN_HIGH;
+      const adjustedRawMnt = cnyPrice * cnyToMnt * appliedMargin;
+      const finalPriceMnt = Math.round(adjustedRawMnt / 100) * 100;
+
+      batch.push({
+        buff_id: buffId,
+        name: skinName,
+        weapon: "Charm",
+        weapon_type: "Charm",
+        game: "CS2",
+        wear: null,
+        buff_price_cny: cnyPrice,
+        price_mnt: finalPriceMnt,
+        image_url: image,
+        rarity,
+        stock: 1,
+        is_active: true,
+        is_available: true,
+        last_synced_at: new Date().toISOString(),
+      });
+    }
+
 
 
     // Batch upsert 50 бүрээр
