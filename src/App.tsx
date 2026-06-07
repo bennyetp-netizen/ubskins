@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import FacebookFab from "@/components/FacebookFab";
 import Index from "./pages/Index";
 import Shop from "./pages/Shop";
 import SkinDetail from "./pages/SkinDetail";
@@ -41,6 +42,7 @@ const App = () => (
             </Routes>
           </main>
           <Footer />
+          <FacebookFab />
         </div>
       </BrowserRouter>
     </TooltipProvider>
