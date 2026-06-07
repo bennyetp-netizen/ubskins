@@ -33,9 +33,9 @@ const Footer = () => (
                 href="https://www.facebook.com/profile.php?id=61590372189026"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 transition-colors hover:text-primary"
+                className="inline-flex items-center gap-2 rounded-lg bg-[#1877F2] px-3 py-2 font-semibold text-white transition-opacity hover:opacity-90"
               >
-                <Facebook className="h-4 w-4" /> Facebook
+                <Facebook className="h-4 w-4" /> Facebook page
               </a>
             </li>
             <li className="flex items-center gap-2"><MessageCircle className="h-4 w-4" /> Discord</li>
