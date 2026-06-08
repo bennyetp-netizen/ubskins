@@ -72,8 +72,15 @@ const PRIORITY_WEAPONS = [
 // Монгол банкны (Mongol Bank) албан ёсны CNY→MNT ханш
 const RATE_URL = "https://api.mongolbank.mn/json/get/exchange_rate?currency=CNY";
 const FALLBACK_RATE_URL = "https://open.er-api.com/v6/latest/CNY";
-const MARGIN_HIGH = 1.20; // 500,000 MNT-оос доорх скинүүд (20%)
-const MARGIN_LOW = 1.15;  // 500,000 MNT-оос дээш скинүүд (15%)
+// Tiered markup applied to the cost price (MNT).
+// 0 - 50,000      → +15%
+// 50,001 - 200,000 → +12%
+// > 200,000        → +8%
+// Final price нь хамгийн ойрын 100 MNT хүртэл бөөрөнхийлнө.
+const calcSellingPrice = (costMnt: number): number => {
+  const markup = costMnt <= 50000 ? 1.15 : costMnt <= 200000 ? 1.12 : 1.08;
+  return Math.round((costMnt * markup) / 100) * 100;
+};
 
 // Хутга бүх төрлөөр (Karambit, Bayonet, Butterfly, Flip, Huntsman гэх мэт)
 const KNIFE_KEYWORDS = ["knife", "karambit", "bayonet", "daggers", "★"];
