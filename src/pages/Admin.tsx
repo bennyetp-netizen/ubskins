@@ -111,8 +111,17 @@ const Admin = () => {
   const loadSkins = async () => {
     setLoading(true);
     const { data, error } = await supabase.from("skins").select("*").order("created_at", { ascending: false });
-    if (error) toast.error(error.message);
-    else setSkins(data ?? []);
+    if (error) {
+      toast.error(error.message);
+      setLoading(false);
+      return;
+    }
+    // Cost prices live in the admin-only skin_costs table — merge them in for admins.
+    const { data: costs } = await supabase.from("skin_costs").select("skin_id, cost_price_mnt");
+    const costMap = new Map<string, number>();
+    (costs ?? []).forEach((c: any) => costMap.set(c.skin_id, c.cost_price_mnt));
+    const merged = (data ?? []).map((s: any) => ({ ...s, cost_price_mnt: costMap.get(s.id) ?? null }));
+    setSkins(merged);
     setLoading(false);
   };
 
