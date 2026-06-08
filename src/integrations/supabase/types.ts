@@ -285,6 +285,7 @@ export type Database = {
         Row: {
           buff_id: string | null
           buff_price_cny: number | null
+          cost_price_mnt: number | null
           created_at: string
           description: string | null
           float_value: number | null
@@ -310,6 +311,7 @@ export type Database = {
         Insert: {
           buff_id?: string | null
           buff_price_cny?: number | null
+          cost_price_mnt?: number | null
           created_at?: string
           description?: string | null
           float_value?: number | null
@@ -335,6 +337,7 @@ export type Database = {
         Update: {
           buff_id?: string | null
           buff_price_cny?: number | null
+          cost_price_mnt?: number | null
           created_at?: string
           description?: string | null
           float_value?: number | null

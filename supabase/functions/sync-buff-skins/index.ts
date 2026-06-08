@@ -72,8 +72,15 @@ const PRIORITY_WEAPONS = [
 // Монгол банкны (Mongol Bank) албан ёсны CNY→MNT ханш
 const RATE_URL = "https://api.mongolbank.mn/json/get/exchange_rate?currency=CNY";
 const FALLBACK_RATE_URL = "https://open.er-api.com/v6/latest/CNY";
-const MARGIN_HIGH = 1.20; // 500,000 MNT-оос доорх скинүүд (20%)
-const MARGIN_LOW = 1.15;  // 500,000 MNT-оос дээш скинүүд (15%)
+// Tiered markup applied to the cost price (MNT).
+// 0 - 50,000      → +15%
+// 50,001 - 200,000 → +12%
+// > 200,000        → +8%
+// Final price нь хамгийн ойрын 100 MNT хүртэл бөөрөнхийлнө.
+const calcSellingPrice = (costMnt: number): number => {
+  const markup = costMnt <= 50000 ? 1.15 : costMnt <= 200000 ? 1.12 : 1.08;
+  return Math.round((costMnt * markup) / 100) * 100;
+};
 
 // Хутга бүх төрлөөр (Karambit, Bayonet, Butterfly, Flip, Huntsman гэх мэт)
 const KNIFE_KEYWORDS = ["knife", "karambit", "bayonet", "daggers", "★"];
@@ -381,11 +388,8 @@ Deno.serve(async (req) => {
       const wear = detectWear(fullName);
       const rarity = detectRarity(it?.goods_info?.info?.tags);
       const image = it?.goods_info?.icon_url ?? it?.goods_info?.original_icon_url ?? null;
-      const rawMnt = cnyPrice * cnyToMnt * MARGIN_HIGH;
-      const priceMnt = Math.round(rawMnt / 100) * 100;
-      const appliedMargin = priceMnt >= 500000 ? MARGIN_LOW : MARGIN_HIGH;
-      const adjustedRawMnt = cnyPrice * cnyToMnt * appliedMargin;
-      const finalPriceMnt = Math.round(adjustedRawMnt / 100) * 100;
+      const costMnt = Math.round(cnyPrice * cnyToMnt);
+      const finalPriceMnt = calcSellingPrice(costMnt);
 
       batch.push({
         buff_id: buffId,
@@ -395,6 +399,7 @@ Deno.serve(async (req) => {
         game: "CS2",
         wear,
         buff_price_cny: cnyPrice,
+        cost_price_mnt: costMnt,
         price_mnt: finalPriceMnt,
         image_url: image,
         rarity,
@@ -421,11 +426,8 @@ Deno.serve(async (req) => {
       const skinName = parts.slice(1).join(" | ") || fullName;
       const image = it?.goods_info?.icon_url ?? it?.goods_info?.original_icon_url ?? null;
       const rarity = detectRarity(it?.goods_info?.info?.tags);
-      const rawMnt = cnyPrice * cnyToMnt * MARGIN_HIGH;
-      const priceMnt = Math.round(rawMnt / 100) * 100;
-      const appliedMargin = priceMnt >= 500000 ? MARGIN_LOW : MARGIN_HIGH;
-      const adjustedRawMnt = cnyPrice * cnyToMnt * appliedMargin;
-      const finalPriceMnt = Math.round(adjustedRawMnt / 100) * 100;
+      const costMnt = Math.round(cnyPrice * cnyToMnt);
+      const finalPriceMnt = calcSellingPrice(costMnt);
 
       batch.push({
         buff_id: buffId,
@@ -435,6 +437,7 @@ Deno.serve(async (req) => {
         game: "CS2",
         wear: null,
         buff_price_cny: cnyPrice,
+        cost_price_mnt: costMnt,
         price_mnt: finalPriceMnt,
         image_url: image,
         rarity,
@@ -461,11 +464,8 @@ Deno.serve(async (req) => {
       const skinName = parts.slice(1).join(" | ") || fullName;
       const image = it?.goods_info?.icon_url ?? it?.goods_info?.original_icon_url ?? null;
       const rarity = detectRarity(it?.goods_info?.info?.tags);
-      const rawMnt = cnyPrice * cnyToMnt * MARGIN_HIGH;
-      const priceMnt = Math.round(rawMnt / 100) * 100;
-      const appliedMargin = priceMnt >= 500000 ? MARGIN_LOW : MARGIN_HIGH;
-      const adjustedRawMnt = cnyPrice * cnyToMnt * appliedMargin;
-      const finalPriceMnt = Math.round(adjustedRawMnt / 100) * 100;
+      const costMnt = Math.round(cnyPrice * cnyToMnt);
+      const finalPriceMnt = calcSellingPrice(costMnt);
 
       batch.push({
         buff_id: buffId,
@@ -475,6 +475,7 @@ Deno.serve(async (req) => {
         game: "CS2",
         wear: null,
         buff_price_cny: cnyPrice,
+        cost_price_mnt: costMnt,
         price_mnt: finalPriceMnt,
         image_url: image,
         rarity,
@@ -500,11 +501,8 @@ Deno.serve(async (req) => {
       const skinName = fullName;
       const image = it?.goods_info?.icon_url ?? it?.goods_info?.original_icon_url ?? null;
       const rarity = detectRarity(it?.goods_info?.info?.tags);
-      const rawMnt = cnyPrice * cnyToMnt * MARGIN_HIGH;
-      const priceMnt = Math.round(rawMnt / 100) * 100;
-      const appliedMargin = priceMnt >= 500000 ? MARGIN_LOW : MARGIN_HIGH;
-      const adjustedRawMnt = cnyPrice * cnyToMnt * appliedMargin;
-      const finalPriceMnt = Math.round(adjustedRawMnt / 100) * 100;
+      const costMnt = Math.round(cnyPrice * cnyToMnt);
+      const finalPriceMnt = calcSellingPrice(costMnt);
 
       batch.push({
         buff_id: buffId,
@@ -514,6 +512,7 @@ Deno.serve(async (req) => {
         game: "CS2",
         wear: null,
         buff_price_cny: cnyPrice,
+        cost_price_mnt: costMnt,
         price_mnt: finalPriceMnt,
         image_url: image,
         rarity,

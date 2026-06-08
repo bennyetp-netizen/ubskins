@@ -12,7 +12,8 @@ export interface Skin {
   weaponName: string;
   wear: Wear;
   float: number;
-  price: number; // MNT
+  price: number; // MNT (selling price shown to customers)
+  costPrice?: number; // MNT (cost, admin-only)
   stock: number;
   image: string;
   rarity: Rarity;
@@ -33,6 +34,7 @@ export interface SkinRow {
   wear: string | null;
   float_value: number | null;
   price_mnt: number;
+  cost_price_mnt?: number | null;
   image_url: string | null;
   rarity: string | null;
   description: string | null;
@@ -44,25 +46,41 @@ export interface SkinRow {
   stock_quantity?: number | null;
 }
 
-export const mapSkinRow = (r: SkinRow): Skin => ({
-  id: r.id,
-  name: r.name,
-  weapon: r.weapon,
-  weaponName: r.weapon,
-  wear: (r.wear as Wear) ?? "FT",
-  float: r.float_value ?? 0,
-  price: r.price_mnt,
-  stock: r.stock,
-  image: r.image_url ?? "/placeholder.svg",
-  rarity: (r.rarity as Rarity) ?? "Mil-Spec",
-  statTrak: r.stattrak,
-  game: r.game,
-  description: r.description,
-  isActive: r.is_active,
-  isFeatured: r.is_featured,
-  productType: ((r.product_type as ProductType) ?? "preorder"),
-  stockQuantity: r.stock_quantity ?? 0,
-});
+// Selling price = cost × tiered markup, rounded to nearest 100 MNT.
+// 0 - 50,000        → +15%
+// 50,001 - 200,000  → +12%
+// > 200,000         → +8%
+export const calcSellingPrice = (costMnt: number): number => {
+  const markup = costMnt <= 50000 ? 1.15 : costMnt <= 200000 ? 1.12 : 1.08;
+  return Math.round((costMnt * markup) / 100) * 100;
+};
+
+export const mapSkinRow = (r: SkinRow): Skin => {
+  const cost = r.cost_price_mnt ?? null;
+  // Always derive the customer-facing price from cost when available so the
+  // tiered markup rule applies uniformly across the site.
+  const sellingPrice = cost && cost > 0 ? calcSellingPrice(cost) : r.price_mnt;
+  return {
+    id: r.id,
+    name: r.name,
+    weapon: r.weapon,
+    weaponName: r.weapon,
+    wear: (r.wear as Wear) ?? "FT",
+    float: r.float_value ?? 0,
+    price: sellingPrice,
+    costPrice: cost ?? undefined,
+    stock: r.stock,
+    image: r.image_url ?? "/placeholder.svg",
+    rarity: (r.rarity as Rarity) ?? "Mil-Spec",
+    statTrak: r.stattrak,
+    game: r.game,
+    description: r.description,
+    isActive: r.is_active,
+    isFeatured: r.is_featured,
+    productType: ((r.product_type as ProductType) ?? "preorder"),
+    stockQuantity: r.stock_quantity ?? 0,
+  };
+};
 
 export const wearLabel: Record<Wear, string> = {
   FN: "Factory New",

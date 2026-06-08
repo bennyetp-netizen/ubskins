@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { formatMNT } from "@/data/skins";
+import { formatMNT, calcSellingPrice } from "@/data/skins";
 import ProductTypeBadge from "@/components/ProductTypeBadge";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
@@ -30,6 +30,7 @@ interface SkinForm {
   game: string;
   wear: string;
   float_value: string;
+  cost_price_mnt: string;
   price_mnt: string;
   image_url: string;
   rarity: string;
@@ -48,6 +49,7 @@ const emptyForm: SkinForm = {
   game: "CS2",
   wear: "FT",
   float_value: "",
+  cost_price_mnt: "",
   price_mnt: "",
   image_url: "",
   rarity: "Mil-Spec",
@@ -202,6 +204,7 @@ const Admin = () => {
       game: s.game ?? "CS2",
       wear: s.wear ?? "FT",
       float_value: s.float_value?.toString() ?? "",
+      cost_price_mnt: s.cost_price_mnt?.toString() ?? "",
       price_mnt: s.price_mnt?.toString() ?? "",
       image_url: s.image_url ?? "",
       rarity: s.rarity ?? "Mil-Spec",
@@ -237,18 +240,22 @@ const Admin = () => {
   };
 
   const save = async () => {
-    if (!form.name || !form.weapon || !form.price_mnt) {
-      toast.error("Нэр, Зэвсэг, Үнэ заавал бөглөнө үү");
+    if (!form.name || !form.weapon || (!form.cost_price_mnt && !form.price_mnt)) {
+      toast.error("Нэр, Зэвсэг, Өртөг үнэ заавал бөглөнө үү");
       return;
     }
     setSaving(true);
+    const costMnt = Number(form.cost_price_mnt) || 0;
+    // Auto-calc selling price from cost when cost is provided; otherwise use manual price.
+    const sellingMnt = costMnt > 0 ? calcSellingPrice(costMnt) : Number(form.price_mnt);
     const payload: any = {
       name: form.name,
       weapon: form.weapon,
       game: form.game,
       wear: form.wear || null,
       float_value: form.float_value ? Number(form.float_value) : null,
-      price_mnt: Number(form.price_mnt),
+      cost_price_mnt: costMnt > 0 ? costMnt : null,
+      price_mnt: sellingMnt,
       image_url: form.image_url || null,
       rarity: form.rarity || null,
       description: form.description || null,
@@ -613,7 +620,7 @@ const Admin = () => {
                     <th className="px-4 py-3">Скин</th>
                     <th className="px-4 py-3">Wear</th>
                     <th className="px-4 py-3">Float</th>
-                    <th className="px-4 py-3">Үнэ (MNT)</th>
+                    <th className="px-4 py-3">Өртөг / Зарах үнэ (MNT)</th>
                     <th className="px-4 py-3">Үлдэгдэл</th>
                     <th className="px-4 py-3">Төлөв</th>
                     <th className="px-4 py-3"></th>
@@ -641,7 +648,10 @@ const Admin = () => {
                       </td>
                       <td className="px-4 py-3"><Badge variant="outline">{s.wear ?? "—"}</Badge></td>
                       <td className="px-4 py-3 text-muted-foreground">{s.float_value?.toFixed(3) ?? "—"}</td>
-                      <td className="px-4 py-3 font-display font-semibold">{formatMNT(s.price_mnt)}</td>
+                      <td className="px-4 py-3 font-display">
+                        <div className="text-xs text-muted-foreground">Өртөг: {s.cost_price_mnt ? formatMNT(s.cost_price_mnt) : "—"}</div>
+                        <div className="font-semibold text-foreground">{formatMNT(s.price_mnt)}</div>
+                      </td>
                       <td className="px-4 py-3">{s.stock}</td>
                       <td className="px-4 py-3">
                         {s.is_active ? (
@@ -766,13 +776,34 @@ const Admin = () => {
             </div>
 
             <div>
-              <Label>Үнэ (MNT) *</Label>
+              <Label>Өртөг үнэ (MNT) *</Label>
               <Input
                 type="number"
-                placeholder="285000"
+                placeholder="100000"
+                value={form.cost_price_mnt}
+                onChange={(e) => {
+                  const cost = e.target.value;
+                  const auto = Number(cost) > 0 ? calcSellingPrice(Number(cost)).toString() : form.price_mnt;
+                  setForm({ ...form, cost_price_mnt: cost, price_mnt: auto });
+                }}
+              />
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                Зарах үнэ автоматаар: {form.cost_price_mnt && Number(form.cost_price_mnt) > 0
+                  ? formatMNT(calcSellingPrice(Number(form.cost_price_mnt)))
+                  : "—"}
+              </p>
+            </div>
+            <div>
+              <Label>Зарах үнэ (MNT)</Label>
+              <Input
+                type="number"
+                placeholder="115000"
                 value={form.price_mnt}
                 onChange={(e) => setForm({ ...form, price_mnt: e.target.value })}
               />
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                Өртөг оруулбал автоматаар тооцоологдоно (15/12/8%).
+              </p>
             </div>
             <div>
               <Label>Үлдэгдэл</Label>
