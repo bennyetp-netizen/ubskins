@@ -312,10 +312,10 @@ Deno.serve(async (req) => {
           `https://buff.163.com/api/market/goods?game=csgo&page_size=40&search=` +
           encodeURIComponent(`${g.weapon} ${g.name}`);
         let items: any[] = [];
-        for (let attempt = 0; attempt < 3; attempt++) {
+        for (let attempt = 0; attempt < 2; attempt++) {
           const res = await fetch(searchUrl, { headers: buffHeaders });
           if (res.status === 429) {
-            await new Promise((r) => setTimeout(r, (attempt + 1) * 3000));
+            await new Promise((r) => setTimeout(r, 1500));
             continue;
           }
           if (!res.ok) break;
@@ -323,7 +323,7 @@ Deno.serve(async (req) => {
           if (json.code === "OK") items = json?.data?.items ?? [];
           break;
         }
-        await new Promise((r) => setTimeout(r, 1200));
+        await new Promise((r) => setTimeout(r, 600));
 
         for (const it of items) {
           const fullName: string = it?.name ?? "";
