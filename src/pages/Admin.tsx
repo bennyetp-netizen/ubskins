@@ -30,6 +30,7 @@ interface SkinForm {
   game: string;
   wear: string;
   float_value: string;
+  cost_price_mnt: string;
   price_mnt: string;
   image_url: string;
   rarity: string;
