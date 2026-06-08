@@ -167,6 +167,22 @@ const Orders = () => {
     delivered: orders.filter((o) => o.status === "delivered").length,
   };
 
+  const remainingDueOrders = orders.filter(
+    (o) =>
+      (o.product_type ?? "ready") === "preorder" &&
+      !!o.deposit_paid &&
+      !o.remaining_paid &&
+      o.status === "pending",
+  );
+
+  const openOrder = (id: string) => {
+    setExpanded(id);
+    setFilter("all");
+    setTimeout(() => {
+      document.getElementById(`order-${id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  };
+
   return (
     <div className="container py-10">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
