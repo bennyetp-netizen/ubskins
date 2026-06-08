@@ -776,13 +776,34 @@ const Admin = () => {
             </div>
 
             <div>
-              <Label>Үнэ (MNT) *</Label>
+              <Label>Өртөг үнэ (MNT) *</Label>
               <Input
                 type="number"
-                placeholder="285000"
+                placeholder="100000"
+                value={form.cost_price_mnt}
+                onChange={(e) => {
+                  const cost = e.target.value;
+                  const auto = Number(cost) > 0 ? calcSellingPrice(Number(cost)).toString() : form.price_mnt;
+                  setForm({ ...form, cost_price_mnt: cost, price_mnt: auto });
+                }}
+              />
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                Зарах үнэ автоматаар: {form.cost_price_mnt && Number(form.cost_price_mnt) > 0
+                  ? formatMNT(calcSellingPrice(Number(form.cost_price_mnt)))
+                  : "—"}
+              </p>
+            </div>
+            <div>
+              <Label>Зарах үнэ (MNT)</Label>
+              <Input
+                type="number"
+                placeholder="115000"
                 value={form.price_mnt}
                 onChange={(e) => setForm({ ...form, price_mnt: e.target.value })}
               />
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                Өртөг оруулбал автоматаар тооцоологдоно (15/12/8%).
+              </p>
             </div>
             <div>
               <Label>Үлдэгдэл</Label>
