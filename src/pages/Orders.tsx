@@ -74,10 +74,17 @@ const Orders = () => {
         if (data) {
           setOrders(data as unknown as OrderRow[]);
           const list = data as unknown as OrderRow[];
-          // Prefer ?open=ID, then first pending
+          // Prefer ?open=ID, then orders owing remaining 70%, then first pending
+          const remainingDueOrder = list.find(
+            (o) =>
+              (o.product_type ?? "ready") === "preorder" &&
+              !!o.deposit_paid &&
+              !o.remaining_paid &&
+              o.status === "pending",
+          );
           const target = openId && list.find((o) => o.id === openId)
             ? openId
-            : list.find((o) => o.status === "pending")?.id ?? null;
+            : remainingDueOrder?.id ?? list.find((o) => o.status === "pending")?.id ?? null;
           if (target) {
             setExpanded(target);
             setFilter("all");
@@ -160,6 +167,22 @@ const Orders = () => {
     delivered: orders.filter((o) => o.status === "delivered").length,
   };
 
+  const remainingDueOrders = orders.filter(
+    (o) =>
+      (o.product_type ?? "ready") === "preorder" &&
+      !!o.deposit_paid &&
+      !o.remaining_paid &&
+      o.status === "pending",
+  );
+
+  const openOrder = (id: string) => {
+    setExpanded(id);
+    setFilter("all");
+    setTimeout(() => {
+      document.getElementById(`order-${id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  };
+
   return (
     <div className="container py-10">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
@@ -175,6 +198,52 @@ const Orders = () => {
           </Button>
         </Link>
       </div>
+
+      {/* Remaining-payment alert — surfaces 70% step so users don't miss it */}
+      {remainingDueOrders.length > 0 && (
+        <div className="mb-6 overflow-hidden rounded-2xl border-2 border-orange-500/60 bg-gradient-to-r from-orange-500/15 to-amber-500/10 shadow-[0_0_0_4px_hsl(25_95%_53%/0.08)]">
+          <div className="flex items-start gap-3 p-4 sm:p-5">
+            <div className="flex h-12 w-12 shrink-0 animate-pulse items-center justify-center rounded-full bg-orange-500/25 text-2xl">
+              ⚠️
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-display text-base font-bold text-orange-400 sm:text-lg">
+                Үлдсэн 70% төлбөрөө төлөх ёстой
+              </p>
+              <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">
+                Та 30% урьдчилгаагаа төлсөн. Скиныг танд илгээхийн тулд үлдсэн 70%-ийг QPay QR-аар төлнө үү.
+              </p>
+              <div className="mt-3 flex flex-col gap-2">
+                {remainingDueOrders.map((o) => {
+                  const due = o.remaining_amount ?? (o.price_mnt - (o.deposit_amount ?? calcPrepayment(o.price_mnt)));
+                  return (
+                    <button
+                      key={o.id}
+                      onClick={() => openOrder(o.id)}
+                      className="group flex items-center justify-between gap-3 rounded-xl border border-orange-500/40 bg-background/60 p-3 text-left transition-colors hover:border-orange-400 hover:bg-orange-500/10"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="font-mono text-xs font-bold text-primary">
+                          {o.order_number ?? o.id.slice(0, 8).toUpperCase()}
+                        </p>
+                        <p className="truncate text-sm font-semibold">{o.skin_name}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-display text-base font-bold text-orange-400">{formatMNT(due)}</p>
+                        <p className="text-[10px] text-muted-foreground group-hover:text-orange-300">
+                          ТӨЛӨХ →
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+
 
       {/* Filter tabs */}
       <div className="mb-6 flex flex-wrap gap-2">
@@ -320,6 +389,33 @@ const Orders = () => {
                     )}
                   </div>
                 </div>
+
+                {/* Remaining-due banner on collapsed card */}
+                {(o.product_type ?? "ready") === "preorder" &&
+                  !!o.deposit_paid &&
+                  !o.remaining_paid &&
+                  o.status === "pending" && (
+                    <button
+                      type="button"
+                      onClick={() => setExpanded(isOpen ? null : o.id)}
+                      className="flex w-full items-center justify-between gap-3 border-t-2 border-orange-500/50 bg-gradient-to-r from-orange-500/15 to-amber-500/10 p-3 text-left transition-colors hover:from-orange-500/25 hover:to-amber-500/15"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">⚠️</span>
+                        <div>
+                          <p className="font-display text-sm font-bold text-orange-400">
+                            Үлдсэн 70% — {formatMNT(o.remaining_amount ?? (o.price_mnt - (o.deposit_amount ?? prepay)))} төлөх
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {isOpen ? "QR код доор гарч ирнэ" : "Дарж QR код нээх"}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-xs font-bold text-orange-400">
+                        {isOpen ? "▲" : "ТӨЛӨХ →"}
+                      </span>
+                    </button>
+                  )}
 
                 {/* Fully paid success banner */}
                 {o.status === "paid" && (
