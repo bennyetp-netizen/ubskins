@@ -92,6 +92,40 @@ const SkinDetail = () => {
             </Badge>
           </div>
 
+          {/* Wear selector (бусад wear хувилбарууд) */}
+          {variants.length > 1 && (
+            <div className="mt-5 rounded-2xl border border-border bg-card/40 p-4">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Wear сонгох
+              </p>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+                {variants.map((v) => {
+                  const active = v.id === skin.id;
+                  return (
+                    <button
+                      key={v.id}
+                      onClick={() => !active && nav(`/skin/${v.id}`)}
+                      className={`flex flex-col items-start rounded-xl border px-3 py-2 text-left transition ${
+                        active
+                          ? "border-primary bg-primary/10 ring-1 ring-primary/40"
+                          : "border-border bg-secondary/30 hover:border-primary/50"
+                      }`}
+                    >
+                      <span className={`font-display text-sm font-bold ${wearColor[v.wear]}`}>
+                        {v.wear}
+                      </span>
+                      <span className="mt-0.5 text-[10px] uppercase text-muted-foreground">
+                        {wearLabel[v.wear]}
+                      </span>
+                      <span className="mt-1 text-xs font-semibold">{formatMNT(v.price)}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+
           {/* Product type banner */}
           {skin.productType === "ready" ? (
             <div className="mt-4 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4">
