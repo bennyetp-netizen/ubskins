@@ -89,7 +89,7 @@ const QpayQrBox = ({ orderId, amount, initialQrImage, initialInvoiceId, paymentC
   return (
     <div className="flex flex-col items-center gap-3 rounded-xl border border-primary/30 bg-background/60 p-5">
       <p className="font-display text-sm font-semibold uppercase tracking-wider text-primary">
-        QPay-р төлөх — {formatMNT(amount)}
+        {stage === "remaining" ? "Үлдсэн 70% төлөх" : "QPay-р төлөх"} — {formatMNT(amount)}
       </p>
       {loading || !qrImage ? (
         <div className="flex h-56 w-56 items-center justify-center rounded-lg bg-secondary/40">
