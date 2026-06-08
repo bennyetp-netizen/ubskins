@@ -99,30 +99,51 @@ const Admin = () => {
   const syncFromBuff = async () => {
     setSyncing(true);
     try {
-      // "Бүгд" сонгосон үед timeout-аас зайлсхийхийн тулд дэд горимуудыг
-      // дараалан тус тусд нь дуудна (knife → gloves → priority зэвсэг → stickers → charms → agents).
-      const modes = syncMode === "all"
-        ? ["knife", "gloves", "priority", "stickers", "charms", "agents"]
-        : [syncMode];
+      // Priority weapons-ийг 5-аар хувааж дуудна (wall-time-ээс зайлсхийх).
+      const PRIORITY_CHUNKS: string[][] = [
+        ["weapon_awp", "weapon_deagle", "weapon_usp_silencer", "weapon_glock", "weapon_m4a4"],
+        ["weapon_m4a1_silencer", "weapon_ak47", "weapon_knife", "weapon_p250", "weapon_famas"],
+        ["weapon_galilar", "weapon_aug", "weapon_sg556", "weapon_ssg08", "weapon_mp9"],
+        ["weapon_mp7", "weapon_p90", "weapon_ump45", "weapon_mac10", "weapon_nova"],
+        ["weapon_xm1014", "weapon_five_seven", "weapon_tec9", "weapon_cz75a", "weapon_revolver", "weapon_hkp2000", "weapon_elite"],
+      ];
+
+      type Job = { mode: string; label: string; weapons?: string[] };
+      const jobs: Job[] = [];
+      const pushPriority = () => {
+        PRIORITY_CHUNKS.forEach((chunk, i) =>
+          jobs.push({ mode: "priority", label: `Зэвсэг ${i + 1}/${PRIORITY_CHUNKS.length}`, weapons: chunk }),
+        );
+      };
+
+      if (syncMode === "all") {
+        jobs.push({ mode: "knife", label: "Хутга" });
+        jobs.push({ mode: "gloves", label: "Бээлий" });
+        pushPriority();
+        jobs.push({ mode: "stickers", label: "Стикер" });
+        jobs.push({ mode: "charms", label: "Charm" });
+        jobs.push({ mode: "agents", label: "Agent" });
+      } else if (syncMode === "priority") {
+        pushPriority();
+      } else {
+        const label = ({
+          knife: "Хутга", gloves: "Бээлий", stickers: "Стикер", charms: "Charm", agents: "Agent",
+        } as Record<string, string>)[syncMode] ?? syncMode;
+        jobs.push({ mode: syncMode, label });
+      }
 
       let totalUpserted = 0;
       let lastRate = 0;
-      for (const m of modes) {
-        const label = ({
-          knife: "Хутга",
-          gloves: "Бээлий",
-          priority: "Зэвсэг",
-          stickers: "Стикер",
-          charms: "Charm",
-          agents: "Agent",
-        } as Record<string, string>)[m] ?? m;
-        toast.info(`${label} татаж байна...`);
-        const { data, error } = await supabase.functions.invoke("sync-buff-skins", { body: { mode: m } });
-        if (error) throw new Error(`${label}: ${error.message}`);
-        if (!data?.success) throw new Error(`${label}: ${data?.error ?? "Тодорхойгүй алдаа"}`);
+      for (const job of jobs) {
+        toast.info(`${job.label} татаж байна...`);
+        const body: Record<string, unknown> = { mode: job.mode };
+        if (job.weapons) body.weapons = job.weapons;
+        const { data, error } = await supabase.functions.invoke("sync-buff-skins", { body });
+        if (error) throw new Error(`${job.label}: ${error.message}`);
+        if (!data?.success) throw new Error(`${job.label}: ${data?.error ?? "Тодорхойгүй алдаа"}`);
         totalUpserted += Number(data.upserted ?? 0);
         lastRate = Number(data.rate_cny_mnt ?? lastRate);
-        toast.success(`${label}: ${data.upserted} item`);
+        toast.success(`${job.label}: ${data.upserted} item`);
       }
       toast.success(`Нийт ${totalUpserted} item шинэчлэгдлээ. Ханш: 1¥ = ${lastRate.toFixed(2)}₮`);
       loadSkins();
