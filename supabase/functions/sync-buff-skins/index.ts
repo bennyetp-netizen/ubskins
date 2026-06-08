@@ -278,6 +278,12 @@ Deno.serve(async (req) => {
     };
     const mode = modeAliases[rawMode] ?? rawMode;
 
+    // Optional: chunk priority weapons to stay under edge function wall-time.
+    // body.weapons = ["weapon_ak47", ...] → restrict PRIORITY_WEAPONS to that subset.
+    const weaponsFilter: string[] | null = Array.isArray(body?.weapons) && body.weapons.length > 0
+      ? body.weapons.map((w: any) => String(w))
+      : null;
+
     let knifeItems: any[] = [];
     let weaponItems: any[] = [];
     let glovesItems: any[] = [];
