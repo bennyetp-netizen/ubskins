@@ -437,6 +437,7 @@ Deno.serve(async (req) => {
         game: "CS2",
         wear: null,
         buff_price_cny: cnyPrice,
+        cost_price_mnt: costMnt,
         price_mnt: finalPriceMnt,
         image_url: image,
         rarity,
