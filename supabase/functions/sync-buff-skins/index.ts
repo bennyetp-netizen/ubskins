@@ -452,6 +452,45 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Agent-уудыг боловсруулах
+    for (const it of agentItems) {
+      const fullName: string = it?.name ?? "";
+      const buffId = String(it?.id ?? "");
+      const cnyPrice = Number(it?.sell_min_price ?? 0);
+      if (!buffId || !cnyPrice) continue;
+      if (cnyPrice < 0.1 || cnyPrice > 50000) {
+        skippedFilter++;
+        continue;
+      }
+
+      // "Agent | Sir Bloody Darryl Royale | The Professionals"
+      const parts = fullName.split("|").map((p) => p.trim());
+      const skinName = parts.slice(1).join(" | ") || fullName;
+      const image = it?.goods_info?.icon_url ?? it?.goods_info?.original_icon_url ?? null;
+      const rarity = detectRarity(it?.goods_info?.info?.tags);
+      const rawMnt = cnyPrice * cnyToMnt * MARGIN_HIGH;
+      const priceMnt = Math.round(rawMnt / 100) * 100;
+      const appliedMargin = priceMnt >= 500000 ? MARGIN_LOW : MARGIN_HIGH;
+      const adjustedRawMnt = cnyPrice * cnyToMnt * appliedMargin;
+      const finalPriceMnt = Math.round(adjustedRawMnt / 100) * 100;
+
+      batch.push({
+        buff_id: buffId,
+        name: skinName,
+        weapon: "Agent",
+        weapon_type: "Agent",
+        game: "CS2",
+        wear: null,
+        buff_price_cny: cnyPrice,
+        price_mnt: finalPriceMnt,
+        image_url: image,
+        rarity,
+        stock: 1,
+        is_active: true,
+        is_available: true,
+        last_synced_at: new Date().toISOString(),
+      });
+    }
 
 
     // Batch upsert 50 бүрээр
