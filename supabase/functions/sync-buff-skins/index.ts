@@ -534,9 +534,29 @@ Deno.serve(async (req) => {
     const BATCH_SIZE = 50;
     for (let i = 0; i < batch.length; i += BATCH_SIZE) {
       const chunk = batch.slice(i, i + BATCH_SIZE);
-      const { error, count } = await sb.from("skins").upsert(chunk, { onConflict: "buff_id" });
-      if (error) console.error(`Batch upsert алдаа [${i}-${i+chunk.length}]:`, error.message);
-      else upserted += chunk.length;
+      const { data: upRows, error } = await sb
+        .from("skins")
+        .upsert(chunk, { onConflict: "buff_id" })
+        .select("id, buff_id");
+      if (error) {
+        console.error(`Batch upsert алдаа [${i}-${i+chunk.length}]:`, error.message);
+        continue;
+      }
+      upserted += chunk.length;
+
+      // Mirror cost prices into admin-only skin_costs.
+      const costRows = (upRows ?? [])
+        .map((r: any) => {
+          const c = costByBuffId.get(String(r.buff_id));
+          return c ? { skin_id: r.id, cost_price_mnt: c } : null;
+        })
+        .filter(Boolean);
+      if (costRows.length) {
+        const { error: cErr } = await sb
+          .from("skin_costs")
+          .upsert(costRows as any[], { onConflict: "skin_id" });
+        if (cErr) console.error(`skin_costs upsert алдаа [${i}]:`, cErr.message);
+      }
     }
 
     return new Response(
