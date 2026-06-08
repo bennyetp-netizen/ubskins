@@ -965,6 +965,67 @@ const Admin = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!costDialogOrder} onOpenChange={(v) => !v && setCostDialogOrder(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>BUFF худалдан авалт бүртгэх</DialogTitle>
+          </DialogHeader>
+          {costDialogOrder && (
+            <div className="space-y-3 text-sm">
+              <div className="rounded-md border border-border bg-secondary/40 px-3 py-2 text-xs">
+                <div className="font-mono text-primary">{costDialogOrder.order_number ?? costDialogOrder.id.slice(0, 8)}</div>
+                <div className="text-muted-foreground">{costDialogOrder.skin_name}</div>
+                <div className="text-muted-foreground">Зарсан үнэ: <span className="text-foreground">{formatMNT(costDialogOrder.price_mnt ?? 0)}</span></div>
+              </div>
+              <div className="space-y-1">
+                <Label>BUFF үнэ (¥ CNY)</Label>
+                <Input type="number" step="0.01" value={costCny} onChange={(e) => setCostCny(e.target.value)} placeholder="жишээ нь 12.50" />
+              </div>
+              <div className="space-y-1">
+                <Label>CNY → MNT ханш</Label>
+                <Input type="number" step="0.01" value={costRate} onChange={(e) => setCostRate(e.target.value)} placeholder="жишээ нь 480" />
+              </div>
+              {Number(costCny) > 0 && Number(costRate) > 0 && (
+                <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 text-xs space-y-0.5">
+                  <div>Өртөг: <span className="font-semibold text-emerald-400">{formatMNT(Math.round(Number(costCny) * Number(costRate)))}</span></div>
+                  <div>Ашиг: <span className="font-semibold text-emerald-400">{formatMNT((costDialogOrder.price_mnt ?? 0) - Math.round(Number(costCny) * Number(costRate)))}</span></div>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCostDialogOrder(null)}>Болих</Button>
+            <Button
+              variant="hero"
+              onClick={async () => {
+                const cny = Number(costCny);
+                const rate = Number(costRate);
+                if (!cny || !rate || cny <= 0 || rate <= 0) {
+                  toast.error("CNY үнэ ба ханш оруулна уу");
+                  return;
+                }
+                const cost = Math.round(cny * rate);
+                const now = new Date();
+                const until = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+                await updateOrder(costDialogOrder.id, {
+                  actual_buff_price_cny: cny,
+                  actual_cny_mnt_rate: rate,
+                  actual_cost_mnt: cost,
+                  buff_purchased_at: now.toISOString(),
+                  trade_hold_until: until.toISOString(),
+                  status: "trade_holding",
+                });
+                setCostDialogOrder(null);
+                setCostCny("");
+                setCostRate("");
+              }}
+            >
+              Хадгалах
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
