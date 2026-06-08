@@ -76,6 +76,9 @@ const Admin = () => {
   const [syncing, setSyncing] = useState(false);
   const [syncMode, setSyncMode] = useState("priority");
   const [orderFilter, setOrderFilter] = useState<"all" | "pending" | "paid" | "delivered">("all");
+  const [costDialogOrder, setCostDialogOrder] = useState<any | null>(null);
+  const [costCny, setCostCny] = useState("");
+  const [costRate, setCostRate] = useState("");
 
   const paidOrders = orders.filter((o) => o.status === "paid" || o.status === "delivered");
   const totalRevenue = paidOrders.reduce((sum, o) => sum + (o.price_mnt ?? 0), 0);
