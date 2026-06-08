@@ -278,6 +278,12 @@ Deno.serve(async (req) => {
     };
     const mode = modeAliases[rawMode] ?? rawMode;
 
+    // Optional: chunk priority weapons to stay under edge function wall-time.
+    // body.weapons = ["weapon_ak47", ...] → restrict PRIORITY_WEAPONS to that subset.
+    const weaponsFilter: string[] | null = Array.isArray(body?.weapons) && body.weapons.length > 0
+      ? body.weapons.map((w: any) => String(w))
+      : null;
+
     let knifeItems: any[] = [];
     let weaponItems: any[] = [];
     let glovesItems: any[] = [];
@@ -298,8 +304,9 @@ Deno.serve(async (req) => {
     }
 
     if (mode === "all" || mode === "priority") {
-      for (const cat of PRIORITY_WEAPONS) {
-        await new Promise((r) => setTimeout(r, 3000));
+      const list = weaponsFilter ?? PRIORITY_WEAPONS;
+      for (const cat of list) {
+        await new Promise((r) => setTimeout(r, 2000));
         const items = await fetchPages(
           `${BUFF_BASE}&category=${cat}&min_price=1&max_price=10000`,
           PAGES_PER_WEAPON,
