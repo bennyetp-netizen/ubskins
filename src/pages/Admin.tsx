@@ -110,7 +110,10 @@ const Admin = () => {
 
   const loadSkins = async () => {
     setLoading(true);
-    const { data, error } = await supabase.from("skins").select("*").order("created_at", { ascending: false });
+    const { data, error } = await supabase
+      .from("skins")
+      .select("id,name,weapon,weapon_type,game,wear,float_value,price_mnt,image_url,rarity,description,stattrak,is_active,is_featured,stock,stock_quantity,product_type,is_available,created_at,last_synced_at")
+      .order("created_at", { ascending: false });
     if (error) {
       toast.error(error.message);
       setLoading(false);
