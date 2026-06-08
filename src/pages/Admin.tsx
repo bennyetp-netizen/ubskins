@@ -240,18 +240,22 @@ const Admin = () => {
   };
 
   const save = async () => {
-    if (!form.name || !form.weapon || !form.price_mnt) {
-      toast.error("Нэр, Зэвсэг, Үнэ заавал бөглөнө үү");
+    if (!form.name || !form.weapon || (!form.cost_price_mnt && !form.price_mnt)) {
+      toast.error("Нэр, Зэвсэг, Өртөг үнэ заавал бөглөнө үү");
       return;
     }
     setSaving(true);
+    const costMnt = Number(form.cost_price_mnt) || 0;
+    // Auto-calc selling price from cost when cost is provided; otherwise use manual price.
+    const sellingMnt = costMnt > 0 ? calcSellingPrice(costMnt) : Number(form.price_mnt);
     const payload: any = {
       name: form.name,
       weapon: form.weapon,
       game: form.game,
       wear: form.wear || null,
       float_value: form.float_value ? Number(form.float_value) : null,
-      price_mnt: Number(form.price_mnt),
+      cost_price_mnt: costMnt > 0 ? costMnt : null,
+      price_mnt: sellingMnt,
       image_url: form.image_url || null,
       rarity: form.rarity || null,
       description: form.description || null,
