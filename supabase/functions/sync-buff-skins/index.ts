@@ -203,6 +203,10 @@ Deno.serve(async (req) => {
       rateSource = "open.er-api.com";
       if (!cnyToMnt) throw new Error("Ханшийн API алдаа: " + JSON.stringify(rateJson));
     }
+    // Монгол банкны ханш дээр +2% нэмэлт (валют хөрвүүлэх зардал/буфер)
+    const baseRate = cnyToMnt;
+    cnyToMnt = Math.round(baseRate * 1.02 * 100) / 100;
+    console.log(`Base ханш: ${baseRate}, +2% → ${cnyToMnt}`);
     console.log(`CNY→MNT ханш: ${cnyToMnt} (${rateSource})`);
 
     await sb.from("exchange_rates").upsert(
