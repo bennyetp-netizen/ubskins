@@ -12,7 +12,8 @@ export interface Skin {
   weaponName: string;
   wear: Wear;
   float: number;
-  price: number; // MNT
+  price: number; // MNT (selling price shown to customers)
+  costPrice?: number; // MNT (cost, admin-only)
   stock: number;
   image: string;
   rarity: Rarity;
