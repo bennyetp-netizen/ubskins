@@ -321,7 +321,7 @@ Deno.serve(async (req) => {
     // Давхардлыг buff_id-аар арилгах
     const seenIds = new Set<string>();
     const allItems: any[] = [];
-    for (const it of [...knifeItems, ...glovesItems, ...priorityItems, ...weaponItems]) {
+    for (const it of [...knifeItems, ...glovesItems, ...priorityItems, ...weaponItems, ...stickerItems, ...charmItems, ...agentItems]) {
       const id = String(it?.id ?? "");
       if (id && !seenIds.has(id)) {
         seenIds.add(id);
