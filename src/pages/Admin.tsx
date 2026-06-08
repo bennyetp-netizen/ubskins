@@ -96,10 +96,32 @@ const Admin = () => {
   const syncFromBuff = async () => {
     setSyncing(true);
     try {
-      const { data, error } = await supabase.functions.invoke("sync-buff-skins", { body: { mode: syncMode } });
-      if (error) throw error;
-      if (!data?.success) throw new Error(data?.error ?? "Тодорхойгүй алдаа");
-      toast.success(`${data.upserted} item шинэчлэгдлээ. Ханш: 1¥ = ${Number(data.rate_cny_mnt).toFixed(2)}₮`);
+      // "Бүгд" сонгосон үед timeout-аас зайлсхийхийн тулд дэд горимуудыг
+      // дараалан тус тусд нь дуудна (knife → gloves → priority зэвсэг → stickers → charms → agents).
+      const modes = syncMode === "all"
+        ? ["knife", "gloves", "priority", "stickers", "charms", "agents"]
+        : [syncMode];
+
+      let totalUpserted = 0;
+      let lastRate = 0;
+      for (const m of modes) {
+        const label = ({
+          knife: "Хутга",
+          gloves: "Бээлий",
+          priority: "Зэвсэг",
+          stickers: "Стикер",
+          charms: "Charm",
+          agents: "Agent",
+        } as Record<string, string>)[m] ?? m;
+        toast.info(`${label} татаж байна...`);
+        const { data, error } = await supabase.functions.invoke("sync-buff-skins", { body: { mode: m } });
+        if (error) throw new Error(`${label}: ${error.message}`);
+        if (!data?.success) throw new Error(`${label}: ${data?.error ?? "Тодорхойгүй алдаа"}`);
+        totalUpserted += Number(data.upserted ?? 0);
+        lastRate = Number(data.rate_cny_mnt ?? lastRate);
+        toast.success(`${label}: ${data.upserted} item`);
+      }
+      toast.success(`Нийт ${totalUpserted} item шинэчлэгдлээ. Ханш: 1¥ = ${lastRate.toFixed(2)}₮`);
       loadSkins();
     } catch (e: any) {
       toast.error(e.message ?? "Sync хийхэд алдаа гарлаа");
