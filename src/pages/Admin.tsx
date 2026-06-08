@@ -157,7 +157,16 @@ const Admin = () => {
 
   const loadOrders = async () => {
     const { data } = await supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(500);
-    const list = data ?? [];
+    let list = data ?? [];
+    // Merge admin-only cost data from order_costs
+    if (list.length) {
+      const { data: costs } = await supabase
+        .from("order_costs")
+        .select("order_id, actual_buff_price_cny, actual_cny_mnt_rate, actual_cost_mnt")
+        .in("order_id", list.map((o: any) => o.id));
+      const costMap = new Map((costs ?? []).map((c: any) => [c.order_id, c]));
+      list = list.map((o: any) => ({ ...o, ...(costMap.get(o.id) ?? {}) }));
+    }
     setOrders(list);
     const userIds = Array.from(new Set(list.map((o: any) => o.user_id).filter(Boolean)));
     if (userIds.length) {
