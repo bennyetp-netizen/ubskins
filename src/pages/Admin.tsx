@@ -111,8 +111,17 @@ const Admin = () => {
   const loadSkins = async () => {
     setLoading(true);
     const { data, error } = await supabase.from("skins").select("*").order("created_at", { ascending: false });
-    if (error) toast.error(error.message);
-    else setSkins(data ?? []);
+    if (error) {
+      toast.error(error.message);
+      setLoading(false);
+      return;
+    }
+    // Cost prices live in the admin-only skin_costs table — merge them in for admins.
+    const { data: costs } = await supabase.from("skin_costs").select("skin_id, cost_price_mnt");
+    const costMap = new Map<string, number>();
+    (costs ?? []).forEach((c: any) => costMap.set(c.skin_id, c.cost_price_mnt));
+    const merged = (data ?? []).map((s: any) => ({ ...s, cost_price_mnt: costMap.get(s.id) ?? null }));
+    setSkins(merged);
     setLoading(false);
   };
 
@@ -254,7 +263,6 @@ const Admin = () => {
       game: form.game,
       wear: form.wear || null,
       float_value: form.float_value ? Number(form.float_value) : null,
-      cost_price_mnt: costMnt > 0 ? costMnt : null,
       price_mnt: sellingMnt,
       image_url: form.image_url || null,
       rarity: form.rarity || null,
@@ -267,10 +275,24 @@ const Admin = () => {
       stock_quantity: Number(form.stock_quantity) || 0,
     };
     let error;
+    let skinId = form.id;
     if (form.id) {
       ({ error } = await supabase.from("skins").update(payload).eq("id", form.id));
     } else {
-      ({ error } = await supabase.from("skins").insert(payload));
+      const { data: ins, error: insErr } = await supabase.from("skins").insert(payload).select("id").single();
+      error = insErr;
+      skinId = ins?.id;
+    }
+    // Sync cost price to admin-only skin_costs table.
+    if (!error && skinId) {
+      if (costMnt > 0) {
+        const { error: cErr } = await supabase
+          .from("skin_costs")
+          .upsert({ skin_id: skinId, cost_price_mnt: costMnt }, { onConflict: "skin_id" });
+        if (cErr) error = cErr;
+      } else {
+        await supabase.from("skin_costs").delete().eq("skin_id", skinId);
+      }
     }
     setSaving(false);
     if (error) {

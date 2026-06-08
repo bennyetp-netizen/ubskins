@@ -281,11 +281,39 @@ export type Database = {
         }
         Relationships: []
       }
+      skin_costs: {
+        Row: {
+          cost_price_mnt: number
+          created_at: string
+          skin_id: string
+          updated_at: string
+        }
+        Insert: {
+          cost_price_mnt: number
+          created_at?: string
+          skin_id: string
+          updated_at?: string
+        }
+        Update: {
+          cost_price_mnt?: number
+          created_at?: string
+          skin_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skin_costs_skin_id_fkey"
+            columns: ["skin_id"]
+            isOneToOne: true
+            referencedRelation: "skins"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       skins: {
         Row: {
           buff_id: string | null
           buff_price_cny: number | null
-          cost_price_mnt: number | null
           created_at: string
           description: string | null
           float_value: number | null
@@ -311,7 +339,6 @@ export type Database = {
         Insert: {
           buff_id?: string | null
           buff_price_cny?: number | null
-          cost_price_mnt?: number | null
           created_at?: string
           description?: string | null
           float_value?: number | null
@@ -337,7 +364,6 @@ export type Database = {
         Update: {
           buff_id?: string | null
           buff_price_cny?: number | null
-          cost_price_mnt?: number | null
           created_at?: string
           description?: string | null
           float_value?: number | null

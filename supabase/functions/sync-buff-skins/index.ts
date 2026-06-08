@@ -366,6 +366,8 @@ Deno.serve(async (req) => {
     let upserted = 0;
     let skippedFilter = 0;
     const batch: any[] = [];
+    // Costs are stored in admin-only skin_costs (not on the public skins row).
+    const costByBuffId = new Map<string, number>();
 
     for (const it of genericItems) {
       const fullName: string = it?.name ?? "";
@@ -390,6 +392,7 @@ Deno.serve(async (req) => {
       const image = it?.goods_info?.icon_url ?? it?.goods_info?.original_icon_url ?? null;
       const costMnt = Math.round(cnyPrice * cnyToMnt);
       const finalPriceMnt = calcSellingPrice(costMnt);
+      costByBuffId.set(buffId, costMnt);
 
       batch.push({
         buff_id: buffId,
@@ -399,7 +402,7 @@ Deno.serve(async (req) => {
         game: "CS2",
         wear,
         buff_price_cny: cnyPrice,
-        cost_price_mnt: costMnt,
+        // cost stored separately in skin_costs
         price_mnt: finalPriceMnt,
         image_url: image,
         rarity,
@@ -428,6 +431,7 @@ Deno.serve(async (req) => {
       const rarity = detectRarity(it?.goods_info?.info?.tags);
       const costMnt = Math.round(cnyPrice * cnyToMnt);
       const finalPriceMnt = calcSellingPrice(costMnt);
+      costByBuffId.set(buffId, costMnt);
 
       batch.push({
         buff_id: buffId,
@@ -437,7 +441,7 @@ Deno.serve(async (req) => {
         game: "CS2",
         wear: null,
         buff_price_cny: cnyPrice,
-        cost_price_mnt: costMnt,
+        // cost stored separately in skin_costs
         price_mnt: finalPriceMnt,
         image_url: image,
         rarity,
@@ -466,6 +470,7 @@ Deno.serve(async (req) => {
       const rarity = detectRarity(it?.goods_info?.info?.tags);
       const costMnt = Math.round(cnyPrice * cnyToMnt);
       const finalPriceMnt = calcSellingPrice(costMnt);
+      costByBuffId.set(buffId, costMnt);
 
       batch.push({
         buff_id: buffId,
@@ -475,7 +480,7 @@ Deno.serve(async (req) => {
         game: "CS2",
         wear: null,
         buff_price_cny: cnyPrice,
-        cost_price_mnt: costMnt,
+        // cost stored separately in skin_costs
         price_mnt: finalPriceMnt,
         image_url: image,
         rarity,
@@ -503,6 +508,7 @@ Deno.serve(async (req) => {
       const rarity = detectRarity(it?.goods_info?.info?.tags);
       const costMnt = Math.round(cnyPrice * cnyToMnt);
       const finalPriceMnt = calcSellingPrice(costMnt);
+      costByBuffId.set(buffId, costMnt);
 
       batch.push({
         buff_id: buffId,
@@ -512,7 +518,7 @@ Deno.serve(async (req) => {
         game: "CS2",
         wear: null,
         buff_price_cny: cnyPrice,
-        cost_price_mnt: costMnt,
+        // cost stored separately in skin_costs
         price_mnt: finalPriceMnt,
         image_url: image,
         rarity,
@@ -528,9 +534,29 @@ Deno.serve(async (req) => {
     const BATCH_SIZE = 50;
     for (let i = 0; i < batch.length; i += BATCH_SIZE) {
       const chunk = batch.slice(i, i + BATCH_SIZE);
-      const { error, count } = await sb.from("skins").upsert(chunk, { onConflict: "buff_id" });
-      if (error) console.error(`Batch upsert алдаа [${i}-${i+chunk.length}]:`, error.message);
-      else upserted += chunk.length;
+      const { data: upRows, error } = await sb
+        .from("skins")
+        .upsert(chunk, { onConflict: "buff_id" })
+        .select("id, buff_id");
+      if (error) {
+        console.error(`Batch upsert алдаа [${i}-${i+chunk.length}]:`, error.message);
+        continue;
+      }
+      upserted += chunk.length;
+
+      // Mirror cost prices into admin-only skin_costs.
+      const costRows = (upRows ?? [])
+        .map((r: any) => {
+          const c = costByBuffId.get(String(r.buff_id));
+          return c ? { skin_id: r.id, cost_price_mnt: c } : null;
+        })
+        .filter(Boolean);
+      if (costRows.length) {
+        const { error: cErr } = await sb
+          .from("skin_costs")
+          .upsert(costRows as any[], { onConflict: "skin_id" });
+        if (cErr) console.error(`skin_costs upsert алдаа [${i}]:`, cErr.message);
+      }
     }
 
     return new Response(
