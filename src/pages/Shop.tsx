@@ -60,6 +60,15 @@ const Shop = () => {
       if (s.price > maxPrice || s.price < minPrice) return false;
       return true;
     });
+    // Group by (weapon|name) — show one representative card (cheapest variant) per skin.
+    // Wear-ийн дэлгэрэнгүй сонголтыг detail хуудсан дээр харуулна.
+    const groups = new Map<string, typeof list[number]>();
+    for (const s of list) {
+      const key = `${s.weapon}|${s.name}`;
+      const existing = groups.get(key);
+      if (!existing || s.price < existing.price) groups.set(key, s);
+    }
+    list = Array.from(groups.values());
     list = [...list].sort((a, b) =>
       sort === "price-asc" ? a.price - b.price : sort === "price-desc" ? b.price - a.price : a.float - b.float
     );

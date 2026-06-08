@@ -11,12 +11,29 @@ import { useCart } from "@/hooks/useCart";
 import { useSkin, useSkins } from "@/hooks/useSkins";
 import { toast } from "sonner";
 
+const WEAR_ORDER: Array<"FN" | "MW" | "FT" | "WW" | "BS"> = ["FN", "MW", "FT", "WW", "BS"];
+
 const SkinDetail = () => {
   const { id } = useParams();
   const nav = useNavigate();
   const { skin, loading } = useSkin(id);
   const { skins: all } = useSkins();
   const { add } = useCart();
+
+  // Same skin's other wear variants (group by weapon + name).
+  const variants = skin
+    ? all
+        .filter((s) => s.weapon === skin.weapon && s.name === skin.name)
+        .reduce((acc: typeof all, s) => {
+          // Keep the cheapest listing per wear.
+          const existing = acc.find((x) => x.wear === s.wear);
+          if (!existing) acc.push(s);
+          else if (s.price < existing.price)
+            acc.splice(acc.indexOf(existing), 1, s);
+          return acc;
+        }, [])
+        .sort((a, b) => WEAR_ORDER.indexOf(a.wear) - WEAR_ORDER.indexOf(b.wear))
+    : [];
 
   if (loading) {
     return (
@@ -35,7 +52,7 @@ const SkinDetail = () => {
     );
   }
 
-  const related = all.filter((s) => s.id !== skin.id && s.weapon === skin.weapon).slice(0, 4);
+  const related = all.filter((s) => s.id !== skin.id && s.weapon === skin.weapon && s.name !== skin.name).slice(0, 4);
 
   const orderNow = () => {
     add(skin);
@@ -74,6 +91,40 @@ const SkinDetail = () => {
               <Repeat className="h-3 w-3" /> Trade Verified
             </Badge>
           </div>
+
+          {/* Wear selector (бусад wear хувилбарууд) */}
+          {variants.length > 1 && (
+            <div className="mt-5 rounded-2xl border border-border bg-card/40 p-4">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Wear сонгох
+              </p>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+                {variants.map((v) => {
+                  const active = v.id === skin.id;
+                  return (
+                    <button
+                      key={v.id}
+                      onClick={() => !active && nav(`/skin/${v.id}`)}
+                      className={`flex flex-col items-start rounded-xl border px-3 py-2 text-left transition ${
+                        active
+                          ? "border-primary bg-primary/10 ring-1 ring-primary/40"
+                          : "border-border bg-secondary/30 hover:border-primary/50"
+                      }`}
+                    >
+                      <span className={`font-display text-sm font-bold ${wearColor[v.wear]}`}>
+                        {v.wear}
+                      </span>
+                      <span className="mt-0.5 text-[10px] uppercase text-muted-foreground">
+                        {wearLabel[v.wear]}
+                      </span>
+                      <span className="mt-1 text-xs font-semibold">{formatMNT(v.price)}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
 
           {/* Product type banner */}
           {skin.productType === "ready" ? (
