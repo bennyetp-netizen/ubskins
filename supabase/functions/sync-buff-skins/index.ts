@@ -392,6 +392,7 @@ Deno.serve(async (req) => {
       const image = it?.goods_info?.icon_url ?? it?.goods_info?.original_icon_url ?? null;
       const costMnt = Math.round(cnyPrice * cnyToMnt);
       const finalPriceMnt = calcSellingPrice(costMnt);
+      costByBuffId.set(buffId, costMnt);
 
       batch.push({
         buff_id: buffId,
@@ -430,6 +431,7 @@ Deno.serve(async (req) => {
       const rarity = detectRarity(it?.goods_info?.info?.tags);
       const costMnt = Math.round(cnyPrice * cnyToMnt);
       const finalPriceMnt = calcSellingPrice(costMnt);
+      costByBuffId.set(buffId, costMnt);
 
       batch.push({
         buff_id: buffId,
@@ -468,6 +470,7 @@ Deno.serve(async (req) => {
       const rarity = detectRarity(it?.goods_info?.info?.tags);
       const costMnt = Math.round(cnyPrice * cnyToMnt);
       const finalPriceMnt = calcSellingPrice(costMnt);
+      costByBuffId.set(buffId, costMnt);
 
       batch.push({
         buff_id: buffId,
@@ -505,6 +508,7 @@ Deno.serve(async (req) => {
       const rarity = detectRarity(it?.goods_info?.info?.tags);
       const costMnt = Math.round(cnyPrice * cnyToMnt);
       const finalPriceMnt = calcSellingPrice(costMnt);
+      costByBuffId.set(buffId, costMnt);
 
       batch.push({
         buff_id: buffId,
