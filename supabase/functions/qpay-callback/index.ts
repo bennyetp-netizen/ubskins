@@ -98,6 +98,8 @@ Deno.serve(async (req) => {
     }
 
     const isPreorder = order.product_type === "preorder";
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
     if (stage === "remaining") {
       if (!order.remaining_paid) {
@@ -105,6 +107,7 @@ Deno.serve(async (req) => {
           .from("orders")
           .update({ remaining_paid: true, status: "paid" })
           .eq("id", order.id);
+        await sendOrderConfirmationEmail(admin, supabaseUrl, serviceKey, order.id, "remaining");
       }
     } else if (!order.payment_confirmed) {
       await admin
@@ -117,7 +120,9 @@ Deno.serve(async (req) => {
           status: isPreorder ? "pending" : "paid",
         })
         .eq("id", order.id);
+      await sendOrderConfirmationEmail(admin, supabaseUrl, serviceKey, order.id, "deposit");
     }
+
 
     return new Response(JSON.stringify({ ok: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
