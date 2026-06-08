@@ -575,13 +575,9 @@ const Admin = () => {
                               variant="outline"
                               className="border-warning/40 text-warning hover:bg-warning/10"
                               onClick={() => {
-                                const now = new Date();
-                                const until = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-                                updateOrder(o.id, {
-                                  buff_purchased_at: now.toISOString(),
-                                  trade_hold_until: until.toISOString(),
-                                  status: "trade_holding",
-                                });
+                                setCostDialogOrder(o);
+                                setCostCny(o.actual_buff_price_cny ? String(o.actual_buff_price_cny) : "");
+                                setCostRate(o.actual_cny_mnt_rate ? String(o.actual_cny_mnt_rate) : "");
                               }}
                             >
                               🔒 Худалдан авлаа (7 хоног hold)
@@ -590,6 +586,15 @@ const Admin = () => {
                           {o.trade_hold_until && o.status !== "delivered" && (
                             <div className="rounded-md border border-warning/30 bg-warning/5 px-2 py-1 text-[10px] text-warning">
                               Hold дуусах: {new Date(o.trade_hold_until).toLocaleString("mn-MN")}
+                            </div>
+                          )}
+                          {o.actual_cost_mnt && (
+                            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 px-2 py-1 text-[10px] text-emerald-400 space-y-0.5">
+                              <div>BUFF: ¥{Number(o.actual_buff_price_cny).toFixed(2)} × {Number(o.actual_cny_mnt_rate).toFixed(1)}</div>
+                              <div>Өртөг: {formatMNT(o.actual_cost_mnt)}</div>
+                              <div className="font-semibold">
+                                Ашиг: {formatMNT((o.price_mnt ?? 0) - o.actual_cost_mnt)}
+                              </div>
                             </div>
                           )}
                           {o.status !== "delivered" && (
