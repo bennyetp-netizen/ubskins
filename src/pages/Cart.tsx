@@ -75,30 +75,38 @@ const Cart = () => {
         .select("id, order_number");
       if (error) throw error;
 
-      // Fire confirmation email (best-effort, don't block UX)
+      // Fire emails (best-effort, don't block UX).
+      // NOTE: For QPay orders, the customer's order-confirmation email is sent
+      // ONLY after QPay actually confirms payment (see qpay-invoice / qpay-callback).
+      // For other methods (bank transfer etc.) we still send immediately so the
+      // user gets the payment instructions in their inbox.
       try {
         const orderNumber = (inserted?.[0] as any)?.order_number || "";
-        await supabase.functions.invoke("send-transactional-email", {
-          body: {
-            templateName: "order-confirmation",
-            recipientEmail: email.trim().toLowerCase(),
-            templateData: {
-              orderNumber,
-              customerName: user?.user_metadata?.display_name || "",
-              items: items.map(({ skin }) => ({
-                name: `${skin.weaponName} | ${skin.name}`,
-                price: skin.price,
-                wear: `${skin.wear} · Float ${skin.float.toFixed(3)}`,
-              })),
-              total,
-              depositAmount: totalDeposit,
-              paymentMethod: method,
-              ordersUrl: `${window.location.origin}/orders`,
-            },
-          },
-        });
 
-        // Notify admin
+        if (method !== "qpay") {
+          await supabase.functions.invoke("send-transactional-email", {
+            body: {
+              templateName: "order-confirmation",
+              recipientEmail: email.trim().toLowerCase(),
+              idempotencyKey: `order-confirmation-${(inserted?.[0] as any)?.id}-create`,
+              templateData: {
+                orderNumber,
+                customerName: user?.user_metadata?.display_name || "",
+                items: items.map(({ skin }) => ({
+                  name: `${skin.weaponName} | ${skin.name}`,
+                  price: skin.price,
+                  wear: `${skin.wear} · Float ${skin.float.toFixed(3)}`,
+                })),
+                total,
+                depositAmount: totalDeposit,
+                paymentMethod: method,
+                ordersUrl: `${window.location.origin}/orders`,
+              },
+            },
+          });
+        }
+
+        // Notify admin immediately on order creation regardless of method
         await supabase.functions.invoke("send-transactional-email", {
           body: {
             templateName: "admin-order-notification",
@@ -123,6 +131,7 @@ const Cart = () => {
       } catch (mailErr) {
         console.warn("email send failed", mailErr);
       }
+
 
       toast.success("✅ Захиалга амжилттай! Төлбөрийн заавар руу шилжиж байна...");
       clear();
