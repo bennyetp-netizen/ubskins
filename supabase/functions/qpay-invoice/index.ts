@@ -24,6 +24,56 @@ async function getQpayToken() {
   return data.access_token as string;
 }
 
+// Send the customer order-confirmation email after QPay actually confirms payment.
+// Uses an idempotencyKey so retries (callback + client check) do not duplicate the email.
+async function sendOrderConfirmationEmail(
+  admin: ReturnType<typeof createClient>,
+  supabaseUrl: string,
+  serviceKey: string,
+  orderId: string,
+  stage: "deposit" | "remaining",
+) {
+  try {
+    const { data: o } = await admin
+      .from("orders")
+      .select("id, order_number, email, skin_name, wear, float_value, price_mnt, deposit_amount, payment_method, product_type")
+      .eq("id", orderId)
+      .single();
+    if (!o?.email) return;
+    const total = Number(o.price_mnt ?? 0);
+    const deposit = Number(o.deposit_amount ?? 0);
+    const wearStr = o.wear
+      ? `${o.wear}${o.float_value ? ` · Float ${Number(o.float_value).toFixed(3)}` : ""}`
+      : "";
+    const res = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${serviceKey}`,
+        "Content-Type": "application/json",
+        apikey: serviceKey,
+      },
+      body: JSON.stringify({
+        templateName: "order-confirmation",
+        recipientEmail: o.email,
+        idempotencyKey: `order-confirmation-${o.id}-${stage}`,
+        templateData: {
+          orderNumber: o.order_number ?? "",
+          customerName: "",
+          items: [{ name: o.skin_name, price: total, wear: wearStr }],
+          total,
+          depositAmount: deposit,
+          paymentMethod: o.payment_method ?? "qpay",
+          ordersUrl: "https://ubskins.mn/orders",
+        },
+      }),
+    });
+    if (!res.ok) console.warn("order-confirmation email send failed", await res.text());
+  } catch (e) {
+    console.warn("order-confirmation email error", e);
+  }
+}
+
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
