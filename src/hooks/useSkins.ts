@@ -63,7 +63,7 @@ export function useSkin(id: string | undefined) {
     }
     (async () => {
       setLoading(true);
-      const { data } = await supabase.from("skins").select("*").eq("id", id).maybeSingle();
+      const { data } = await supabase.from("skins").select(PUBLIC_COLS).eq("id", id).maybeSingle();
       if (data) setSkin(mapSkinRow(data as SkinRow));
       setLoading(false);
     })();
