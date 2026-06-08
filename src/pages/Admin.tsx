@@ -1031,7 +1031,6 @@ const Admin = () => {
                 await updateOrder(costDialogOrder.id, {
                   buff_purchased_at: now.toISOString(),
                   trade_hold_until: until.toISOString(),
-                  status: "trade_holding",
                 });
                 setCostDialogOrder(null);
                 setCostCny("");
