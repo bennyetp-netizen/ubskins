@@ -72,6 +72,7 @@ const Admin = () => {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [syncMode, setSyncMode] = useState("priority");
   const [orderFilter, setOrderFilter] = useState<"all" | "pending" | "paid" | "delivered">("all");
 
   const paidOrders = orders.filter((o) => o.status === "paid" || o.status === "delivered");
@@ -93,10 +94,10 @@ const Admin = () => {
   const syncFromBuff = async () => {
     setSyncing(true);
     try {
-      const { data, error } = await supabase.functions.invoke("sync-buff-skins");
+      const { data, error } = await supabase.functions.invoke("sync-buff-skins", { body: { mode: syncMode } });
       if (error) throw error;
       if (!data?.success) throw new Error(data?.error ?? "Тодорхойгүй алдаа");
-      toast.success(`${data.upserted}/${data.items_received} скин шинэчлэгдлээ. Ханш: 1¥ = ${Number(data.rate_cny_mnt).toFixed(2)}₮`);
+      toast.success(`${data.upserted} item шинэчлэгдлээ. Ханш: 1¥ = ${Number(data.rate_cny_mnt).toFixed(2)}₮`);
       loadSkins();
     } catch (e: any) {
       toast.error(e.message ?? "Sync хийхэд алдаа гарлаа");
@@ -572,6 +573,18 @@ const Admin = () => {
                   <span className="text-muted-foreground">{label}</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
+                  <select
+                    value={syncMode}
+                    onChange={(e) => setSyncMode(e.target.value)}
+                    disabled={syncing}
+                    className="h-10 rounded-md border border-border bg-secondary px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="priority">Зэвсэг</option>
+                    <option value="agents">Agent</option>
+                    <option value="stickers">Sticker</option>
+                    <option value="charms">Charm</option>
+                    <option value="all">Бүгд</option>
+                  </select>
                   <Button variant="outline" onClick={syncFromBuff} disabled={syncing}>
                     {syncing ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-1 h-4 w-4" />}
                     Скин шинэчлэх
