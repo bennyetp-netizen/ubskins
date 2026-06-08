@@ -11,12 +11,29 @@ import { useCart } from "@/hooks/useCart";
 import { useSkin, useSkins } from "@/hooks/useSkins";
 import { toast } from "sonner";
 
+const WEAR_ORDER: Array<"FN" | "MW" | "FT" | "WW" | "BS"> = ["FN", "MW", "FT", "WW", "BS"];
+
 const SkinDetail = () => {
   const { id } = useParams();
   const nav = useNavigate();
   const { skin, loading } = useSkin(id);
   const { skins: all } = useSkins();
   const { add } = useCart();
+
+  // Same skin's other wear variants (group by weapon + name).
+  const variants = skin
+    ? all
+        .filter((s) => s.weapon === skin.weapon && s.name === skin.name)
+        .reduce((acc: typeof all, s) => {
+          // Keep the cheapest listing per wear.
+          const existing = acc.find((x) => x.wear === s.wear);
+          if (!existing) acc.push(s);
+          else if (s.price < existing.price)
+            acc.splice(acc.indexOf(existing), 1, s);
+          return acc;
+        }, [])
+        .sort((a, b) => WEAR_ORDER.indexOf(a.wear) - WEAR_ORDER.indexOf(b.wear))
+    : [];
 
   if (loading) {
     return (
@@ -35,7 +52,7 @@ const SkinDetail = () => {
     );
   }
 
-  const related = all.filter((s) => s.id !== skin.id && s.weapon === skin.weapon).slice(0, 4);
+  const related = all.filter((s) => s.id !== skin.id && s.weapon === skin.weapon && s.name !== skin.name).slice(0, 4);
 
   const orderNow = () => {
     add(skin);
