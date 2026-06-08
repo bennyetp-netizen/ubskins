@@ -53,7 +53,7 @@ export interface SkinRow {
 // never reach the customer-facing client. `price_mnt` on `skins` is the
 // already-calculated selling price.
 export const calcSellingPrice = (costMnt: number): number => {
-  const markup = costMnt <= 50000 ? 1.15 : costMnt <= 200000 ? 1.12 : 1.08;
+  const markup = costMnt <= 50000 ? 1.16 : costMnt <= 200000 ? 1.13 : 1.09;
   return Math.round(costMnt * markup);
 };
 
