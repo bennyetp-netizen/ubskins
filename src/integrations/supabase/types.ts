@@ -308,13 +308,6 @@ export type Database = {
             referencedRelation: "skins"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "skin_costs_skin_id_fkey"
-            columns: ["skin_id"]
-            isOneToOne: true
-            referencedRelation: "skins_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       skins: {
@@ -475,75 +468,7 @@ export type Database = {
       }
     }
     Views: {
-      skins_public: {
-        Row: {
-          created_at: string | null
-          description: string | null
-          float_value: number | null
-          game: string | null
-          id: string | null
-          image_url: string | null
-          is_active: boolean | null
-          is_available: boolean | null
-          is_featured: boolean | null
-          last_synced_at: string | null
-          name: string | null
-          price_mnt: number | null
-          product_type: string | null
-          rarity: string | null
-          stattrak: boolean | null
-          stock: number | null
-          stock_quantity: number | null
-          weapon: string | null
-          weapon_type: string | null
-          wear: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          description?: string | null
-          float_value?: number | null
-          game?: string | null
-          id?: string | null
-          image_url?: string | null
-          is_active?: boolean | null
-          is_available?: boolean | null
-          is_featured?: boolean | null
-          last_synced_at?: string | null
-          name?: string | null
-          price_mnt?: number | null
-          product_type?: string | null
-          rarity?: string | null
-          stattrak?: boolean | null
-          stock?: number | null
-          stock_quantity?: number | null
-          weapon?: string | null
-          weapon_type?: string | null
-          wear?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          description?: string | null
-          float_value?: number | null
-          game?: string | null
-          id?: string | null
-          image_url?: string | null
-          is_active?: boolean | null
-          is_available?: boolean | null
-          is_featured?: boolean | null
-          last_synced_at?: string | null
-          name?: string | null
-          price_mnt?: number | null
-          product_type?: string | null
-          rarity?: string | null
-          stattrak?: boolean | null
-          stock?: number | null
-          stock_quantity?: number | null
-          weapon?: string | null
-          weapon_type?: string | null
-          wear?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       delete_email: {
