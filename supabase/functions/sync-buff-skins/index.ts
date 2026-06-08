@@ -388,11 +388,8 @@ Deno.serve(async (req) => {
       const wear = detectWear(fullName);
       const rarity = detectRarity(it?.goods_info?.info?.tags);
       const image = it?.goods_info?.icon_url ?? it?.goods_info?.original_icon_url ?? null;
-      const rawMnt = cnyPrice * cnyToMnt * MARGIN_HIGH;
-      const priceMnt = Math.round(rawMnt / 100) * 100;
-      const appliedMargin = priceMnt >= 500000 ? MARGIN_LOW : MARGIN_HIGH;
-      const adjustedRawMnt = cnyPrice * cnyToMnt * appliedMargin;
-      const finalPriceMnt = Math.round(adjustedRawMnt / 100) * 100;
+      const costMnt = Math.round(cnyPrice * cnyToMnt);
+      const finalPriceMnt = calcSellingPrice(costMnt);
 
       batch.push({
         buff_id: buffId,
