@@ -180,6 +180,7 @@ Deno.serve(async (req) => {
             .from("orders")
             .update({ remaining_paid: true, status: "paid" })
             .eq("id", order.id);
+          await sendOrderConfirmationEmail(admin, supabaseUrl, serviceKey, order.id, "remaining");
         } else if (!isRemaining && !order.payment_confirmed) {
           await admin
             .from("orders")
@@ -191,8 +192,10 @@ Deno.serve(async (req) => {
               status: isPreorder ? "pending" : "paid",
             })
             .eq("id", order.id);
+          await sendOrderConfirmationEmail(admin, supabaseUrl, serviceKey, order.id, "deposit");
         }
       }
+
 
       return new Response(JSON.stringify({ paid, raw: checkJson }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
