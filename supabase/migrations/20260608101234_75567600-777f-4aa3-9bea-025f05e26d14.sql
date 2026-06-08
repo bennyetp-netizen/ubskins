@@ -1,0 +1,1 @@
+REVOKE SELECT (buff_id, buff_price_cny) ON public.skins FROM anon, authenticated;
