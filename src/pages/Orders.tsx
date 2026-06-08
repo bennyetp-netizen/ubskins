@@ -74,10 +74,17 @@ const Orders = () => {
         if (data) {
           setOrders(data as unknown as OrderRow[]);
           const list = data as unknown as OrderRow[];
-          // Prefer ?open=ID, then first pending
+          // Prefer ?open=ID, then orders owing remaining 70%, then first pending
+          const remainingDueOrder = list.find(
+            (o) =>
+              (o.product_type ?? "ready") === "preorder" &&
+              !!o.deposit_paid &&
+              !o.remaining_paid &&
+              o.status === "pending",
+          );
           const target = openId && list.find((o) => o.id === openId)
             ? openId
-            : list.find((o) => o.status === "pending")?.id ?? null;
+            : remainingDueOrder?.id ?? list.find((o) => o.status === "pending")?.id ?? null;
           if (target) {
             setExpanded(target);
             setFilter("all");
