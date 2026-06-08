@@ -303,6 +303,13 @@ Deno.serve(async (req) => {
       console.log(`Charm: ${charmItems.length} item`);
     }
 
+    if (mode === "all" || mode === "agents") {
+      await new Promise((r) => setTimeout(r, 3000));
+      agentItems = await fetchPages(BUFF_AGENT_BASE, PAGES_AGENTS);
+      console.log(`Agent: ${agentItems.length} item`);
+    }
+
+
 
     // Давхардлыг buff_id-аар арилгах
     const seenIds = new Set<string>();
