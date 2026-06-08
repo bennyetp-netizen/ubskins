@@ -399,7 +399,7 @@ Deno.serve(async (req) => {
         game: "CS2",
         wear,
         buff_price_cny: cnyPrice,
-        cost_price_mnt: costMnt,
+        // cost stored separately in skin_costs
         price_mnt: finalPriceMnt,
         image_url: image,
         rarity,
@@ -437,7 +437,7 @@ Deno.serve(async (req) => {
         game: "CS2",
         wear: null,
         buff_price_cny: cnyPrice,
-        cost_price_mnt: costMnt,
+        // cost stored separately in skin_costs
         price_mnt: finalPriceMnt,
         image_url: image,
         rarity,
@@ -475,7 +475,7 @@ Deno.serve(async (req) => {
         game: "CS2",
         wear: null,
         buff_price_cny: cnyPrice,
-        cost_price_mnt: costMnt,
+        // cost stored separately in skin_costs
         price_mnt: finalPriceMnt,
         image_url: image,
         rarity,
@@ -512,7 +512,7 @@ Deno.serve(async (req) => {
         game: "CS2",
         wear: null,
         buff_price_cny: cnyPrice,
-        cost_price_mnt: costMnt,
+        // cost stored separately in skin_costs
         price_mnt: finalPriceMnt,
         image_url: image,
         rarity,
