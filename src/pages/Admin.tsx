@@ -154,6 +154,36 @@ const Admin = () => {
     }
   };
 
+  // Бэлэн скинүүдийн дутуу wear-уудыг BUFF search-аар нөхөх (chunked)
+  const fillMissingWears = async () => {
+    setSyncing(true);
+    try {
+      let offset = 0;
+      let totalAdded = 0;
+      let totalGroups = 0;
+      // Хэт удаан болохгүйн тулд хамгийн ихдээ 20 chunk (≈ 600 скин)
+      for (let i = 0; i < 20; i++) {
+        toast.info(`Wear нөхөж байна... (${offset}+)`);
+        const { data, error } = await supabase.functions.invoke("sync-buff-skins", {
+          body: { mode: "fillwears", offset, limit: 30 },
+        });
+        if (error) throw new Error(error.message);
+        if (!data?.success) throw new Error(data?.error ?? "Тодорхойгүй алдаа");
+        totalAdded += Number(data.upserted ?? 0);
+        totalGroups = Number(data.total_groups ?? totalGroups);
+        offset = Number(data.next_offset ?? offset + 30);
+        if (offset >= totalGroups) break;
+      }
+      toast.success(`Wear нөхөлт дууслаа. Нэмсэн: ${totalAdded} / ${totalGroups} скин`);
+      loadSkins();
+    } catch (e: any) {
+      toast.error(e.message ?? "Wear нөхөхөд алдаа гарлаа");
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+
   const loadSkins = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -680,6 +710,10 @@ const Admin = () => {
                   <Button variant="outline" onClick={syncFromBuff} disabled={syncing}>
                     {syncing ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-1 h-4 w-4" />}
                     Скин шинэчлэх
+                  </Button>
+                  <Button variant="outline" onClick={fillMissingWears} disabled={syncing}>
+                    {syncing ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-1 h-4 w-4" />}
+                    Дутуу wear нөхөх
                   </Button>
                   <Button variant="outline" onClick={removeAllSkins} disabled={skins.length === 0} className="border-destructive/40 text-destructive hover:bg-destructive/10">
                     <Trash2 className="mr-1 h-4 w-4" /> Бүх скин устгах

@@ -278,6 +278,121 @@ Deno.serve(async (req) => {
     };
     const mode = modeAliases[rawMode] ?? rawMode;
 
+    // === fillwears горим: байгаа скинүүдийн дутуу wear-уудыг BUFF search-аар нөхөх ===
+    if (mode === "fillwears") {
+      const limit = Math.max(1, Math.min(200, Number(body?.limit ?? 30)));
+      const offset = Math.max(0, Number(body?.offset ?? 0));
+
+      // Distinct (weapon, name) групп — зөвхөн wear-тэй (зэвсэг/хутга/бээлий) скинүүд
+      const { data: groups, error: gErr } = await sb
+        .from("skins")
+        .select("weapon, name")
+        .not("wear", "is", null)
+        .in("weapon_type", [
+          "Rifle", "Sniper", "Pistol", "SMG", "Shotgun", "Heavy", "Knife", "Gloves",
+        ])
+        .order("weapon", { ascending: true })
+        .order("name", { ascending: true });
+      if (gErr) throw new Error("groups query: " + gErr.message);
+
+      const uniq = new Map<string, { weapon: string; name: string }>();
+      for (const r of groups ?? []) {
+        const key = `${r.weapon}|${r.name}`;
+        if (!uniq.has(key)) uniq.set(key, { weapon: r.weapon, name: r.name });
+      }
+      const allGroups = Array.from(uniq.values());
+      const slice = allGroups.slice(offset, offset + limit);
+
+      let added = 0;
+      let scanned = 0;
+      for (const g of slice) {
+        scanned++;
+        // BUFF search — нэрээр хайна
+        const searchUrl =
+          `https://buff.163.com/api/market/goods?game=csgo&page_size=40&search=` +
+          encodeURIComponent(`${g.weapon} ${g.name}`);
+        let items: any[] = [];
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const res = await fetch(searchUrl, { headers: buffHeaders });
+          if (res.status === 429) {
+            await new Promise((r) => setTimeout(r, (attempt + 1) * 3000));
+            continue;
+          }
+          if (!res.ok) break;
+          const json = await res.json();
+          if (json.code === "OK") items = json?.data?.items ?? [];
+          break;
+        }
+        await new Promise((r) => setTimeout(r, 1200));
+
+        for (const it of items) {
+          const fullName: string = it?.name ?? "";
+          const buffId = String(it?.id ?? "");
+          const cnyPrice = Number(it?.sell_min_price ?? 0);
+          if (!buffId || !cnyPrice) continue;
+          const { weapon, skin } = cleanName(fullName);
+          // Зөвхөн яг таарсан weapon+name-ийг авна (StatTrak™ зэргийг ялгах)
+          if (weapon !== g.weapon || skin !== g.name) continue;
+          const wear = detectWear(fullName);
+          const weaponType = detectWeaponType(fullName);
+          const rarity = detectRarity(it?.goods_info?.info?.tags);
+          const image = it?.goods_info?.icon_url ?? it?.goods_info?.original_icon_url ?? null;
+          const costMnt = Math.round(cnyPrice * cnyToMnt);
+          const finalPriceMnt = calcSellingPrice(costMnt);
+
+          const { data: up, error: uErr } = await sb
+            .from("skins")
+            .upsert(
+              {
+                buff_id: buffId,
+                name: skin,
+                weapon,
+                weapon_type: weaponType,
+                game: "CS2",
+                wear,
+                buff_price_cny: cnyPrice,
+                price_mnt: finalPriceMnt,
+                image_url: image,
+                rarity,
+                stock: 1,
+                is_active: true,
+                is_available: true,
+                last_synced_at: new Date().toISOString(),
+              },
+              { onConflict: "buff_id" },
+            )
+            .select("id")
+            .maybeSingle();
+          if (uErr) {
+            console.error("fillwears upsert:", uErr.message);
+            continue;
+          }
+          if (up?.id) {
+            await sb
+              .from("skin_costs")
+              .upsert({ skin_id: up.id, cost_price_mnt: costMnt }, { onConflict: "skin_id" });
+            added++;
+          }
+        }
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          mode: "fillwears",
+          rate_cny_mnt: cnyToMnt,
+          total_groups: allGroups.length,
+          scanned,
+          offset,
+          limit,
+          next_offset: offset + scanned,
+          upserted: added,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+
     // Optional: chunk priority weapons to stay under edge function wall-time.
     // body.weapons = ["weapon_ak47", ...] → restrict PRIORITY_WEAPONS to that subset.
     const weaponsFilter: string[] | null = Array.isArray(body?.weapons) && body.weapons.length > 0
