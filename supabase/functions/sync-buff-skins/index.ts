@@ -33,6 +33,10 @@ const PAGES_PLAYER_STICKERS = 40; // 40 × 80 = 3200
 const BUFF_CHARM_BASE =
   "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category_group=charm&sort_by=sell_num.desc&min_price=0.1&max_price=50000";
 const PAGES_CHARMS = 20; // 20 × 80 = 1600
+// Agents
+const BUFF_AGENT_BASE =
+  "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category=type_customplayer&sort_by=sell_num.desc&min_price=0.1&max_price=50000";
+const PAGES_AGENTS = 15; // 15 × 80 = 1200
 // Тэргүүлэх зэвсгүүд
 const PRIORITY_WEAPONS = [
   "weapon_awp",
