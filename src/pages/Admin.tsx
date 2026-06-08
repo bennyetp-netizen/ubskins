@@ -72,6 +72,7 @@ const Admin = () => {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [syncMode, setSyncMode] = useState("priority");
   const [orderFilter, setOrderFilter] = useState<"all" | "pending" | "paid" | "delivered">("all");
 
   const paidOrders = orders.filter((o) => o.status === "paid" || o.status === "delivered");
@@ -93,10 +94,10 @@ const Admin = () => {
   const syncFromBuff = async () => {
     setSyncing(true);
     try {
-      const { data, error } = await supabase.functions.invoke("sync-buff-skins");
+      const { data, error } = await supabase.functions.invoke("sync-buff-skins", { body: { mode: syncMode } });
       if (error) throw error;
       if (!data?.success) throw new Error(data?.error ?? "Тодорхойгүй алдаа");
-      toast.success(`${data.upserted}/${data.items_received} скин шинэчлэгдлээ. Ханш: 1¥ = ${Number(data.rate_cny_mnt).toFixed(2)}₮`);
+      toast.success(`${data.upserted} item шинэчлэгдлээ. Ханш: 1¥ = ${Number(data.rate_cny_mnt).toFixed(2)}₮`);
       loadSkins();
     } catch (e: any) {
       toast.error(e.message ?? "Sync хийхэд алдаа гарлаа");
