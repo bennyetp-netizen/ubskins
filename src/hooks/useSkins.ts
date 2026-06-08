@@ -26,7 +26,7 @@ export function useSkins(options: Options = {}) {
     while (true) {
       let query = supabase
         .from("skins")
-        .select("*")
+        .select(PUBLIC_COLS)
         .order("created_at", { ascending: false })
         .range(from, from + PAGE - 1);
       if (!includeInactive) query = query.eq("is_active", true);
