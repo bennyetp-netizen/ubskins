@@ -49,6 +49,7 @@ const emptyForm: SkinForm = {
   game: "CS2",
   wear: "FT",
   float_value: "",
+  cost_price_mnt: "",
   price_mnt: "",
   image_url: "",
   rarity: "Mil-Spec",
