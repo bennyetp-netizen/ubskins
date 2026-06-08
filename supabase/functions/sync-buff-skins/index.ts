@@ -33,6 +33,10 @@ const PAGES_PLAYER_STICKERS = 40; // 40 × 80 = 3200
 const BUFF_CHARM_BASE =
   "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category_group=charm&sort_by=sell_num.desc&min_price=0.1&max_price=50000";
 const PAGES_CHARMS = 20; // 20 × 80 = 1600
+// Agents
+const BUFF_AGENT_BASE =
+  "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category=type_customplayer&sort_by=sell_num.desc&min_price=0.1&max_price=50000";
+const PAGES_AGENTS = 15; // 15 × 80 = 1200
 // Тэргүүлэх зэвсгүүд
 const PRIORITY_WEAPONS = [
   "weapon_awp",
@@ -249,6 +253,7 @@ Deno.serve(async (req) => {
     let priorityItems: any[] = [];
     let stickerItems: any[] = [];
     let charmItems: any[] = [];
+    let agentItems: any[] = [];
 
     if (mode === "all" || mode === "knife") {
       knifeItems = await fetchPages(BUFF_KNIFE_BASE, PAGES_KNIVES);
@@ -297,6 +302,13 @@ Deno.serve(async (req) => {
       charmItems = await fetchPages(BUFF_CHARM_BASE, PAGES_CHARMS);
       console.log(`Charm: ${charmItems.length} item`);
     }
+
+    if (mode === "all" || mode === "agents") {
+      await new Promise((r) => setTimeout(r, 3000));
+      agentItems = await fetchPages(BUFF_AGENT_BASE, PAGES_AGENTS);
+      console.log(`Agent: ${agentItems.length} item`);
+    }
+
 
 
     // Давхардлыг buff_id-аар арилгах
@@ -440,6 +452,45 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Agent-уудыг боловсруулах
+    for (const it of agentItems) {
+      const fullName: string = it?.name ?? "";
+      const buffId = String(it?.id ?? "");
+      const cnyPrice = Number(it?.sell_min_price ?? 0);
+      if (!buffId || !cnyPrice) continue;
+      if (cnyPrice < 0.1 || cnyPrice > 50000) {
+        skippedFilter++;
+        continue;
+      }
+
+      // "Agent | Sir Bloody Darryl Royale | The Professionals"
+      const parts = fullName.split("|").map((p) => p.trim());
+      const skinName = parts.slice(1).join(" | ") || fullName;
+      const image = it?.goods_info?.icon_url ?? it?.goods_info?.original_icon_url ?? null;
+      const rarity = detectRarity(it?.goods_info?.info?.tags);
+      const rawMnt = cnyPrice * cnyToMnt * MARGIN_HIGH;
+      const priceMnt = Math.round(rawMnt / 100) * 100;
+      const appliedMargin = priceMnt >= 500000 ? MARGIN_LOW : MARGIN_HIGH;
+      const adjustedRawMnt = cnyPrice * cnyToMnt * appliedMargin;
+      const finalPriceMnt = Math.round(adjustedRawMnt / 100) * 100;
+
+      batch.push({
+        buff_id: buffId,
+        name: skinName,
+        weapon: "Agent",
+        weapon_type: "Agent",
+        game: "CS2",
+        wear: null,
+        buff_price_cny: cnyPrice,
+        price_mnt: finalPriceMnt,
+        image_url: image,
+        rarity,
+        stock: 1,
+        is_active: true,
+        is_available: true,
+        last_synced_at: new Date().toISOString(),
+      });
+    }
 
 
     // Batch upsert 50 бүрээр
