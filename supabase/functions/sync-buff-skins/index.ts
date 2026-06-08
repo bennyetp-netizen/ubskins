@@ -73,12 +73,12 @@ const PRIORITY_WEAPONS = [
 const RATE_URL = "https://api.mongolbank.mn/json/get/exchange_rate?currency=CNY";
 const FALLBACK_RATE_URL = "https://open.er-api.com/v6/latest/CNY";
 // Tiered markup applied to the cost price (MNT).
-// 0 - 50,000      → +15%
-// 50,001 - 200,000 → +12%
-// > 200,000        → +8%
+// 0 - 50,000       → +16%
+// 50,001 - 200,000 → +13%
+// > 200,000        → +9%
 // Final price нь хамгийн ойрын 100 MNT хүртэл бөөрөнхийлнө.
 const calcSellingPrice = (costMnt: number): number => {
-  const markup = costMnt <= 50000 ? 1.15 : costMnt <= 200000 ? 1.12 : 1.08;
+  const markup = costMnt <= 50000 ? 1.16 : costMnt <= 200000 ? 1.13 : 1.09;
   return Math.round(costMnt * markup);
 };
 
