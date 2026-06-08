@@ -45,7 +45,7 @@ export interface SkinRow {
   stock_quantity?: number | null;
 }
 
-// Selling price = cost × tiered markup, rounded to nearest 100 MNT.
+// Selling price = cost × tiered markup (exact, no rounding).
 // 0 - 50,000        → +15%
 // 50,001 - 200,000  → +12%
 // > 200,000         → +8%
@@ -54,7 +54,7 @@ export interface SkinRow {
 // already-calculated selling price.
 export const calcSellingPrice = (costMnt: number): number => {
   const markup = costMnt <= 50000 ? 1.15 : costMnt <= 200000 ? 1.12 : 1.08;
-  return Math.round((costMnt * markup) / 100) * 100;
+  return Math.round(costMnt * markup);
 };
 
 export const mapSkinRow = (r: SkinRow): Skin => ({
