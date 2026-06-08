@@ -390,6 +390,33 @@ const Orders = () => {
                   </div>
                 </div>
 
+                {/* Remaining-due banner on collapsed card */}
+                {(o.product_type ?? "ready") === "preorder" &&
+                  !!o.deposit_paid &&
+                  !o.remaining_paid &&
+                  o.status === "pending" && (
+                    <button
+                      type="button"
+                      onClick={() => setExpanded(isOpen ? null : o.id)}
+                      className="flex w-full items-center justify-between gap-3 border-t-2 border-orange-500/50 bg-gradient-to-r from-orange-500/15 to-amber-500/10 p-3 text-left transition-colors hover:from-orange-500/25 hover:to-amber-500/15"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">⚠️</span>
+                        <div>
+                          <p className="font-display text-sm font-bold text-orange-400">
+                            Үлдсэн 70% — {formatMNT(o.remaining_amount ?? (o.price_mnt - (o.deposit_amount ?? prepay)))} төлөх
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {isOpen ? "QR код доор гарч ирнэ" : "Дарж QR код нээх"}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-xs font-bold text-orange-400">
+                        {isOpen ? "▲" : "ТӨЛӨХ →"}
+                      </span>
+                    </button>
+                  )}
+
                 {/* Fully paid success banner */}
                 {o.status === "paid" && (
                   <div className="border-t border-emerald-500/30 bg-emerald-500/10 p-4">
