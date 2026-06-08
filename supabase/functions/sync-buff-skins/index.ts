@@ -248,7 +248,15 @@ Deno.serve(async (req) => {
     // default (all) → бүгд
     const url = new URL(req.url);
     const body = req.method === "GET" ? null : await req.clone().json().catch(() => null);
-    const mode = body?.mode ?? url.searchParams.get("mode") ?? "all";
+    const rawMode = String(body?.mode ?? url.searchParams.get("mode") ?? "all").trim().toLowerCase();
+    const modeAliases: Record<string, string> = {
+      agent: "agents",
+      sticker: "stickers",
+      charm: "charms",
+      knives: "knife",
+      weapons: "weapon",
+    };
+    const mode = modeAliases[rawMode] ?? rawMode;
 
     let knifeItems: any[] = [];
     let weaponItems: any[] = [];
@@ -330,11 +338,21 @@ Deno.serve(async (req) => {
     }
     console.log(`Нийт давхардалгүй: ${allItems.length} item`);
 
+    const seenGenericIds = new Set<string>();
+    const genericItems: any[] = [];
+    for (const it of [...knifeItems, ...glovesItems, ...priorityItems, ...weaponItems]) {
+      const id = String(it?.id ?? "");
+      if (id && !seenGenericIds.has(id)) {
+        seenGenericIds.add(id);
+        genericItems.push(it);
+      }
+    }
+
     let upserted = 0;
     let skippedFilter = 0;
     const batch: any[] = [];
 
-    for (const it of allItems) {
+    for (const it of genericItems) {
       const fullName: string = it?.name ?? "";
       const buffId = String(it?.id ?? "");
       const cnyPrice = Number(it?.sell_min_price ?? 0);
@@ -514,7 +532,7 @@ Deno.serve(async (req) => {
         success: true,
         rate_cny_mnt: cnyToMnt,
         mode,
-        items_received: allItems.length + stickerItems.length + charmItems.length + agentItems.length,
+        items_received: allItems.length,
         skipped_filter: skippedFilter,
         upserted,
       }),
