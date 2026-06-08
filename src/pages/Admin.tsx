@@ -1017,10 +1017,18 @@ const Admin = () => {
                 const cost = Math.round(cny * rate);
                 const now = new Date();
                 const until = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-                await updateOrder(costDialogOrder.id, {
+                // Store cost data in admin-only order_costs table
+                const { error: cErr } = await supabase.from("order_costs").upsert({
+                  order_id: costDialogOrder.id,
                   actual_buff_price_cny: cny,
                   actual_cny_mnt_rate: rate,
                   actual_cost_mnt: cost,
+                }, { onConflict: "order_id" });
+                if (cErr) {
+                  toast.error(cErr.message);
+                  return;
+                }
+                await updateOrder(costDialogOrder.id, {
                   buff_purchased_at: now.toISOString(),
                   trade_hold_until: until.toISOString(),
                   status: "trade_holding",
