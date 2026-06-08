@@ -129,6 +129,14 @@ Deno.serve(async (req) => {
     const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
     const BUFF_COOKIE = Deno.env.get("BUFF_COOKIE") ?? "";
+    console.log("BUFF_COOKIE debug:", {
+      exists: !!BUFF_COOKIE,
+      length: BUFF_COOKIE.length,
+      hasSession: BUFF_COOKIE.includes("session="),
+      hasCsrfToken: BUFF_COOKIE.includes("csrf_token="),
+      hasDeviceId: BUFF_COOKIE.includes("Device-Id="),
+      hasDeviceIdLower: BUFF_COOKIE.includes("device_id="),
+    });
     if (!BUFF_COOKIE) throw new Error("BUFF_COOKIE secret тохируулагдаагүй байна");
 
     // Allow either: (a) cron call with SERVICE_ROLE_KEY bearer, or (b) authenticated admin user.
