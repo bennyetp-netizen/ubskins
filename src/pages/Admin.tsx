@@ -620,7 +620,7 @@ const Admin = () => {
                     <th className="px-4 py-3">Скин</th>
                     <th className="px-4 py-3">Wear</th>
                     <th className="px-4 py-3">Float</th>
-                    <th className="px-4 py-3">Үнэ (MNT)</th>
+                    <th className="px-4 py-3">Өртөг / Зарах үнэ (MNT)</th>
                     <th className="px-4 py-3">Үлдэгдэл</th>
                     <th className="px-4 py-3">Төлөв</th>
                     <th className="px-4 py-3"></th>
