@@ -437,7 +437,45 @@ const Orders = () => {
                 )}
 
                 {/* Payment instructions */}
-                {isOpen && o.status === "pending" && payment && (
+                {isOpen && o.status === "pending" && payment && (() => {
+                  const isPreorder = (o.product_type ?? "ready") === "preorder";
+                  const remainingDue = o.remaining_amount ?? (o.price_mnt - (o.deposit_amount ?? prepay));
+                  const showRemaining = isPreorder && !!o.deposit_paid && !o.remaining_paid && remainingDue > 0;
+
+                  // Streamlined: show QPay QR immediately for the 70% step
+                  if (showRemaining) {
+                    const ref = o.order_number ?? `UBS-${o.id.slice(0, 8).toUpperCase()}`;
+                    return (
+                      <div className="border-t border-border bg-background/40 p-5">
+                        <QpayQrBox
+                          orderId={o.id}
+                          stage="remaining"
+                          amount={remainingDue}
+                          initialQrImage={o.qpay_remaining_qr_image}
+                          initialInvoiceId={o.qpay_remaining_invoice_id}
+                          paymentConfirmed={!!o.remaining_paid}
+                          onPaid={() =>
+                            setOrders((prev) =>
+                              prev.map((x) =>
+                                x.id === o.id ? { ...x, remaining_paid: true, status: "paid" } : x,
+                              ),
+                            )
+                          }
+                        />
+                        <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border-2 border-primary/40 bg-primary/10 p-3">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[11px] uppercase tracking-wider text-primary">Гүйлгээний утга</p>
+                            <p className="truncate font-mono text-base font-bold text-primary">{ref}</p>
+                          </div>
+                          <Button variant="default" size="sm" className="shrink-0" onClick={() => copy(ref, "Гүйлгээний утга")}>
+                            <Copy className="mr-1 h-3.5 w-3.5" /> Хуулах
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return (
                   <div className="border-t border-border bg-background/40 p-5">
                     <div className="mb-4 rounded-xl border-2 border-primary/40 bg-primary/10 p-4 text-center">
                       <div className="flex items-center justify-center gap-2 text-primary">
@@ -452,7 +490,7 @@ const Orders = () => {
                     </div>
 
                     {/* Amount summary */}
-                    {(o.product_type ?? "ready") === "ready" ? (
+                    {!isPreorder ? (
                       <div className="mb-4 rounded-xl border border-emerald-500/40 bg-emerald-500/5 p-4">
                         <p className="text-[11px] uppercase tracking-wider text-emerald-400">
                           🟢 БЭЛЭН — Бүтэн төлбөр
@@ -465,16 +503,12 @@ const Orders = () => {
                     ) : (
                       <div className="mb-4 grid grid-cols-2 gap-3">
                         <div className="rounded-xl border border-orange-500/40 bg-orange-500/5 p-3">
-                          <p className="text-[11px] uppercase tracking-wider text-orange-400">
-                            Урьдчилгаа (30%)
-                          </p>
+                          <p className="text-[11px] uppercase tracking-wider text-orange-400">Урьдчилгаа (30%)</p>
                           <p className="mt-1 font-display text-lg font-bold">{formatMNT(o.deposit_amount ?? prepay)}</p>
                           <p className="text-[10px] text-muted-foreground">эхлээд төлнө</p>
                         </div>
                         <div className="rounded-xl border border-border bg-secondary/40 p-3">
-                          <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                            Үлдэгдэл (70%)
-                          </p>
+                          <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Үлдэгдэл (70%)</p>
                           <p className="mt-1 font-display text-lg font-bold">
                             {formatMNT(o.remaining_amount ?? (o.price_mnt - prepay))}
                           </p>
@@ -483,94 +517,48 @@ const Orders = () => {
                       </div>
                     )}
 
-                    {(() => {
-                      const isPreorder = (o.product_type ?? "ready") === "preorder";
-                      const remainingDue = o.remaining_amount ?? (o.price_mnt - (o.deposit_amount ?? prepay));
-                      const showRemaining = isPreorder && !!o.deposit_paid && !o.remaining_paid && remainingDue > 0;
-
-                      // Always show QPay QR for the remaining 70% step, even if the
-                      // original payment_method was bank transfer.
-                      if (showRemaining) {
-                        return (
-                          <div className="space-y-3">
-                            <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3 text-xs">
-                              ✅ 30% урьдчилгаа төлөгдсөн. Үлдсэн 70%-ийг доорх QPay QR-аар төлнө үү.
+                    {o.payment_method === "qpay" ? (
+                      <QpayQrBox
+                        orderId={o.id}
+                        stage="deposit"
+                        amount={(isPreorder ? o.deposit_amount : o.price_mnt) ?? o.price_mnt}
+                        initialQrImage={o.qpay_qr_image}
+                        initialInvoiceId={o.qpay_invoice_id}
+                        paymentConfirmed={o.payment_confirmed}
+                        onPaid={() =>
+                          setOrders((prev) =>
+                            prev.map((x) =>
+                              x.id === o.id
+                                ? {
+                                    ...x,
+                                    payment_confirmed: true,
+                                    deposit_paid: true,
+                                    status: (x.product_type ?? "ready") === "preorder" ? "pending" : "paid",
+                                  }
+                                : x,
+                            ),
+                          )
+                        }
+                      />
+                    ) : (
+                      <div className="space-y-2">
+                        {payment.fields.map((f) => (
+                          <div
+                            key={f.key}
+                            className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card/60 p-3"
+                          >
+                            <div className="min-w-0 flex-1">
+                              <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{f.label}</p>
+                              <p className="truncate font-mono text-sm">{f.value}</p>
                             </div>
-                            <QpayQrBox
-                              orderId={o.id}
-                              stage="remaining"
-                              amount={remainingDue}
-                              initialQrImage={o.qpay_remaining_qr_image}
-                              initialInvoiceId={o.qpay_remaining_invoice_id}
-                              paymentConfirmed={!!o.remaining_paid}
-                              onPaid={() =>
-                                setOrders((prev) =>
-                                  prev.map((x) =>
-                                    x.id === o.id ? { ...x, remaining_paid: true, status: "paid" } : x,
-                                  ),
-                                )
-                              }
-                            />
+                            {f.copy !== false && (
+                              <Button variant="outline" size="sm" className="shrink-0" onClick={() => copy(f.value, f.label)}>
+                                <Copy className="mr-1 h-3.5 w-3.5" /> Хуулах
+                              </Button>
+                            )}
                           </div>
-                        );
-                      }
-
-                      if (o.payment_method === "qpay") {
-                        return (
-                          <QpayQrBox
-                            orderId={o.id}
-                            stage="deposit"
-                            amount={(isPreorder ? o.deposit_amount : o.price_mnt) ?? o.price_mnt}
-                            initialQrImage={o.qpay_qr_image}
-                            initialInvoiceId={o.qpay_invoice_id}
-                            paymentConfirmed={o.payment_confirmed}
-                            onPaid={() =>
-                              setOrders((prev) =>
-                                prev.map((x) =>
-                                  x.id === o.id
-                                    ? {
-                                        ...x,
-                                        payment_confirmed: true,
-                                        deposit_paid: true,
-                                        // For preorders keep status "pending" so the remaining-payment UI stays visible
-                                        status: (x.product_type ?? "ready") === "preorder" ? "pending" : "paid",
-                                      }
-                                    : x,
-                                ),
-                              )
-                            }
-                          />
-                        );
-                      }
-
-                      return null;
-                    })() ?? (
-
-                    <div className="space-y-2">
-                      {payment.fields.map((f) => (
-                        <div
-                          key={f.key}
-                          className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card/60 p-3"
-                        >
-                          <div className="min-w-0 flex-1">
-                            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                              {f.label}
-                            </p>
-                            <p className="truncate font-mono text-sm">{f.value}</p>
-                          </div>
-                          {f.copy !== false && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="shrink-0"
-                              onClick={() => copy(f.value, f.label)}
-                            >
-                              <Copy className="mr-1 h-3.5 w-3.5" /> Хуулах
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
                     )}
 
                     {/* Reference */}
@@ -579,19 +567,10 @@ const Orders = () => {
                       return (
                         <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border-2 border-primary/40 bg-primary/10 p-3">
                           <div className="min-w-0 flex-1">
-                            <p className="text-[11px] uppercase tracking-wider text-primary">
-                              Гүйлгээний утга (заавал!)
-                            </p>
-                            <p className="truncate font-mono text-base font-bold text-primary">
-                              {ref}
-                            </p>
+                            <p className="text-[11px] uppercase tracking-wider text-primary">Гүйлгээний утга (заавал!)</p>
+                            <p className="truncate font-mono text-base font-bold text-primary">{ref}</p>
                           </div>
-                          <Button
-                            variant="default"
-                            size="sm"
-                            className="shrink-0"
-                            onClick={() => copy(ref, "Гүйлгээний утга")}
-                          >
+                          <Button variant="default" size="sm" className="shrink-0" onClick={() => copy(ref, "Гүйлгээний утга")}>
                             <Copy className="mr-1 h-3.5 w-3.5" /> Хуулах
                           </Button>
                         </div>
@@ -619,9 +598,7 @@ const Orders = () => {
                         <Facebook className="h-5 w-5 text-[#1877F2]" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-[#1877F2]">
-                          📩 Facebook-р холбогдох — баримтаа явуулах
-                        </p>
+                        <p className="text-sm font-semibold text-[#1877F2]">📩 Facebook-р холбогдох — баримтаа явуулах</p>
                         <p className="text-[11px] text-muted-foreground">
                           Скин авсаны дараа энд дарж бидэнтэй холбогдож, гүйлгээний баримтаа илгээнэ үү
                         </p>
@@ -630,18 +607,15 @@ const Orders = () => {
 
                     <p className="mt-3 rounded-lg border border-border bg-secondary/40 p-3 text-xs text-muted-foreground">
                       Төлбөр шилжүүлсний дараа{" "}
-                      <a
-                        href="https://t.me/ubskins"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-semibold text-primary hover:underline"
-                      >
+                      <a href="https://t.me/ubskins" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">
                         @ubskins Telegram
                       </a>{" "}
                       руу screenshot илгээнэ үү. Бид 1-2 цагийн дотор баталгаажуулна.
                     </p>
                   </div>
-                )}
+                  );
+                })()}
+
               </div>
             );
           })}
