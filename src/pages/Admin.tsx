@@ -204,6 +204,7 @@ const Admin = () => {
       game: s.game ?? "CS2",
       wear: s.wear ?? "FT",
       float_value: s.float_value?.toString() ?? "",
+      cost_price_mnt: s.cost_price_mnt?.toString() ?? "",
       price_mnt: s.price_mnt?.toString() ?? "",
       image_url: s.image_url ?? "",
       rarity: s.rarity ?? "Mil-Spec",
