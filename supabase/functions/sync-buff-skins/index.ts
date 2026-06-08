@@ -33,10 +33,12 @@ const PAGES_PLAYER_STICKERS = 40; // 40 × 80 = 3200
 const BUFF_CHARM_BASE =
   "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category_group=charm&sort_by=sell_num.desc&min_price=0.1&max_price=50000";
 const PAGES_CHARMS = 20; // 20 × 80 = 1600
-// Agents
-const BUFF_AGENT_BASE =
-  "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category=type_customplayer&sort_by=sell_num.desc&min_price=0.1&max_price=50000";
-const PAGES_AGENTS = 15; // 15 × 80 = 1200
+// Agents (BUFF дээр CT/T агент тусдаа category-тэй)
+const BUFF_AGENT_BASES = [
+  "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category=agent_team_ct&sort_by=sell_num.desc&min_price=0.1&max_price=50000",
+  "https://buff.163.com/api/market/goods?game=csgo&page_size=80&category=agent_team_t&sort_by=sell_num.desc&min_price=0.1&max_price=50000",
+];
+const PAGES_AGENTS = 5; // CT/T тус бүрт хангалттай, хурдан дуусна
 // Тэргүүлэх зэвсгүүд
 const PRIORITY_WEAPONS = [
   "weapon_awp",
@@ -245,7 +247,8 @@ Deno.serve(async (req) => {
     // mode=gloves → зөвхөн бээлий, mode=priority → зөвхөн тэргүүлэх зэвсгүүд,
     // default (all) → бүгд
     const url = new URL(req.url);
-    const mode = url.searchParams.get("mode") ?? "all";
+    const body = req.method === "GET" ? null : await req.clone().json().catch(() => null);
+    const mode = body?.mode ?? url.searchParams.get("mode") ?? "all";
 
     let knifeItems: any[] = [];
     let weaponItems: any[] = [];
@@ -305,7 +308,11 @@ Deno.serve(async (req) => {
 
     if (mode === "all" || mode === "agents") {
       await new Promise((r) => setTimeout(r, 3000));
-      agentItems = await fetchPages(BUFF_AGENT_BASE, PAGES_AGENTS);
+      for (const agentBase of BUFF_AGENT_BASES) {
+        const items = await fetchPages(agentBase, PAGES_AGENTS);
+        agentItems.push(...items);
+        if (items.length > 0) await new Promise((r) => setTimeout(r, 3000));
+      }
       console.log(`Agent: ${agentItems.length} item`);
     }
 
