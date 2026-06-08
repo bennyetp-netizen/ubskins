@@ -437,83 +437,48 @@ const Orders = () => {
                 )}
 
                 {/* Payment instructions */}
-                {isOpen && o.status === "pending" && payment && (
+                {isOpen && o.status === "pending" && payment && (() => {
+                  const isPreorder = (o.product_type ?? "ready") === "preorder";
+                  const remainingDue = o.remaining_amount ?? (o.price_mnt - (o.deposit_amount ?? prepay));
+                  const showRemaining = isPreorder && !!o.deposit_paid && !o.remaining_paid && remainingDue > 0;
+
+                  // Streamlined: show QPay QR immediately for the 70% step
+                  if (showRemaining) {
+                    const ref = o.order_number ?? `UBS-${o.id.slice(0, 8).toUpperCase()}`;
+                    return (
+                      <div className="border-t border-border bg-background/40 p-5">
+                        <QpayQrBox
+                          orderId={o.id}
+                          stage="remaining"
+                          amount={remainingDue}
+                          initialQrImage={o.qpay_remaining_qr_image}
+                          initialInvoiceId={o.qpay_remaining_invoice_id}
+                          paymentConfirmed={!!o.remaining_paid}
+                          onPaid={() =>
+                            setOrders((prev) =>
+                              prev.map((x) =>
+                                x.id === o.id ? { ...x, remaining_paid: true, status: "paid" } : x,
+                              ),
+                            )
+                          }
+                        />
+                        <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border-2 border-primary/40 bg-primary/10 p-3">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[11px] uppercase tracking-wider text-primary">Гүйлгээний утга</p>
+                            <p className="truncate font-mono text-base font-bold text-primary">{ref}</p>
+                          </div>
+                          <Button variant="default" size="sm" className="shrink-0" onClick={() => copy(ref, "Гүйлгээний утга")}>
+                            <Copy className="mr-1 h-3.5 w-3.5" /> Хуулах
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return (
                   <div className="border-t border-border bg-background/40 p-5">
                     <div className="mb-4 rounded-xl border-2 border-primary/40 bg-primary/10 p-4 text-center">
-                      <div className="flex items-center justify-center gap-2 text-primary">
-                        <Banknote className="h-5 w-5" />
-                        <h4 className="font-display text-base font-bold uppercase tracking-wider">
-                          Төлбөрийн мэдээлэл — {payment.short}
-                        </h4>
-                      </div>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Доорх данс руу шилжүүлж, гүйлгээний утгад захиалгын дугаараа бичнэ үү
-                      </p>
-                    </div>
 
-                    {/* Amount summary */}
-                    {(o.product_type ?? "ready") === "ready" ? (
-                      <div className="mb-4 rounded-xl border border-emerald-500/40 bg-emerald-500/5 p-4">
-                        <p className="text-[11px] uppercase tracking-wider text-emerald-400">
-                          🟢 БЭЛЭН — Бүтэн төлбөр
-                        </p>
-                        <p className="mt-1 font-display text-2xl font-bold">{formatMNT(o.price_mnt)}</p>
-                        <p className="mt-1 text-[11px] text-muted-foreground">
-                          Төлбөр баталгаажсаны дараа Steam trade offer илгээнэ.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="mb-4 grid grid-cols-2 gap-3">
-                        <div className="rounded-xl border border-orange-500/40 bg-orange-500/5 p-3">
-                          <p className="text-[11px] uppercase tracking-wider text-orange-400">
-                            Урьдчилгаа (30%)
-                          </p>
-                          <p className="mt-1 font-display text-lg font-bold">{formatMNT(o.deposit_amount ?? prepay)}</p>
-                          <p className="text-[10px] text-muted-foreground">эхлээд төлнө</p>
-                        </div>
-                        <div className="rounded-xl border border-border bg-secondary/40 p-3">
-                          <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                            Үлдэгдэл (70%)
-                          </p>
-                          <p className="mt-1 font-display text-lg font-bold">
-                            {formatMNT(o.remaining_amount ?? (o.price_mnt - prepay))}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground">скин ирмэгц</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {(() => {
-                      const isPreorder = (o.product_type ?? "ready") === "preorder";
-                      const remainingDue = o.remaining_amount ?? (o.price_mnt - (o.deposit_amount ?? prepay));
-                      const showRemaining = isPreorder && !!o.deposit_paid && !o.remaining_paid && remainingDue > 0;
-
-                      // Always show QPay QR for the remaining 70% step, even if the
-                      // original payment_method was bank transfer.
-                      if (showRemaining) {
-                        return (
-                          <div className="space-y-3">
-                            <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3 text-xs">
-                              ✅ 30% урьдчилгаа төлөгдсөн. Үлдсэн 70%-ийг доорх QPay QR-аар төлнө үү.
-                            </div>
-                            <QpayQrBox
-                              orderId={o.id}
-                              stage="remaining"
-                              amount={remainingDue}
-                              initialQrImage={o.qpay_remaining_qr_image}
-                              initialInvoiceId={o.qpay_remaining_invoice_id}
-                              paymentConfirmed={!!o.remaining_paid}
-                              onPaid={() =>
-                                setOrders((prev) =>
-                                  prev.map((x) =>
-                                    x.id === o.id ? { ...x, remaining_paid: true, status: "paid" } : x,
-                                  ),
-                                )
-                              }
-                            />
-                          </div>
-                        );
-                      }
 
                       if (o.payment_method === "qpay") {
                         return (
