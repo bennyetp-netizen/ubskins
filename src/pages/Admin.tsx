@@ -648,7 +648,10 @@ const Admin = () => {
                       </td>
                       <td className="px-4 py-3"><Badge variant="outline">{s.wear ?? "—"}</Badge></td>
                       <td className="px-4 py-3 text-muted-foreground">{s.float_value?.toFixed(3) ?? "—"}</td>
-                      <td className="px-4 py-3 font-display font-semibold">{formatMNT(s.price_mnt)}</td>
+                      <td className="px-4 py-3 font-display">
+                        <div className="text-xs text-muted-foreground">Өртөг: {s.cost_price_mnt ? formatMNT(s.cost_price_mnt) : "—"}</div>
+                        <div className="font-semibold text-foreground">{formatMNT(s.price_mnt)}</div>
+                      </td>
                       <td className="px-4 py-3">{s.stock}</td>
                       <td className="px-4 py-3">
                         {s.is_active ? (
