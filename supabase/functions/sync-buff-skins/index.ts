@@ -513,7 +513,8 @@ Deno.serve(async (req) => {
       JSON.stringify({
         success: true,
         rate_cny_mnt: cnyToMnt,
-        items_received: allItems.length,
+        mode,
+        items_received: allItems.length + stickerItems.length + charmItems.length + agentItems.length,
         skipped_filter: skippedFilter,
         upserted,
       }),
