@@ -79,7 +79,7 @@ const FALLBACK_RATE_URL = "https://open.er-api.com/v6/latest/CNY";
 // Final price нь хамгийн ойрын 100 MNT хүртэл бөөрөнхийлнө.
 const calcSellingPrice = (costMnt: number): number => {
   const markup = costMnt <= 50000 ? 1.15 : costMnt <= 200000 ? 1.12 : 1.08;
-  return Math.round((costMnt * markup) / 100) * 100;
+  return Math.round(costMnt * markup);
 };
 
 // Хутга бүх төрлөөр (Karambit, Bayonet, Butterfly, Flip, Huntsman гэх мэт)
