@@ -573,6 +573,18 @@ const Admin = () => {
                   <span className="text-muted-foreground">{label}</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
+                  <select
+                    value={syncMode}
+                    onChange={(e) => setSyncMode(e.target.value)}
+                    disabled={syncing}
+                    className="h-10 rounded-md border border-border bg-secondary px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="priority">Зэвсэг</option>
+                    <option value="agents">Agent</option>
+                    <option value="stickers">Sticker</option>
+                    <option value="charms">Charm</option>
+                    <option value="all">Бүгд</option>
+                  </select>
                   <Button variant="outline" onClick={syncFromBuff} disabled={syncing}>
                     {syncing ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-1 h-4 w-4" />}
                     Скин шинэчлэх
