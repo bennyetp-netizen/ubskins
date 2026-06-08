@@ -45,16 +45,18 @@ export interface SkinRow {
   stock_quantity?: number | null;
 }
 
-// Selling price = cost × tiered markup (exact, no rounding).
-// 0 - 50,000        → +15%
-// 50,001 - 200,000  → +12%
-// > 200,000         → +8%
-// NOTE: Cost prices are stored in the admin-only `skin_costs` table and
-// never reach the customer-facing client. `price_mnt` on `skins` is the
-// already-calculated selling price.
+// Selling price calculation — cost_price_mnt is the single source of truth.
+// Tiered pricing rules:
+//   cost <= 20,000           → cost + 1,000 (flat)
+//   20,001 - 200,000         → cost * 1.10, rounded to nearest 100 MNT
+//   200,001 - 1,000,000      → cost * 1.08, rounded to nearest 100 MNT
+//   > 1,000,000              → cost * 1.05, rounded to nearest 100 MNT
+// NOTE: cost prices are stored in admin-only `skin_costs` and never reach
+// the customer client. `price_mnt` on `skins` is the computed selling price.
 export const calcSellingPrice = (costMnt: number): number => {
-  const markup = costMnt <= 50000 ? 1.16 : costMnt <= 200000 ? 1.13 : 1.09;
-  return Math.round(costMnt * markup);
+  if (costMnt <= 20000) return costMnt + 1000;
+  const markup = costMnt <= 200000 ? 1.10 : costMnt <= 1000000 ? 1.08 : 1.05;
+  return Math.round((costMnt * markup) / 100) * 100;
 };
 
 export const mapSkinRow = (r: SkinRow): Skin => ({
