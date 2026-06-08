@@ -483,42 +483,44 @@ const Orders = () => {
                       </div>
                     )}
 
-                    {o.payment_method === "qpay" ? (
-                      (() => {
-                        const isPreorder = (o.product_type ?? "ready") === "preorder";
-                        const remainingDue = o.remaining_amount ?? (o.price_mnt - (o.deposit_amount ?? prepay));
-                        const showRemaining = isPreorder && !!o.deposit_paid && !o.remaining_paid && remainingDue > 0;
-                        if (showRemaining) {
-                          return (
-                            <div className="space-y-3">
-                              <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3 text-xs">
-                                ✅ 30% урьдчилгаа төлөгдсөн. Скин ирмэгц 70% үлдэгдлийг доорх QR-аар төлнө үү.
-                              </div>
-                              <QpayQrBox
-                                orderId={o.id}
-                                stage="remaining"
-                                amount={o.remaining_amount ?? (o.price_mnt - (o.deposit_amount ?? prepay))}
-                                initialQrImage={o.qpay_remaining_qr_image}
-                                initialInvoiceId={o.qpay_remaining_invoice_id}
-                                paymentConfirmed={!!o.remaining_paid}
-                                onPaid={() =>
-                                  setOrders((prev) =>
-                                    prev.map((x) =>
-                                      x.id === o.id ? { ...x, remaining_paid: true, status: "paid" } : x,
-                                    ),
-                                  )
-                                }
-                              />
+                    {(() => {
+                      const isPreorder = (o.product_type ?? "ready") === "preorder";
+                      const remainingDue = o.remaining_amount ?? (o.price_mnt - (o.deposit_amount ?? prepay));
+                      const showRemaining = isPreorder && !!o.deposit_paid && !o.remaining_paid && remainingDue > 0;
+
+                      // Always show QPay QR for the remaining 70% step, even if the
+                      // original payment_method was bank transfer.
+                      if (showRemaining) {
+                        return (
+                          <div className="space-y-3">
+                            <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3 text-xs">
+                              ✅ 30% урьдчилгаа төлөгдсөн. Үлдсэн 70%-ийг доорх QPay QR-аар төлнө үү.
                             </div>
-                          );
-                        }
+                            <QpayQrBox
+                              orderId={o.id}
+                              stage="remaining"
+                              amount={remainingDue}
+                              initialQrImage={o.qpay_remaining_qr_image}
+                              initialInvoiceId={o.qpay_remaining_invoice_id}
+                              paymentConfirmed={!!o.remaining_paid}
+                              onPaid={() =>
+                                setOrders((prev) =>
+                                  prev.map((x) =>
+                                    x.id === o.id ? { ...x, remaining_paid: true, status: "paid" } : x,
+                                  ),
+                                )
+                              }
+                            />
+                          </div>
+                        );
+                      }
+
+                      if (o.payment_method === "qpay") {
                         return (
                           <QpayQrBox
                             orderId={o.id}
                             stage="deposit"
-                            amount={
-                              (isPreorder ? o.deposit_amount : o.price_mnt) ?? o.price_mnt
-                            }
+                            amount={(isPreorder ? o.deposit_amount : o.price_mnt) ?? o.price_mnt}
                             initialQrImage={o.qpay_qr_image}
                             initialInvoiceId={o.qpay_invoice_id}
                             paymentConfirmed={o.payment_confirmed}
@@ -539,8 +541,11 @@ const Orders = () => {
                             }
                           />
                         );
-                      })()
-                    ) : (
+                      }
+
+                      return null;
+                    })() ?? (
+
                     <div className="space-y-2">
                       {payment.fields.map((f) => (
                         <div
