@@ -496,9 +496,8 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      // "Agent | Sir Bloody Darryl Royale | The Professionals"
-      const parts = fullName.split("|").map((p) => p.trim());
-      const skinName = parts.slice(1).join(" | ") || fullName;
+      // BUFF agent name format: "3rd Commando Company | KSK" — keep full name as-is
+      const skinName = fullName;
       const image = it?.goods_info?.icon_url ?? it?.goods_info?.original_icon_url ?? null;
       const rarity = detectRarity(it?.goods_info?.info?.tags);
       const rawMnt = cnyPrice * cnyToMnt * MARGIN_HIGH;
