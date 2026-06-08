@@ -366,6 +366,8 @@ Deno.serve(async (req) => {
     let upserted = 0;
     let skippedFilter = 0;
     const batch: any[] = [];
+    // Costs are stored in admin-only skin_costs (not on the public skins row).
+    const costByBuffId = new Map<string, number>();
 
     for (const it of genericItems) {
       const fullName: string = it?.name ?? "";
