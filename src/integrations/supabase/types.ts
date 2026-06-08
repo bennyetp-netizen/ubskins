@@ -130,6 +130,9 @@ export type Database = {
       }
       orders: {
         Row: {
+          actual_buff_price_cny: number | null
+          actual_cny_mnt_rate: number | null
+          actual_cost_mnt: number | null
           buff_purchased_at: string | null
           created_at: string
           deposit_amount: number | null
@@ -168,6 +171,9 @@ export type Database = {
           wear: string | null
         }
         Insert: {
+          actual_buff_price_cny?: number | null
+          actual_cny_mnt_rate?: number | null
+          actual_cost_mnt?: number | null
           buff_purchased_at?: string | null
           created_at?: string
           deposit_amount?: number | null
@@ -206,6 +212,9 @@ export type Database = {
           wear?: string | null
         }
         Update: {
+          actual_buff_price_cny?: number | null
+          actual_cny_mnt_rate?: number | null
+          actual_cost_mnt?: number | null
           buff_purchased_at?: string | null
           created_at?: string
           deposit_amount?: number | null
