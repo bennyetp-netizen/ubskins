@@ -161,17 +161,21 @@ const Admin = () => {
       let offset = 0;
       let totalAdded = 0;
       let totalGroups = 0;
-      // Хэт удаан болохгүйн тулд хамгийн ихдээ 20 chunk (≈ 600 скин)
-      for (let i = 0; i < 20; i++) {
-        toast.info(`Wear нөхөж байна... (${offset}+)`);
+      // Жижиг chunk-аар (8 скин) олон удаа дуудаж timeout-аас сэргийлнэ
+      const CHUNK = 8;
+      const MAX_CHUNKS = 80; // ≈ 640 скин
+      for (let i = 0; i < MAX_CHUNKS; i++) {
+        toast.info(`Wear нөхөж байна... (${offset}${totalGroups ? `/${totalGroups}` : "+"})`);
         const { data, error } = await supabase.functions.invoke("sync-buff-skins", {
-          body: { mode: "fillwears", offset, limit: 30 },
+          body: { mode: "fillwears", offset, limit: CHUNK },
         });
         if (error) throw new Error(error.message);
         if (!data?.success) throw new Error(data?.error ?? "Тодорхойгүй алдаа");
         totalAdded += Number(data.upserted ?? 0);
         totalGroups = Number(data.total_groups ?? totalGroups);
-        offset = Number(data.next_offset ?? offset + 30);
+        const next = Number(data.next_offset ?? offset + CHUNK);
+        if (next <= offset) break;
+        offset = next;
         if (offset >= totalGroups) break;
       }
       toast.success(`Wear нөхөлт дууслаа. Нэмсэн: ${totalAdded} / ${totalGroups} скин`);
