@@ -77,7 +77,14 @@ const Shop = () => {
     let list = skins.filter((s) => {
       if (typeFilter !== "all" && s.productType !== typeFilter) return false;
       if (q && !`${s.weaponName} ${s.name}`.toLowerCase().includes(q.toLowerCase())) return false;
-      if (weapons.length && !weapons.some((w) => s.weapon.toLowerCase().includes(w.toLowerCase()))) return false;
+      if (weapons.length) {
+        const sw = s.weapon.toLowerCase();
+        const match = weapons.some((w) => {
+          if (w === "Knife") return knifeOptions.some((k) => sw.includes(k.toLowerCase())) || sw.includes("knife");
+          return sw.includes(w.toLowerCase());
+        });
+        if (!match) return false;
+      }
       if (wears.length && !wears.includes(s.wear)) return false;
       if (s.price > maxPrice || s.price < minPrice) return false;
       return true;
