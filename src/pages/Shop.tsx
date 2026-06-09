@@ -35,6 +35,28 @@ const readSaved = (): Partial<SavedState> => {
 };
 
 const weaponOptions = ["AK-47", "AWP", "M4A4", "M4A1-S", "Desert Eagle", "USP-S", "Glock-18", "Knife", "Gloves", "Agent", "Sticker", "Charm"];
+const knifeOptions = [
+  "Karambit",
+  "M9 Bayonet",
+  "Bayonet",
+  "Butterfly Knife",
+  "Flip Knife",
+  "Gut Knife",
+  "Huntsman Knife",
+  "Falchion Knife",
+  "Bowie Knife",
+  "Shadow Daggers",
+  "Navaja Knife",
+  "Stiletto Knife",
+  "Talon Knife",
+  "Ursus Knife",
+  "Classic Knife",
+  "Nomad Knife",
+  "Paracord Knife",
+  "Survival Knife",
+  "Skeleton Knife",
+  "Kukri Knife",
+];
 const wearOptions: Wear[] = ["FN", "MW", "FT", "WW", "BS"];
 type TypeFilter = "all" | "ready" | "preorder";
 
