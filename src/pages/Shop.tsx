@@ -79,10 +79,14 @@ const Shop = () => {
       if (q && !`${s.weaponName} ${s.name}`.toLowerCase().includes(q.toLowerCase())) return false;
       if (weapons.length) {
         const sw = s.weapon.toLowerCase();
-        const match = weapons.some((w) => {
-          if (w === "Knife") return knifeOptions.some((k) => sw.includes(k.toLowerCase())) || sw.includes("knife");
-          return sw.includes(w.toLowerCase());
-        });
+        const knifeSubs = weapons.filter((w) => knifeOptions.includes(w));
+        const others = weapons.filter((w) => w !== "Knife" && !knifeOptions.includes(w));
+        const match = others.some((w) => sw.includes(w.toLowerCase()))
+          || (knifeSubs.length
+            ? knifeSubs.some((k) => sw.includes(k.toLowerCase()))
+            : weapons.includes("Knife")
+              ? (knifeOptions.some((k) => sw.includes(k.toLowerCase())) || sw.includes("knife"))
+              : false);
         if (!match) return false;
       }
       if (wears.length && !wears.includes(s.wear)) return false;
