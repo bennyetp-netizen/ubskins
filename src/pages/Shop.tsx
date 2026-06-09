@@ -35,6 +35,28 @@ const readSaved = (): Partial<SavedState> => {
 };
 
 const weaponOptions = ["AK-47", "AWP", "M4A4", "M4A1-S", "Desert Eagle", "USP-S", "Glock-18", "Knife", "Gloves", "Agent", "Sticker", "Charm"];
+const knifeOptions = [
+  "Karambit",
+  "M9 Bayonet",
+  "Bayonet",
+  "Butterfly Knife",
+  "Flip Knife",
+  "Gut Knife",
+  "Huntsman Knife",
+  "Falchion Knife",
+  "Bowie Knife",
+  "Shadow Daggers",
+  "Navaja Knife",
+  "Stiletto Knife",
+  "Talon Knife",
+  "Ursus Knife",
+  "Classic Knife",
+  "Nomad Knife",
+  "Paracord Knife",
+  "Survival Knife",
+  "Skeleton Knife",
+  "Kukri Knife",
+];
 const wearOptions: Wear[] = ["FN", "MW", "FT", "WW", "BS"];
 type TypeFilter = "all" | "ready" | "preorder";
 
@@ -55,7 +77,18 @@ const Shop = () => {
     let list = skins.filter((s) => {
       if (typeFilter !== "all" && s.productType !== typeFilter) return false;
       if (q && !`${s.weaponName} ${s.name}`.toLowerCase().includes(q.toLowerCase())) return false;
-      if (weapons.length && !weapons.some((w) => s.weapon.toLowerCase().includes(w.toLowerCase()))) return false;
+      if (weapons.length) {
+        const sw = s.weapon.toLowerCase();
+        const knifeSubs = weapons.filter((w) => knifeOptions.includes(w));
+        const others = weapons.filter((w) => w !== "Knife" && !knifeOptions.includes(w));
+        const match = others.some((w) => sw.includes(w.toLowerCase()))
+          || (knifeSubs.length
+            ? knifeSubs.some((k) => sw.includes(k.toLowerCase()))
+            : weapons.includes("Knife")
+              ? (knifeOptions.some((k) => sw.includes(k.toLowerCase())) || sw.includes("knife"))
+              : false);
+        if (!match) return false;
+      }
       if (wears.length && !wears.includes(s.wear)) return false;
       if (s.price > maxPrice || s.price < minPrice) return false;
       return true;
@@ -192,7 +225,30 @@ const Shop = () => {
                 </button>
               ))}
             </div>
+            {weapons.includes("Knife") && (
+              <div className="mt-3 rounded-xl border border-border/60 bg-secondary/20 p-3">
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Хутганы төрөл
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {knifeOptions.map((k) => (
+                    <button
+                      key={k}
+                      onClick={() => toggle(weapons, k, setWeapons)}
+                      className={`rounded-full border px-2.5 py-0.5 text-[11px] transition ${
+                        weapons.includes(k)
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border text-muted-foreground hover:border-primary/50"
+                      }`}
+                    >
+                      {k}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
+
 
           <div>
             <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Wear</p>
