@@ -221,7 +221,30 @@ const Shop = () => {
                 </button>
               ))}
             </div>
+            {weapons.includes("Knife") && (
+              <div className="mt-3 rounded-xl border border-border/60 bg-secondary/20 p-3">
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Хутганы төрөл
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {knifeOptions.map((k) => (
+                    <button
+                      key={k}
+                      onClick={() => toggle(weapons, k, setWeapons)}
+                      className={`rounded-full border px-2.5 py-0.5 text-[11px] transition ${
+                        weapons.includes(k)
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border text-muted-foreground hover:border-primary/50"
+                      }`}
+                    >
+                      {k}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
+
 
           <div>
             <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Wear</p>
