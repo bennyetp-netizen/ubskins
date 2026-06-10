@@ -15,6 +15,11 @@ const WEAR_ORDER: Array<"FN" | "MW" | "FT" | "WW" | "BS"> = ["FN", "MW", "FT", "
 const DEFAULT_FLOAT: Record<typeof WEAR_ORDER[number], number> = {
   FN: 0.03, MW: 0.10, FT: 0.20, WW: 0.40, BS: 0.55,
 };
+// Wear-ийн ойролцоо үнийн коэффициент (зах зээлийн ердийн харьцаа).
+// Жинхэнэ үнэ DB-д байхгүй үед энэ коэффициентоор тооцоолно.
+const WEAR_PRICE_MULTIPLIER: Record<typeof WEAR_ORDER[number], number> = {
+  FN: 1.6, MW: 1.15, FT: 1.0, WW: 0.75, BS: 0.6,
+};
 
 const SkinDetail = () => {
   const { id } = useParams();
