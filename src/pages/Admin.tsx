@@ -79,6 +79,44 @@ const Admin = () => {
   const [costDialogOrder, setCostDialogOrder] = useState<any | null>(null);
   const [costCny, setCostCny] = useState("");
   const [costRate, setCostRate] = useState("");
+  const [cookieStatus, setCookieStatus] = useState<"unknown" | "ok" | "expired" | "error">("unknown");
+
+  // BUFF cookie health-check + автомат sync (cookie сэргэхэд)
+  useEffect(() => {
+    if (!isAdmin) return;
+    let cancelled = false;
+    let prev: "unknown" | "ok" | "expired" | "error" = "unknown";
+    const check = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("sync-buff-skins", {
+          body: { mode: "health" },
+        });
+        if (cancelled) return;
+        let next: "unknown" | "ok" | "expired" | "error" = "error";
+        if (!error && data) {
+          if (data.ok) next = "ok";
+          else if (data.expired) next = "expired";
+          else next = "error";
+        }
+        setCookieStatus(next);
+        if (prev !== "ok" && prev !== "unknown" && next === "ok" && !syncing) {
+          toast.success("BUFF cookie сэргэлээ — автомат sync эхэллээ");
+          syncFromBuff();
+        }
+        prev = next;
+      } catch {
+        if (!cancelled) setCookieStatus("error");
+      }
+    };
+    check();
+    const id = setInterval(check, 3 * 60 * 1000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAdmin]);
+
 
   const paidOrders = orders.filter((o) => o.status === "paid" || o.status === "delivered");
   const totalRevenue = paidOrders.reduce((sum, o) => sum + (o.price_mnt ?? 0), 0);
@@ -719,6 +757,26 @@ const Admin = () => {
                   <span className="text-muted-foreground">{label}</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
+                  <div className={`flex items-center gap-2 rounded-md border px-3 h-10 text-xs ${
+                    cookieStatus === "ok" ? "border-emerald-500/40 text-emerald-400" :
+                    cookieStatus === "expired" ? "border-destructive/50 text-destructive" :
+                    cookieStatus === "error" ? "border-orange-500/40 text-orange-400" :
+                    "border-border text-muted-foreground"
+                  }`}>
+                    <span className={`h-2 w-2 rounded-full ${
+                      cookieStatus === "ok" ? "bg-emerald-400" :
+                      cookieStatus === "expired" ? "bg-destructive animate-pulse" :
+                      cookieStatus === "error" ? "bg-orange-400" :
+                      "bg-muted-foreground animate-pulse"
+                    }`} />
+                    BUFF cookie: {
+                      cookieStatus === "ok" ? "хүчинтэй" :
+                      cookieStatus === "expired" ? "хугацаа дуусчээ — шинэчилнэ үү" :
+                      cookieStatus === "error" ? "холболтын алдаа" :
+                      "шалгаж байна..."
+                    }
+                  </div>
+
                   <select
                     value={syncMode}
                     onChange={(e) => setSyncMode(e.target.value)}
