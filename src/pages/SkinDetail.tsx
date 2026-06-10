@@ -1,5 +1,5 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, ShieldCheck, Truck, Tag, Loader2, Globe2, ShoppingCart, BadgeCheck, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,13 +12,26 @@ import { useSkin, useSkins } from "@/hooks/useSkins";
 import { toast } from "sonner";
 
 const WEAR_ORDER: Array<"FN" | "MW" | "FT" | "WW" | "BS"> = ["FN", "MW", "FT", "WW", "BS"];
+const DEFAULT_FLOAT: Record<typeof WEAR_ORDER[number], number> = {
+  FN: 0.03, MW: 0.10, FT: 0.20, WW: 0.40, BS: 0.55,
+};
 
 const SkinDetail = () => {
   const { id } = useParams();
   const nav = useNavigate();
-  const { skin, loading } = useSkin(id);
+  const { skin: dbSkin, loading } = useSkin(id);
   const { skins: all } = useSkins();
   const { add } = useCart();
+  const [overrideWear, setOverrideWear] = useState<typeof WEAR_ORDER[number] | null>(null);
+
+  // id солигдох болгонд override-г reset
+  useEffect(() => { setOverrideWear(null); }, [id]);
+
+  // Хэрэв DB-д тухайн wear-тэй мөр байхгүй бол одоогийн скиныг wear-оор нь
+  // override хийж харуулна (preorder болгож сагсанд нэмнэ).
+  const skin = dbSkin && overrideWear && overrideWear !== dbSkin.wear
+    ? { ...dbSkin, wear: overrideWear, float: DEFAULT_FLOAT[overrideWear], productType: "preorder" as const }
+    : dbSkin;
 
   // Same skin's other wear variants (group by weapon + name).
   const variants = skin
@@ -92,7 +105,8 @@ const SkinDetail = () => {
             </Badge>
           </div>
 
-          {/* Wear selector — бүх 5 wear-ийг харуулж, байхгүйг нь "Боломжгүй" гэж тэмдэглэнэ */}
+          {/* Wear selector — 5 wear бүгд сонгох боломжтой. DB-д байхгүй wear-ийг
+              сонговол захиалгаар (preorder) болгож харуулна. */}
           <div className="mt-5 rounded-2xl border border-border bg-card/40 p-4">
             <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Wear сонгох
@@ -100,19 +114,27 @@ const SkinDetail = () => {
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
               {WEAR_ORDER.map((w) => {
                 const v = variants.find((x) => x.wear === w);
-                const active = v?.id === skin.id;
-                const available = !!v;
+                const active = skin.wear === w;
+                const inStock = !!v;
                 return (
                   <button
                     key={w}
-                    disabled={!available || active}
-                    onClick={() => v && !active && nav(`/skin/${v.id}`)}
+                    disabled={active}
+                    onClick={() => {
+                      if (active) return;
+                      if (v) {
+                        setOverrideWear(null);
+                        nav(`/skin/${v.id}`);
+                      } else {
+                        setOverrideWear(w);
+                      }
+                    }}
                     className={`flex flex-col items-start rounded-xl border px-3 py-2 text-left transition ${
                       active
                         ? "border-primary bg-primary/10 ring-1 ring-primary/40"
-                        : available
+                        : inStock
                           ? "border-border bg-secondary/30 hover:border-primary/50"
-                          : "cursor-not-allowed border-dashed border-border bg-secondary/10 opacity-50"
+                          : "border-dashed border-border bg-secondary/10 hover:border-orange-400/60"
                     }`}
                   >
                     <span className={`font-display text-sm font-bold ${wearColor[w]}`}>{w}</span>
@@ -120,13 +142,14 @@ const SkinDetail = () => {
                       {wearLabel[w]}
                     </span>
                     <span className="mt-1 text-xs font-semibold">
-                      {available ? formatMNT(v!.price) : "Боломжгүй"}
+                      {inStock ? formatMNT(v!.price) : <span className="text-orange-400">Захиалга</span>}
                     </span>
                   </button>
                 );
               })}
             </div>
           </div>
+
 
 
 
