@@ -46,16 +46,16 @@ export interface SkinRow {
 }
 
 // Selling price calculation — cost_price_mnt is the single source of truth.
-// Tiered pricing rules:
-//   cost <= 20,000           → cost + 1,000 (flat)
-//   20,001 - 200,000         → cost * 1.10, rounded to nearest 100 MNT
-//   200,001 - 1,000,000      → cost * 1.08, rounded to nearest 100 MNT
-//   > 1,000,000              → cost * 1.05, rounded to nearest 100 MNT
+// Tiered pricing rules (revised to fix low-margin sub-20k skins):
+//   cost <= 20,000           → cost + 3,000 (flat)
+//   20,001 - 200,000         → cost * 1.12, rounded to nearest 100 MNT
+//   200,001 - 1,000,000      → cost * 1.10, rounded to nearest 100 MNT
+//   > 1,000,000              → cost * 1.06, rounded to nearest 100 MNT
 // NOTE: cost prices are stored in admin-only `skin_costs` and never reach
 // the customer client. `price_mnt` on `skins` is the computed selling price.
 export const calcSellingPrice = (costMnt: number): number => {
-  if (costMnt <= 20000) return costMnt + 1000;
-  const markup = costMnt <= 200000 ? 1.10 : costMnt <= 1000000 ? 1.08 : 1.05;
+  if (costMnt <= 20000) return costMnt + 3000;
+  const markup = costMnt <= 200000 ? 1.12 : costMnt <= 1000000 ? 1.10 : 1.06;
   return Math.round((costMnt * markup) / 100) * 100;
 };
 

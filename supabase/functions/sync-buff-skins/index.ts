@@ -73,13 +73,13 @@ const PRIORITY_WEAPONS = [
 const RATE_URL = "https://api.mongolbank.mn/json/get/exchange_rate?currency=CNY";
 const FALLBACK_RATE_URL = "https://open.er-api.com/v6/latest/CNY";
 // Selling price tiers based on cost_price_mnt (single source of truth):
-//   cost <= 20,000           → cost + 1,000 (flat)
-//   20,001 - 200,000         → cost * 1.10, rounded to nearest 100 MNT
-//   200,001 - 1,000,000      → cost * 1.08, rounded to nearest 100 MNT
-//   > 1,000,000              → cost * 1.05, rounded to nearest 100 MNT
+//   cost <= 20,000           → cost + 3,000 (flat)
+//   20,001 - 200,000         → cost * 1.12, rounded to nearest 100 MNT
+//   200,001 - 1,000,000      → cost * 1.10, rounded to nearest 100 MNT
+//   > 1,000,000              → cost * 1.06, rounded to nearest 100 MNT
 const calcSellingPrice = (costMnt: number): number => {
-  if (costMnt <= 20000) return costMnt + 1000;
-  const markup = costMnt <= 200000 ? 1.10 : costMnt <= 1000000 ? 1.08 : 1.05;
+  if (costMnt <= 20000) return costMnt + 3000;
+  const markup = costMnt <= 200000 ? 1.12 : costMnt <= 1000000 ? 1.10 : 1.06;
   return Math.round((costMnt * markup) / 100) * 100;
 };
 
