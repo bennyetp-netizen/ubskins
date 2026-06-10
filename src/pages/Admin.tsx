@@ -683,10 +683,6 @@ const Admin = () => {
                     {syncing ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-1 h-4 w-4" />}
                     Скин шинэчлэх
                   </Button>
-                  <Button variant="outline" onClick={fillMissingWears} disabled={syncing}>
-                    {syncing ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-1 h-4 w-4" />}
-                    Дутуу wear нөхөх
-                  </Button>
                   <Button variant="outline" onClick={removeAllSkins} disabled={skins.length === 0} className="border-destructive/40 text-destructive hover:bg-destructive/10">
                     <Trash2 className="mr-1 h-4 w-4" /> Бүх скин устгах
                   </Button>
