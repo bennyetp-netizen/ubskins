@@ -182,6 +182,49 @@ Deno.serve(async (req) => {
       }
     }
 
+    // === health горим: BUFF cookie хүчинтэй эсэхийг хурдан шалгана ===
+    {
+      const url0 = new URL(req.url);
+      const body0 = req.method === "GET" ? null : await req.clone().json().catch(() => null);
+      const rawMode0 = String(body0?.mode ?? url0.searchParams.get("mode") ?? "").trim().toLowerCase();
+      if (rawMode0 === "health") {
+        try {
+          const res = await fetch(
+            "https://buff.163.com/api/market/goods?game=csgo&page_num=1&page_size=1&sort_by=sell_num.desc",
+            {
+              headers: {
+                "Cookie": BUFF_COOKIE,
+                "User-Agent":
+                  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+                "Referer": "https://buff.163.com/market/csgo",
+                "Accept": "application/json",
+              },
+            },
+          );
+          const json = await res.json().catch(() => ({}));
+          const ok = res.ok && json?.code === "OK";
+          const expired = json?.code === "Login Required" ||
+            String(json?.error ?? json?.msg ?? "").toLowerCase().includes("login");
+          return new Response(
+            JSON.stringify({
+              ok,
+              expired,
+              status: res.status,
+              code: json?.code ?? null,
+            }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        } catch (e) {
+          return new Response(
+            JSON.stringify({ ok: false, expired: false, error: String(e) }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+      }
+    }
+
+
+
 
 
     // 1) CNY → MNT ханш татах — Монгол банкны ханш (monxansh нь Монголбанкны өдөр тутмын ханшийг JSON-оор өгдөг)
