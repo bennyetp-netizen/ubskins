@@ -127,12 +127,28 @@ const Admin = () => {
     .filter((o) => o.product_type === "preorder")
     .reduce((sum, o) => sum + (o.price_mnt ?? 0), 0);
 
+  // Ашгийн тооцоо — зөвхөн өртөг бүртгэгдсэн захиалгууд дээр
+  const ordersWithCost = paidOrders.filter((o) => Number(o.actual_cost_mnt) > 0);
+  const totalCost = ordersWithCost.reduce((sum, o) => sum + Number(o.actual_cost_mnt ?? 0), 0);
+  const revenueWithCost = ordersWithCost.reduce((sum, o) => sum + (o.price_mnt ?? 0), 0);
+  const totalProfit = revenueWithCost - totalCost;
+  const profitMargin = revenueWithCost > 0 ? (totalProfit / revenueWithCost) * 100 : 0;
+  const missingCostCount = paidOrders.length - ordersWithCost.length;
+
   const stats = [
     { label: "Нийт захиалга", value: `${orders.length}`, icon: TrendingUp, color: "text-accent" },
     { label: "Нийт орлого", value: formatMNT(totalRevenue), icon: TrendingUp, color: "text-primary" },
     { label: "БЭЛЭН-ээс", value: formatMNT(readyRevenue), icon: TrendingUp, color: "text-emerald-400" },
     { label: "ЗАХИАЛГА-аас", value: formatMNT(preorderRevenue), icon: TrendingUp, color: "text-orange-400" },
+    {
+      label: missingCostCount > 0 ? `Ашиг (${ordersWithCost.length}/${paidOrders.length})` : "Цэвэр ашиг",
+      value: `${formatMNT(totalProfit)}${revenueWithCost > 0 ? ` · ${profitMargin.toFixed(1)}%` : ""}`,
+      icon: TrendingUp,
+      color: totalProfit >= 0 ? "text-emerald-400" : "text-destructive",
+    },
+    { label: "Нийт өртөг", value: formatMNT(totalCost), icon: TrendingUp, color: "text-muted-foreground" },
   ];
+
 
   const syncFromBuff = async () => {
     setSyncing(true);
