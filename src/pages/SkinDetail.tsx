@@ -12,14 +12,6 @@ import { useSkin, useSkins } from "@/hooks/useSkins";
 import { toast } from "sonner";
 
 const WEAR_ORDER: Array<"FN" | "MW" | "FT" | "WW" | "BS"> = ["FN", "MW", "FT", "WW", "BS"];
-const DEFAULT_FLOAT: Record<typeof WEAR_ORDER[number], number> = {
-  FN: 0.03, MW: 0.10, FT: 0.20, WW: 0.40, BS: 0.55,
-};
-// Wear-ийн ойролцоо үнийн коэффициент (зах зээлийн ердийн харьцаа).
-// Жинхэнэ үнэ DB-д байхгүй үед энэ коэффициентоор тооцоолно.
-const WEAR_PRICE_MULTIPLIER: Record<typeof WEAR_ORDER[number], number> = {
-  FN: 1.6, MW: 1.15, FT: 1.0, WW: 0.75, BS: 0.6,
-};
 
 const SkinDetail = () => {
   const { id } = useParams();
@@ -27,24 +19,9 @@ const SkinDetail = () => {
   const { skin: dbSkin, loading } = useSkin(id);
   const { skins: all } = useSkins();
   const { add } = useCart();
-  const [overrideWear, setOverrideWear] = useState<typeof WEAR_ORDER[number] | null>(null);
 
-  // id солигдох болгонд override-г reset
-  useEffect(() => { setOverrideWear(null); }, [id]);
+  const skin = dbSkin;
 
-  // Хэрэв DB-д тухайн wear-тэй мөр байхгүй бол одоогийн скиныг wear-оор нь
-  // override хийж харуулна. Үнийг wear-ийн коэффициентоор тооцоолно.
-  const skin = dbSkin && overrideWear && overrideWear !== dbSkin.wear
-    ? {
-        ...dbSkin,
-        wear: overrideWear,
-        float: DEFAULT_FLOAT[overrideWear],
-        price: Math.round(
-          (dbSkin.price / WEAR_PRICE_MULTIPLIER[dbSkin.wear as typeof WEAR_ORDER[number]]) *
-            WEAR_PRICE_MULTIPLIER[overrideWear]
-        ),
-      }
-    : dbSkin;
 
   // Same skin's other wear variants (group by weapon + name).
   const variants = skin
@@ -129,32 +106,20 @@ const SkinDetail = () => {
                 const v = variants.find((x) => x.wear === w);
                 const active = skin.wear === w;
                 const inStock = !!v;
-                const basePrice = dbSkin
-                  ? Math.round(
-                      (dbSkin.price /
-                        WEAR_PRICE_MULTIPLIER[dbSkin.wear as typeof WEAR_ORDER[number]]) *
-                        WEAR_PRICE_MULTIPLIER[w]
-                    )
-                  : skin.price;
                 return (
                   <button
                     key={w}
-                    disabled={active}
+                    disabled={active || !inStock}
                     onClick={() => {
-                      if (active) return;
-                      if (v) {
-                        setOverrideWear(null);
-                        nav(`/skin/${v.id}`);
-                      } else {
-                        setOverrideWear(w);
-                      }
+                      if (active || !v) return;
+                      nav(`/skin/${v.id}`);
                     }}
                     className={`flex flex-col items-start rounded-xl border px-3 py-2 text-left transition ${
                       active
                         ? "border-primary bg-primary/10 ring-1 ring-primary/40"
                         : inStock
                           ? "border-border bg-secondary/30 hover:border-primary/50"
-                          : "border-dashed border-border bg-secondary/10 hover:border-orange-400/60"
+                          : "cursor-not-allowed border-dashed border-border/50 bg-secondary/10 opacity-50"
                     }`}
                   >
                     <span className={`font-display text-sm font-bold ${wearColor[w]}`}>{w}</span>
@@ -162,11 +127,12 @@ const SkinDetail = () => {
                       {wearLabel[w]}
                     </span>
                     <span className="mt-1 text-xs font-semibold">
-                      {inStock ? formatMNT(v!.price) : formatMNT(basePrice)}
+                      {inStock ? formatMNT(v!.price) : "Байхгүй"}
                     </span>
                   </button>
                 );
               })}
+
             </div>
           </div>
 
