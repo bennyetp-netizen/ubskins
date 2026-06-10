@@ -154,6 +154,37 @@ const Admin = () => {
     }
   };
 
+  const fillMissingWears = async () => {
+    setSyncing(true);
+    try {
+      const LIMIT = 25;
+      let offset = 0;
+      let totalAdded = 0;
+      let totalGroups = 0;
+      // Аюулгүйн тулд хязгаар — нэг ажиллахад дээд тал нь 80 batch (~2000 групп)
+      for (let i = 0; i < 80; i++) {
+        toast.info(`Wear нөхөж байна... (offset ${offset})`);
+        const { data, error } = await supabase.functions.invoke("sync-buff-skins", {
+          body: { mode: "fillwears", offset, limit: LIMIT },
+        });
+        if (error) throw new Error(error.message);
+        if (!data?.success) throw new Error(data?.error ?? "Тодорхойгүй алдаа");
+        totalAdded += Number(data.upserted ?? 0);
+        totalGroups = Number(data.total_groups ?? totalGroups);
+        const next = Number(data.next_offset ?? offset + LIMIT);
+        if (next >= totalGroups || data.scanned === 0) break;
+        offset = next;
+      }
+      toast.success(`Бүх скины дутуу wear-уудыг шалгаж дууслаа. ${totalAdded} шинэ wear нэмэгдсэн.`);
+      loadSkins();
+    } catch (e: any) {
+      toast.error(e.message ?? "Wear нөхөхөд алдаа гарлаа");
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+
 
 
   const loadSkins = async () => {
