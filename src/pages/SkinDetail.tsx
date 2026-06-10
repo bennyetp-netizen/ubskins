@@ -106,32 +106,20 @@ const SkinDetail = () => {
                 const v = variants.find((x) => x.wear === w);
                 const active = skin.wear === w;
                 const inStock = !!v;
-                const basePrice = dbSkin
-                  ? Math.round(
-                      (dbSkin.price /
-                        WEAR_PRICE_MULTIPLIER[dbSkin.wear as typeof WEAR_ORDER[number]]) *
-                        WEAR_PRICE_MULTIPLIER[w]
-                    )
-                  : skin.price;
                 return (
                   <button
                     key={w}
-                    disabled={active}
+                    disabled={active || !inStock}
                     onClick={() => {
-                      if (active) return;
-                      if (v) {
-                        setOverrideWear(null);
-                        nav(`/skin/${v.id}`);
-                      } else {
-                        setOverrideWear(w);
-                      }
+                      if (active || !v) return;
+                      nav(`/skin/${v.id}`);
                     }}
                     className={`flex flex-col items-start rounded-xl border px-3 py-2 text-left transition ${
                       active
                         ? "border-primary bg-primary/10 ring-1 ring-primary/40"
                         : inStock
                           ? "border-border bg-secondary/30 hover:border-primary/50"
-                          : "border-dashed border-border bg-secondary/10 hover:border-orange-400/60"
+                          : "cursor-not-allowed border-dashed border-border/50 bg-secondary/10 opacity-50"
                     }`}
                   >
                     <span className={`font-display text-sm font-bold ${wearColor[w]}`}>{w}</span>
@@ -139,11 +127,12 @@ const SkinDetail = () => {
                       {wearLabel[w]}
                     </span>
                     <span className="mt-1 text-xs font-semibold">
-                      {inStock ? formatMNT(v!.price) : formatMNT(basePrice)}
+                      {inStock ? formatMNT(v!.price) : "Байхгүй"}
                     </span>
                   </button>
                 );
               })}
+
             </div>
           </div>
 
