@@ -24,6 +24,9 @@ const SkinDetail = () => {
   const { add } = useCart();
   const [overrideWear, setOverrideWear] = useState<typeof WEAR_ORDER[number] | null>(null);
 
+  // id солигдох болгонд override-г reset
+  useEffect(() => { setOverrideWear(null); }, [id]);
+
   // Хэрэв DB-д тухайн wear-тэй мөр байхгүй бол одоогийн скиныг wear-оор нь
   // override хийж харуулна (preorder болгож сагсанд нэмнэ).
   const skin = dbSkin && overrideWear && overrideWear !== dbSkin.wear
