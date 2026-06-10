@@ -12,13 +12,23 @@ import { useSkin, useSkins } from "@/hooks/useSkins";
 import { toast } from "sonner";
 
 const WEAR_ORDER: Array<"FN" | "MW" | "FT" | "WW" | "BS"> = ["FN", "MW", "FT", "WW", "BS"];
+const DEFAULT_FLOAT: Record<typeof WEAR_ORDER[number], number> = {
+  FN: 0.03, MW: 0.10, FT: 0.20, WW: 0.40, BS: 0.55,
+};
 
 const SkinDetail = () => {
   const { id } = useParams();
   const nav = useNavigate();
-  const { skin, loading } = useSkin(id);
+  const { skin: dbSkin, loading } = useSkin(id);
   const { skins: all } = useSkins();
   const { add } = useCart();
+  const [overrideWear, setOverrideWear] = useState<typeof WEAR_ORDER[number] | null>(null);
+
+  // Хэрэв DB-д тухайн wear-тэй мөр байхгүй бол одоогийн скиныг wear-оор нь
+  // override хийж харуулна (preorder болгож сагсанд нэмнэ).
+  const skin = dbSkin && overrideWear && overrideWear !== dbSkin.wear
+    ? { ...dbSkin, wear: overrideWear, float: DEFAULT_FLOAT[overrideWear], productType: "preorder" as const }
+    : dbSkin;
 
   // Same skin's other wear variants (group by weapon + name).
   const variants = skin
