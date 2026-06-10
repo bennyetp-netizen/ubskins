@@ -28,9 +28,9 @@ const SkinDetail = () => {
   useEffect(() => { setOverrideWear(null); }, [id]);
 
   // Хэрэв DB-д тухайн wear-тэй мөр байхгүй бол одоогийн скиныг wear-оор нь
-  // override хийж харуулна (preorder болгож сагсанд нэмнэ).
+  // override хийж харуулна (бүх wear ижил төрлөөр сонгох боломжтой).
   const skin = dbSkin && overrideWear && overrideWear !== dbSkin.wear
-    ? { ...dbSkin, wear: overrideWear, float: DEFAULT_FLOAT[overrideWear], productType: "preorder" as const }
+    ? { ...dbSkin, wear: overrideWear, float: DEFAULT_FLOAT[overrideWear] }
     : dbSkin;
 
   // Same skin's other wear variants (group by weapon + name).
