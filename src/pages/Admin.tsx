@@ -154,38 +154,6 @@ const Admin = () => {
     }
   };
 
-  // Бэлэн скинүүдийн дутуу wear-уудыг BUFF search-аар нөхөх (chunked)
-  const fillMissingWears = async () => {
-    setSyncing(true);
-    try {
-      let offset = 0;
-      let totalAdded = 0;
-      let totalGroups = 0;
-      // Жижиг chunk-аар (8 скин) олон удаа дуудаж timeout-аас сэргийлнэ
-      const CHUNK = 8;
-      const MAX_CHUNKS = 80; // ≈ 640 скин
-      for (let i = 0; i < MAX_CHUNKS; i++) {
-        toast.info(`Wear нөхөж байна... (${offset}${totalGroups ? `/${totalGroups}` : "+"})`);
-        const { data, error } = await supabase.functions.invoke("sync-buff-skins", {
-          body: { mode: "fillwears", offset, limit: CHUNK },
-        });
-        if (error) throw new Error(error.message);
-        if (!data?.success) throw new Error(data?.error ?? "Тодорхойгүй алдаа");
-        totalAdded += Number(data.upserted ?? 0);
-        totalGroups = Number(data.total_groups ?? totalGroups);
-        const next = Number(data.next_offset ?? offset + CHUNK);
-        if (next <= offset) break;
-        offset = next;
-        if (offset >= totalGroups) break;
-      }
-      toast.success(`Wear нөхөлт дууслаа. Нэмсэн: ${totalAdded} / ${totalGroups} скин`);
-      loadSkins();
-    } catch (e: any) {
-      toast.error(e.message ?? "Wear нөхөхөд алдаа гарлаа");
-    } finally {
-      setSyncing(false);
-    }
-  };
 
 
   const loadSkins = async () => {
