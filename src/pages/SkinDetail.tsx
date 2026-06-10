@@ -102,7 +102,8 @@ const SkinDetail = () => {
             </Badge>
           </div>
 
-          {/* Wear selector — бүх 5 wear-ийг харуулж, байхгүйг нь "Боломжгүй" гэж тэмдэглэнэ */}
+          {/* Wear selector — 5 wear бүгд сонгох боломжтой. DB-д байхгүй wear-ийг
+              сонговол захиалгаар (preorder) болгож харуулна. */}
           <div className="mt-5 rounded-2xl border border-border bg-card/40 p-4">
             <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Wear сонгох
@@ -110,19 +111,27 @@ const SkinDetail = () => {
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
               {WEAR_ORDER.map((w) => {
                 const v = variants.find((x) => x.wear === w);
-                const active = v?.id === skin.id;
-                const available = !!v;
+                const active = skin.wear === w;
+                const inStock = !!v;
                 return (
                   <button
                     key={w}
-                    disabled={!available || active}
-                    onClick={() => v && !active && nav(`/skin/${v.id}`)}
+                    disabled={active}
+                    onClick={() => {
+                      if (active) return;
+                      if (v) {
+                        setOverrideWear(null);
+                        nav(`/skin/${v.id}`);
+                      } else {
+                        setOverrideWear(w);
+                      }
+                    }}
                     className={`flex flex-col items-start rounded-xl border px-3 py-2 text-left transition ${
                       active
                         ? "border-primary bg-primary/10 ring-1 ring-primary/40"
-                        : available
+                        : inStock
                           ? "border-border bg-secondary/30 hover:border-primary/50"
-                          : "cursor-not-allowed border-dashed border-border bg-secondary/10 opacity-50"
+                          : "border-dashed border-border bg-secondary/10 hover:border-orange-400/60"
                     }`}
                   >
                     <span className={`font-display text-sm font-bold ${wearColor[w]}`}>{w}</span>
@@ -130,13 +139,14 @@ const SkinDetail = () => {
                       {wearLabel[w]}
                     </span>
                     <span className="mt-1 text-xs font-semibold">
-                      {available ? formatMNT(v!.price) : "Боломжгүй"}
+                      {inStock ? formatMNT(v!.price) : <span className="text-orange-400">Захиалга</span>}
                     </span>
                   </button>
                 );
               })}
             </div>
           </div>
+
 
 
 
