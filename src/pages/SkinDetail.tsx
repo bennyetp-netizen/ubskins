@@ -162,7 +162,7 @@ const SkinDetail = () => {
                       {wearLabel[w]}
                     </span>
                     <span className="mt-1 text-xs font-semibold">
-                      {inStock ? formatMNT(v!.price) : formatMNT(skin.price)}
+                      {inStock ? formatMNT(v!.price) : formatMNT(basePrice)}
                     </span>
                   </button>
                 );
