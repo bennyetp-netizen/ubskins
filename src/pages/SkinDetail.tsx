@@ -33,9 +33,17 @@ const SkinDetail = () => {
   useEffect(() => { setOverrideWear(null); }, [id]);
 
   // Хэрэв DB-д тухайн wear-тэй мөр байхгүй бол одоогийн скиныг wear-оор нь
-  // override хийж харуулна (бүх wear ижил төрлөөр сонгох боломжтой).
+  // override хийж харуулна. Үнийг wear-ийн коэффициентоор тооцоолно.
   const skin = dbSkin && overrideWear && overrideWear !== dbSkin.wear
-    ? { ...dbSkin, wear: overrideWear, float: DEFAULT_FLOAT[overrideWear] }
+    ? {
+        ...dbSkin,
+        wear: overrideWear,
+        float: DEFAULT_FLOAT[overrideWear],
+        price: Math.round(
+          (dbSkin.price / WEAR_PRICE_MULTIPLIER[dbSkin.wear as typeof WEAR_ORDER[number]]) *
+            WEAR_PRICE_MULTIPLIER[overrideWear]
+        ),
+      }
     : dbSkin;
 
   // Same skin's other wear variants (group by weapon + name).
