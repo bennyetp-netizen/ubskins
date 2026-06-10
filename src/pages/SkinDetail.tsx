@@ -129,6 +129,13 @@ const SkinDetail = () => {
                 const v = variants.find((x) => x.wear === w);
                 const active = skin.wear === w;
                 const inStock = !!v;
+                const basePrice = dbSkin
+                  ? Math.round(
+                      (dbSkin.price /
+                        WEAR_PRICE_MULTIPLIER[dbSkin.wear as typeof WEAR_ORDER[number]]) *
+                        WEAR_PRICE_MULTIPLIER[w]
+                    )
+                  : skin.price;
                 return (
                   <button
                     key={w}
