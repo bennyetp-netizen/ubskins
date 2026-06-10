@@ -757,6 +757,26 @@ const Admin = () => {
                   <span className="text-muted-foreground">{label}</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
+                  <div className={`flex items-center gap-2 rounded-md border px-3 h-10 text-xs ${
+                    cookieStatus === "ok" ? "border-emerald-500/40 text-emerald-400" :
+                    cookieStatus === "expired" ? "border-destructive/50 text-destructive" :
+                    cookieStatus === "error" ? "border-orange-500/40 text-orange-400" :
+                    "border-border text-muted-foreground"
+                  }`}>
+                    <span className={`h-2 w-2 rounded-full ${
+                      cookieStatus === "ok" ? "bg-emerald-400" :
+                      cookieStatus === "expired" ? "bg-destructive animate-pulse" :
+                      cookieStatus === "error" ? "bg-orange-400" :
+                      "bg-muted-foreground animate-pulse"
+                    }`} />
+                    BUFF cookie: {
+                      cookieStatus === "ok" ? "хүчинтэй" :
+                      cookieStatus === "expired" ? "хугацаа дуусчээ — шинэчилнэ үү" :
+                      cookieStatus === "error" ? "холболтын алдаа" :
+                      "шалгаж байна..."
+                    }
+                  </div>
+
                   <select
                     value={syncMode}
                     onChange={(e) => setSyncMode(e.target.value)}
