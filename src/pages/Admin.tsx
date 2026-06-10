@@ -146,7 +146,28 @@ const Admin = () => {
         toast.success(`${job.label}: ${data.upserted} item`);
       }
       toast.success(`Нийт ${totalUpserted} item шинэчлэгдлээ. Ханш: 1¥ = ${lastRate.toFixed(2)}₮`);
+
+      // Дараа нь дутуу wear-уудыг автоматаар Buff-аас нөхнө
+      toast.info("Дутуу wear-уудыг нөхөж байна...");
+      const FW_LIMIT = 25;
+      let fwOffset = 0;
+      let fwAdded = 0;
+      let fwTotal = 0;
+      for (let i = 0; i < 80; i++) {
+        const { data: fw, error: fwErr } = await supabase.functions.invoke("sync-buff-skins", {
+          body: { mode: "fillwears", offset: fwOffset, limit: FW_LIMIT },
+        });
+        if (fwErr || !fw?.success) break;
+        fwAdded += Number(fw.upserted ?? 0);
+        fwTotal = Number(fw.total_groups ?? fwTotal);
+        const next = Number(fw.next_offset ?? fwOffset + FW_LIMIT);
+        if (next >= fwTotal || fw.scanned === 0) break;
+        fwOffset = next;
+      }
+      if (fwAdded > 0) toast.success(`${fwAdded} дутуу wear нэмэгдлээ.`);
+
       loadSkins();
+
     } catch (e: any) {
       toast.error(e.message ?? "Sync хийхэд алдаа гарлаа");
     } finally {
