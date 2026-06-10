@@ -15,6 +15,11 @@ const WEAR_ORDER: Array<"FN" | "MW" | "FT" | "WW" | "BS"> = ["FN", "MW", "FT", "
 const DEFAULT_FLOAT: Record<typeof WEAR_ORDER[number], number> = {
   FN: 0.03, MW: 0.10, FT: 0.20, WW: 0.40, BS: 0.55,
 };
+// Wear-ийн ойролцоо үнийн коэффициент (зах зээлийн ердийн харьцаа).
+// Жинхэнэ үнэ DB-д байхгүй үед энэ коэффициентоор тооцоолно.
+const WEAR_PRICE_MULTIPLIER: Record<typeof WEAR_ORDER[number], number> = {
+  FN: 1.6, MW: 1.15, FT: 1.0, WW: 0.75, BS: 0.6,
+};
 
 const SkinDetail = () => {
   const { id } = useParams();
@@ -28,9 +33,17 @@ const SkinDetail = () => {
   useEffect(() => { setOverrideWear(null); }, [id]);
 
   // Хэрэв DB-д тухайн wear-тэй мөр байхгүй бол одоогийн скиныг wear-оор нь
-  // override хийж харуулна (бүх wear ижил төрлөөр сонгох боломжтой).
+  // override хийж харуулна. Үнийг wear-ийн коэффициентоор тооцоолно.
   const skin = dbSkin && overrideWear && overrideWear !== dbSkin.wear
-    ? { ...dbSkin, wear: overrideWear, float: DEFAULT_FLOAT[overrideWear] }
+    ? {
+        ...dbSkin,
+        wear: overrideWear,
+        float: DEFAULT_FLOAT[overrideWear],
+        price: Math.round(
+          (dbSkin.price / WEAR_PRICE_MULTIPLIER[dbSkin.wear as typeof WEAR_ORDER[number]]) *
+            WEAR_PRICE_MULTIPLIER[overrideWear]
+        ),
+      }
     : dbSkin;
 
   // Same skin's other wear variants (group by weapon + name).
@@ -116,6 +129,13 @@ const SkinDetail = () => {
                 const v = variants.find((x) => x.wear === w);
                 const active = skin.wear === w;
                 const inStock = !!v;
+                const basePrice = dbSkin
+                  ? Math.round(
+                      (dbSkin.price /
+                        WEAR_PRICE_MULTIPLIER[dbSkin.wear as typeof WEAR_ORDER[number]]) *
+                        WEAR_PRICE_MULTIPLIER[w]
+                    )
+                  : skin.price;
                 return (
                   <button
                     key={w}
@@ -142,7 +162,7 @@ const SkinDetail = () => {
                       {wearLabel[w]}
                     </span>
                     <span className="mt-1 text-xs font-semibold">
-                      {inStock ? formatMNT(v!.price) : formatMNT(skin.price)}
+                      {inStock ? formatMNT(v!.price) : formatMNT(basePrice)}
                     </span>
                   </button>
                 );
