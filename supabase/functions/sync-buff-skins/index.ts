@@ -244,6 +244,10 @@ Deno.serve(async (req) => {
           }
           const json = await res.json();
           if (json.code !== "OK") {
+            const message = String(json?.error ?? json?.msg ?? json?.code ?? "BUFF хариу буруу");
+            if (json.code === "Login Required" || message.toLowerCase().includes("login")) {
+              throw new Error("BUFF login cookie хугацаа дууссан байна. BUFF_COOKIE secret-ийг шинэ cookie-оор солино уу.");
+            }
             console.error(`Buff163 хариу буруу page=${page}: ${JSON.stringify(json).slice(0, 300)}`);
             return items;
           }
@@ -321,6 +325,12 @@ Deno.serve(async (req) => {
           if (!res.ok) break;
           const json = await res.json();
           if (json.code === "OK") items = json?.data?.items ?? [];
+          else {
+            const message = String(json?.error ?? json?.msg ?? json?.code ?? "BUFF хариу буруу");
+            if (json.code === "Login Required" || message.toLowerCase().includes("login")) {
+              throw new Error("BUFF login cookie хугацаа дууссан байна. BUFF_COOKIE secret-ийг шинэ cookie-оор солино уу.");
+            }
+          }
           break;
         }
         await new Promise((r) => setTimeout(r, 600));
