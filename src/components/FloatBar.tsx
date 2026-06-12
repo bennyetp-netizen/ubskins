@@ -1,6 +1,7 @@
 import { Info } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useTranslation } from "react-i18next";
 
 interface FloatBarProps {
   float: number;
@@ -9,15 +10,17 @@ interface FloatBarProps {
   interactive?: boolean;
 }
 
-const tiers = [
-  { key: "FN", label: "Factory New", short: "FN", start: 0, end: 0.07, color: "from-emerald-400 to-emerald-500" },
-  { key: "MW", label: "Minimal Wear", short: "MW", start: 0.07, end: 0.15, color: "from-lime-400 to-lime-500" },
-  { key: "FT", label: "Field-Tested", short: "FT", start: 0.15, end: 0.38, color: "from-yellow-400 to-yellow-500" },
-  { key: "WW", label: "Well-Worn", short: "WW", start: 0.38, end: 0.45, color: "from-orange-400 to-orange-500" },
-  { key: "BS", label: "Battle-Scarred", short: "BS", start: 0.45, end: 1, color: "from-red-500 to-red-600" },
+const baseTiers = [
+  { key: "FN", short: "FN", start: 0, end: 0.07, color: "from-emerald-400 to-emerald-500" },
+  { key: "MW", short: "MW", start: 0.07, end: 0.15, color: "from-lime-400 to-lime-500" },
+  { key: "FT", short: "FT", start: 0.15, end: 0.38, color: "from-yellow-400 to-yellow-500" },
+  { key: "WW", short: "WW", start: 0.38, end: 0.45, color: "from-orange-400 to-orange-500" },
+  { key: "BS", short: "BS", start: 0.45, end: 1, color: "from-red-500 to-red-600" },
 ];
 
 const FloatBar = ({ float, onChange, interactive }: FloatBarProps) => {
+  const { t } = useTranslation();
+  const tiers = baseTiers.map((b) => ({ ...b, label: t(`wearTier.${b.key}`) }));
   const isInteractive = interactive ?? Boolean(onChange);
   const clamped = Math.max(0, Math.min(1, float));
   const pct = clamped * 100;
@@ -78,7 +81,7 @@ const FloatBar = ({ float, onChange, interactive }: FloatBarProps) => {
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Float Value {isInteractive && <span className="ml-1 text-primary/80">· чирж сонгоно</span>}
+              {t("floatBar.label")} {isInteractive && <span className="ml-1 text-primary/80">· {t("floatBar.dragHint")}</span>}
             </span>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -87,7 +90,7 @@ const FloatBar = ({ float, onChange, interactive }: FloatBarProps) => {
                 </button>
               </TooltipTrigger>
               <TooltipContent side="top" className="max-w-[220px] text-xs">
-                Float бага байх тусам скин илүү цэвэрхэн харагдана. {isInteractive && "Шугаман дээр дарж эсвэл чирж float-оо сонгоорой."}
+                {t("floatBar.tooltip")} {isInteractive && t("floatBar.tooltipInteractive")}
               </TooltipContent>
             </Tooltip>
           </div>

@@ -1,5 +1,6 @@
 import { useRef, useState, type ReactNode, type PointerEvent } from "react";
 import { Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   children: ReactNode;
@@ -9,6 +10,7 @@ interface Props {
 const THRESHOLD = 80;
 
 export default function SwipeableCartItem({ children, onDelete }: Props) {
+  const { t } = useTranslation();
   const [dx, setDx] = useState(0);
   const [dragging, setDragging] = useState(false);
   const [removing, setRemoving] = useState(false);
@@ -74,7 +76,7 @@ export default function SwipeableCartItem({ children, onDelete }: Props) {
         >
           <div className="flex items-center gap-2 text-destructive-foreground">
             <Trash2 className="h-5 w-5" />
-            <span className="font-display text-sm font-semibold">Устгах</span>
+            <span className="font-display text-sm font-semibold">{t("swipe.delete")}</span>
           </div>
         </div>
       )}
