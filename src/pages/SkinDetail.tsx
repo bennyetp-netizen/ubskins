@@ -1,19 +1,20 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
 import { ArrowLeft, ShieldCheck, Truck, Tag, Loader2, Globe2, ShoppingCart, BadgeCheck, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatMNT, wearLabel, wearColor } from "@/data/skins";
+import { formatMNT, wearColor } from "@/data/skins";
 import { calcPrepayment, mntToCny, formatCNY } from "@/data/payment";
 import SkinCard from "@/components/SkinCard";
 import MarketPriceReference from "@/components/MarketPriceReference";
 import { useCart } from "@/hooks/useCart";
 import { useSkin, useSkins } from "@/hooks/useSkins";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 const WEAR_ORDER: Array<"FN" | "MW" | "FT" | "WW" | "BS"> = ["FN", "MW", "FT", "WW", "BS"];
 
 const SkinDetail = () => {
+  const { t } = useTranslation();
   const { id } = useParams();
   const nav = useNavigate();
   const { skin: dbSkin, loading } = useSkin(id);
@@ -22,13 +23,10 @@ const SkinDetail = () => {
 
   const skin = dbSkin;
 
-
-  // Same skin's other wear variants (group by weapon + name).
   const variants = skin
     ? all
         .filter((s) => s.weapon === skin.weapon && s.name === skin.name)
         .reduce((acc: typeof all, s) => {
-          // Keep the cheapest listing per wear.
           const existing = acc.find((x) => x.wear === s.wear);
           if (!existing) acc.push(s);
           else if (s.price < existing.price)
@@ -41,7 +39,7 @@ const SkinDetail = () => {
   if (loading) {
     return (
       <div className="container flex items-center justify-center py-20 text-muted-foreground">
-        <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Уншиж байна...
+        <Loader2 className="mr-2 h-5 w-5 animate-spin" /> {t("common.loading")}
       </div>
     );
   }
@@ -49,8 +47,8 @@ const SkinDetail = () => {
   if (!skin) {
     return (
       <div className="container py-20 text-center">
-        <p className="text-muted-foreground">Скин олдсонгүй.</p>
-        <Link to="/shop"><Button variant="outline" className="mt-4">Дэлгүүр рүү</Button></Link>
+        <p className="text-muted-foreground">{t("detail.notFound")}</p>
+        <Link to="/shop"><Button variant="outline" className="mt-4">{t("detail.toShop")}</Button></Link>
       </div>
     );
   }
@@ -59,18 +57,17 @@ const SkinDetail = () => {
 
   const orderNow = () => {
     add(skin);
-    toast.success("Сагсанд нэмэгдлээ. Захиалга үүсгэх рүү шилжиж байна...");
+    toast.success(t("detail.addedRedirect"));
     setTimeout(() => nav("/cart"), 500);
   };
 
   return (
     <div className="container py-10">
       <Link to="/shop" className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" /> Дэлгүүр рүү буцах
+        <ArrowLeft className="h-4 w-4" /> {t("detail.back")}
       </Link>
 
       <div className="grid gap-10 lg:grid-cols-2">
-        {/* Image */}
         <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-secondary/40 to-background p-10">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,hsl(186_100%_50%/0.15),transparent_60%)]" />
           <div className="absolute inset-0 bg-grid opacity-20" />
@@ -80,13 +77,12 @@ const SkinDetail = () => {
           )}
         </div>
 
-        {/* Info */}
         <div>
           <p className="text-sm uppercase tracking-wider text-muted-foreground">{skin.weaponName}</p>
           <h1 className="mt-1 font-display text-4xl font-bold md:text-5xl">{skin.name}</h1>
           <div className="mt-3 flex flex-wrap gap-2">
             <Badge variant="outline" className="border-primary/40 bg-primary/10 text-primary">{skin.rarity}</Badge>
-            <Badge variant="outline" className={`border-current/40 bg-background ${wearColor[skin.wear]}`}>{wearLabel[skin.wear]}</Badge>
+            <Badge variant="outline" className={`border-current/40 bg-background ${wearColor[skin.wear]}`}>{t(`wearTier.${skin.wear}`)}</Badge>
             <Badge variant="outline" className="gap-1 border-sky-400/40 bg-sky-400/10 text-sky-300">
               <BadgeCheck className="h-3 w-3" /> Float Checked
             </Badge>
@@ -95,11 +91,9 @@ const SkinDetail = () => {
             </Badge>
           </div>
 
-          {/* Wear selector — 5 wear бүгд сонгох боломжтой. DB-д байхгүй wear-ийг
-              сонговол захиалгаар (preorder) болгож харуулна. */}
           <div className="mt-5 rounded-2xl border border-border bg-card/40 p-4">
             <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Wear сонгох
+              {t("detail.wearSelect")}
             </p>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
               {WEAR_ORDER.map((w) => {
@@ -124,67 +118,52 @@ const SkinDetail = () => {
                   >
                     <span className={`font-display text-sm font-bold ${wearColor[w]}`}>{w}</span>
                     <span className="mt-0.5 text-[10px] uppercase text-muted-foreground">
-                      {wearLabel[w]}
+                      {t(`wearTier.${w}`)}
                     </span>
                     <span className="mt-1 text-xs font-semibold">
-                      {inStock ? formatMNT(v!.price) : "Байхгүй"}
+                      {inStock ? formatMNT(v!.price) : t("detail.unavailable")}
                     </span>
                   </button>
                 );
               })}
-
             </div>
           </div>
 
-
-
-
-          {/* Product type banner */}
           {skin.productType === "ready" ? (
             <div className="mt-4 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4">
-              <p className="font-display text-sm font-bold text-emerald-400">
-                🟢 БЭЛЭН — Өнөөдөр хүргэнэ
-              </p>
-              <p className="mt-1 text-xs text-emerald-300/80">
-                Энэ скин агуулахад бэлэн байна. Бүтэн төлбөрөө шилжүүлсний дараа Steam trade offer шууд илгээнэ.
-              </p>
+              <p className="font-display text-sm font-bold text-emerald-400">{t("detail.readyTitle")}</p>
+              <p className="mt-1 text-xs text-emerald-300/80">{t("detail.readyDesc")}</p>
             </div>
           ) : (
             <div className="mt-4 rounded-xl border border-orange-500/40 bg-orange-500/10 p-4">
-              <p className="font-display text-sm font-bold text-orange-400">
-                🟡 ЗАХИАЛГА — өдөрт нь хүргэнэ
-              </p>
-              <p className="mt-1 text-xs text-orange-300/80">
-                Захиалгаар авна. 30% урьдчилгаа төлсний дараа худалдан авч, ирмэгц үлдэгдлийг төлж trade offer хүлээн авна.
-              </p>
+              <p className="font-display text-sm font-bold text-orange-400">{t("detail.preorderTitle")}</p>
+              <p className="mt-1 text-xs text-orange-300/80">{t("detail.preorderDesc")}</p>
             </div>
           )}
 
-          {/* stats */}
           <div className="mt-6 grid grid-cols-3 gap-3">
             <div className="rounded-xl border border-border bg-card p-4">
-              <p className="text-xs text-muted-foreground">Float</p>
+              <p className="text-xs text-muted-foreground">{t("detail.float")}</p>
               <p className="mt-1 font-display text-lg font-bold">{skin.float.toFixed(4)}</p>
             </div>
             <div className="rounded-xl border border-border bg-card p-4">
-              <p className="text-xs text-muted-foreground">Wear</p>
+              <p className="text-xs text-muted-foreground">{t("detail.wear")}</p>
               <p className={`mt-1 font-display text-lg font-bold ${wearColor[skin.wear]}`}>{skin.wear}</p>
             </div>
             <div className="rounded-xl border border-border bg-card p-4">
               <p className="text-xs text-muted-foreground">
-                {skin.productType === "ready" ? "Үлдэгдэл" : "Хүргэх"}
+                {skin.productType === "ready" ? t("detail.stock") : t("detail.delivery")}
               </p>
               <p className="mt-1 font-display text-lg font-bold">
-                {skin.productType === "ready" ? (skin.stockQuantity || skin.stock) : "Өдөрт нь"}
+                {skin.productType === "ready" ? (skin.stockQuantity || skin.stock) : t("detail.sameDay")}
               </p>
             </div>
           </div>
 
-          {/* Price */}
           <div className="mt-6 rounded-2xl border border-border bg-gradient-card p-5">
             <div className="flex items-end justify-between">
               <div>
-                <p className="text-xs text-muted-foreground">Үнэ</p>
+                <p className="text-xs text-muted-foreground">{t("detail.price")}</p>
                 <p className="font-display text-4xl font-bold text-gradient-primary">{formatMNT(skin.price)}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   ≈ {formatCNY(mntToCny(skin.price))} CNY
@@ -192,25 +171,25 @@ const SkinDetail = () => {
               </div>
               {skin.productType === "preorder" ? (
                 <div className="text-right">
-                  <p className="text-xs text-muted-foreground">Урьдчилгаа (30%)</p>
+                  <p className="text-xs text-muted-foreground">{t("detail.prepay")}</p>
                   <p className="font-display text-lg font-semibold text-warning">{formatMNT(calcPrepayment(skin.price))}</p>
-                  <p className="text-[10px] text-muted-foreground">үлдэгдлийг хүргэх үед</p>
+                  <p className="text-[10px] text-muted-foreground">{t("detail.prepaySub")}</p>
                 </div>
               ) : (
                 <div className="text-right">
-                  <p className="text-xs text-muted-foreground">Бүтэн төлбөр</p>
+                  <p className="text-xs text-muted-foreground">{t("detail.fullPay")}</p>
                   <p className="font-display text-lg font-semibold text-emerald-400">{formatMNT(skin.price)}</p>
-                  <p className="text-[10px] text-muted-foreground">100% урьдчилан</p>
+                  <p className="text-[10px] text-muted-foreground">{t("detail.fullPaySub")}</p>
                 </div>
               )}
             </div>
 
             <div className="mt-5 grid gap-2">
               <Button variant="hero" size="lg" onClick={orderNow}>
-                <Globe2 className="mr-1.5 h-4 w-4" /> Захиалга үүсгэх
+                <Globe2 className="mr-1.5 h-4 w-4" /> {t("detail.orderNow")}
               </Button>
-              <Button variant="outline" size="lg" onClick={() => { add(skin); toast.success("Сагсанд нэмэгдлээ"); }}>
-                <ShoppingCart className="mr-1.5 h-4 w-4" /> Сагсанд нэмэх
+              <Button variant="outline" size="lg" onClick={() => { add(skin); toast.success(t("detail.addedToCart")); }}>
+                <ShoppingCart className="mr-1.5 h-4 w-4" /> {t("detail.addToCart")}
               </Button>
             </div>
           </div>
@@ -223,18 +202,17 @@ const SkinDetail = () => {
             </div>
           )}
 
-          {/* features */}
           <div className="mt-5 space-y-2 text-sm">
-            <div className="flex items-center gap-2 text-muted-foreground"><ShieldCheck className="h-4 w-4 text-accent" /> Steam OpenID-р найдвартай нэвтрэлт</div>
-            <div className="flex items-center gap-2 text-muted-foreground"><Truck className="h-4 w-4 text-primary" /> Төлбөр баталгаажмагц trade offer автоматаар явна</div>
-            <div className="flex items-center gap-2 text-muted-foreground"><Tag className="h-4 w-4 text-primary" /> Ил тод үнэ, нуугдмал зардалгүй</div>
+            <div className="flex items-center gap-2 text-muted-foreground"><ShieldCheck className="h-4 w-4 text-accent" /> {t("detail.f1")}</div>
+            <div className="flex items-center gap-2 text-muted-foreground"><Truck className="h-4 w-4 text-primary" /> {t("detail.f2")}</div>
+            <div className="flex items-center gap-2 text-muted-foreground"><Tag className="h-4 w-4 text-primary" /> {t("detail.f3")}</div>
           </div>
         </div>
       </div>
 
       {related.length > 0 && (
         <section className="mt-20">
-          <h2 className="mb-6 font-display text-2xl font-bold">Ижил төстэй скинүүд</h2>
+          <h2 className="mb-6 font-display text-2xl font-bold">{t("detail.related")}</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {related.map((s) => <SkinCard key={s.id} skin={s} />)}
           </div>
