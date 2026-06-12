@@ -6,6 +6,7 @@ import SkinCard from "@/components/SkinCard";
 import heroBg from "@/assets/hero-bg.jpg";
 import { useAuth } from "@/hooks/useAuth";
 import { useSkins } from "@/hooks/useSkins";
+import { formatMNT } from "@/data/skins";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
@@ -142,7 +143,7 @@ const Index = () => {
                       <div className="mt-1 flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">{t("home.floatVerified")}</span>
                         <span className="font-display text-lg font-bold text-gradient-primary">
-                          {new Intl.NumberFormat("mn-MN").format(featured[0].price)}₮
+                          {formatMNT(featured[0].price)}
                         </span>
                       </div>
                     </div>

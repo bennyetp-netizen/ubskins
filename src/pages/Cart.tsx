@@ -194,7 +194,7 @@ const Cart = () => {
                 <span>{t("cart.itemCount")}</span><span>{items.length}</span>
               </div>
               <div className="flex justify-between text-muted-foreground">
-                <span>{t("cart.fee")}</span><span>0₮</span>
+                <span>{t("cart.fee")}</span><span>{formatMNT(0)}</span>
               </div>
               <div className="my-3 border-t border-border" />
               <div className="flex justify-between font-display text-lg font-bold">

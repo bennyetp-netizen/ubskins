@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import SkinCard from "@/components/SkinCard";
-import { type Wear } from "@/data/skins";
+import { type Wear, formatMNT } from "@/data/skins";
 import { useSkins } from "@/hooks/useSkins";
 import { useTranslation } from "react-i18next";
 
@@ -252,7 +252,7 @@ const Shop = () => {
             <div className="mb-2 flex items-center justify-between">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("shop.priceRange")}</p>
               <span className="text-xs text-foreground">
-                {new Intl.NumberFormat("mn-MN").format(minPrice)}₮ – {new Intl.NumberFormat("mn-MN").format(maxPrice)}₮
+                {formatMNT(minPrice)} – {formatMNT(maxPrice)}
               </span>
             </div>
             <Slider
