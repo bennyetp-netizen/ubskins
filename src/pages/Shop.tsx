@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import SkinCard from "@/components/SkinCard";
-import { type Wear } from "@/data/skins";
+import { type Wear, formatMNT } from "@/data/skins";
 import { useSkins } from "@/hooks/useSkins";
 import { useTranslation } from "react-i18next";
 
