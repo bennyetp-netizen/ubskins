@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, ShieldCheck, LogIn, CreditCard, Send, Sparkles, Lock, BadgeCheck, CheckCircle2, Wallet, Truck, Activity, Star, MessageCircle, Headphones, Zap, Globe2, Quote, ShoppingBag, Package } from "lucide-react";
+import { ArrowRight, ShieldCheck, LogIn, CreditCard, Send, Sparkles, BadgeCheck, CheckCircle2, Wallet, Truck, Activity, Headphones, Zap, ShoppingBag, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import SkinCard from "@/components/SkinCard";
@@ -7,20 +7,16 @@ import heroBg from "@/assets/hero-bg.jpg";
 import { useAuth } from "@/hooks/useAuth";
 import { useSkins } from "@/hooks/useSkins";
 import { toast } from "sonner";
-
-const faqs = [
-  { q: "Storepay-р яаж худалдан авах вэ?", a: "Buy with Storepay товчийг дарж дансаараа нэвтэрснээр үнийн дүнг 4 хувааж, хүүгүй төлнө. Эхний төлбөр шууд төлөгдөнө." },
-  { q: "Хэдийд скин минийх болох вэ?", a: "Төлбөр баталгаажсаны дараа Steam trade offer-р хүргэгдэнэ. Та Steam-д trade offer-оо хүлээн авч баталгаажуулаарай." },
-  { q: "Энэ gambling уу?", a: "Үгүй. Манай платформ дээр case opening, roulette, jackpot, betting байхгүй. Зөвхөн store inventory-оос шууд скин худалдаалдаг." },
-  { q: "Trade hold хэр удаан байх вэ?", a: "Steam Mobile Authenticator идэвхжүүлсэн бол шууд. Үгүй бол Valve-н нөхцөлөөр 7-15 хоног." },
-  { q: "Үнэ юунд тулгуурладаг вэ?", a: "Steam Market болон third-party-н дундаж үнэд тулгуурлан, MNT ханшаар тооцон тогтоодог." },
-];
+import { useTranslation } from "react-i18next";
 
 const Index = () => {
+  const { t } = useTranslation();
   const { user, signInWithSteam } = useAuth();
   const { skins } = useSkins({ featuredOnly: true });
   const { skins: allSkins } = useSkins();
   const featured = (skins.length > 0 ? skins : allSkins).slice(0, 4);
+
+  const faqs = (t("home.faqs", { returnObjects: true }) as { q: string; a: string }[]) || [];
 
   const handleSteam = async () => {
     if (user) {
@@ -30,38 +26,52 @@ const Index = () => {
     try {
       await signInWithSteam();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Алдаа гарлаа");
+      toast.error(e instanceof Error ? e.message : t("common.error"));
     }
   };
+
   const trustBadges = [
-    { icon: BadgeCheck, label: "Float шалгасан" },
-    { icon: CheckCircle2, label: "Trade баталгаажсан" },
-    { icon: Wallet, label: "Storepay-р авах" },
-    { icon: Truck, label: "Найдвартай хүргэлт" },
+    { icon: BadgeCheck, label: t("home.trust1") },
+    { icon: CheckCircle2, label: t("home.trust2") },
+    { icon: Wallet, label: t("home.trust3") },
+    { icon: Truck, label: t("home.trust4") },
   ];
 
   const recentActivity = [
-    { user: "bataa_mn", action: "худалдаж авлаа", item: "AK-47 | Redline (FT)" },
-    { user: "tsetsegee", action: "хүлээн авлаа", item: "★ Karambit | Doppler" },
-    { user: "khangai99", action: "захиаллаа", item: "AWP | Asiimov (FT)" },
-    { user: "munkhuu", action: "худалдаж авлаа", item: "M4A4 | Howl (MW)" },
-    { user: "anar_cs", action: "хүлээн авлаа", item: "★ Butterfly | Fade" },
-    { user: "saruul", action: "худалдаж авлаа", item: "Glock-18 | Fade" },
-    { user: "temuujin", action: "захиаллаа", item: "USP-S | Kill Confirmed" },
-    { user: "dorj_gg", action: "хүлээн авлаа", item: "★ Bayonet | Tiger Tooth" },
+    { user: "bataa_mn", action: t("home.actBuy"), item: "AK-47 | Redline (FT)" },
+    { user: "tsetsegee", action: t("home.actReceive"), item: "★ Karambit | Doppler" },
+    { user: "khangai99", action: t("home.actOrder"), item: "AWP | Asiimov (FT)" },
+    { user: "munkhuu", action: t("home.actBuy"), item: "M4A4 | Howl (MW)" },
+    { user: "anar_cs", action: t("home.actReceive"), item: "★ Butterfly | Fade" },
+    { user: "saruul", action: t("home.actBuy"), item: "Glock-18 | Fade" },
+    { user: "temuujin", action: t("home.actOrder"), item: "USP-S | Kill Confirmed" },
+    { user: "dorj_gg", action: t("home.actReceive"), item: "★ Bayonet | Tiger Tooth" },
+  ];
+
+  const features = [
+    { icon: Wallet, title: t("home.feat1Title"), desc: t("home.feat1Desc") },
+    { icon: Zap, title: t("home.feat2Title"), desc: t("home.feat2Desc") },
+    { icon: BadgeCheck, title: t("home.feat3Title"), desc: t("home.feat3Desc") },
+    { icon: ShieldCheck, title: t("home.feat4Title"), desc: t("home.feat4Desc") },
+    { icon: Headphones, title: t("home.feat5Title"), desc: t("home.feat5Desc") },
+    { icon: CreditCard, title: t("home.feat6Title"), desc: t("home.feat6Desc") },
+  ];
+
+  const steps = [
+    { icon: ShoppingBag, title: t("home.step1Title"), desc: t("home.step1Desc") },
+    { icon: CreditCard, title: t("home.step2Title"), desc: t("home.step2Desc") },
+    { icon: Send, title: t("home.step3Title"), desc: t("home.step3Desc") },
+    { icon: Package, title: t("home.step4Title"), desc: t("home.step4Desc") },
   ];
 
   return (
     <>
-      {/* Hero */}
       <section className="relative overflow-hidden border-b border-border/50">
-        {/* Animated gradient + image background */}
         <div className="absolute inset-0 -z-10 animated-gradient-bg" />
         <div className="absolute inset-0 -z-10">
           <img src={heroBg} alt="" width={1920} height={1024} className="h-full w-full object-cover opacity-25 mix-blend-luminosity" />
           <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/60 to-background" />
           <div className="absolute inset-0 bg-grid opacity-20" />
-          {/* Floating glow orbs */}
           <div className="absolute -left-32 top-20 h-80 w-80 rounded-full bg-primary/30 blur-3xl animate-orb" />
           <div className="absolute right-0 top-1/3 h-96 w-96 rounded-full bg-accent/20 blur-3xl animate-orb" style={{ animationDelay: "-5s" }} />
           <div className="absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-primary/20 blur-3xl animate-orb" style={{ animationDelay: "-9s" }} />
@@ -74,41 +84,36 @@ const Index = () => {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
               </span>
-              Шууд маркет · Монголд №1
+              {t("home.heroBadge")}
             </div>
             <h1 className="font-display text-4xl font-bold leading-[1.05] tracking-tight md:text-6xl lg:text-7xl">
-              Монголын <span className="text-gradient-primary">CS2 Skin</span>
+              {t("home.heroTitle1")} <span className="text-gradient-primary">{t("home.heroTitle2")}</span>
               <br />
-              Marketplace
+              {t("home.heroTitle3")}
             </h1>
             <p className="mt-5 max-w-xl text-base text-muted-foreground md:text-lg">
-              Steam skin-үүдээ <span className="text-foreground font-medium">аюулгүй, хурдан, local payment</span>-тай аваарай.
-              Storepay, QPay, банкны шилжүүлэг — бүгд төгрөгөөр.
+              {t("home.heroDesc1")} <span className="text-foreground font-medium">{t("home.heroDescStrong")}</span>{t("home.heroDesc2")}
             </p>
             <p className="mt-3 max-w-xl text-sm font-semibold text-orange-400 md:text-base">
-              💰 30% урьдчилгаа төлөөд скинээ захиалаад өдөрт нь аваарай!
+              {t("home.heroPreorder")}
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
               <Link to="/shop">
                 <Button variant="hero" size="xl">
-                  Скин үзэх <ArrowRight className="ml-1" />
+                  {t("home.ctaShop")} <ArrowRight className="ml-1" />
                 </Button>
               </Link>
               <Link to="/account">
                 <Button variant="steam" size="xl">
-                  Скин зарах
+                  {t("home.ctaSell")}
                 </Button>
               </Link>
             </div>
 
-            {/* Trust indicator chips */}
             <div className="mt-8 grid grid-cols-2 gap-2 sm:grid-cols-4">
               {trustBadges.map((b) => (
-                <div
-                  key={b.label}
-                  className="glass-card group flex items-center gap-2 rounded-xl px-3 py-2.5 transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-[0_0_20px_hsl(186_100%_50%/0.25)]"
-                >
+                <div key={b.label} className="glass-card group flex items-center gap-2 rounded-xl px-3 py-2.5 transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-[0_0_20px_hsl(186_100%_50%/0.25)]">
                   <b.icon className="h-4 w-4 shrink-0 text-primary transition-transform group-hover:scale-110" />
                   <span className="text-xs font-medium text-foreground/90">{b.label}</span>
                 </div>
@@ -116,9 +121,7 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Right column: skin showcase + live ticker */}
           <div className="relative">
-            {/* Premium knife/glove showcase */}
             <div className="relative mx-auto aspect-square max-w-md">
               <div className="absolute inset-8 rounded-full bg-primary/25 blur-3xl animate-pulse" />
               <div className="absolute inset-16 rounded-full bg-accent/20 blur-3xl" />
@@ -127,21 +130,17 @@ const Index = () => {
                   <>
                     <div className="flex items-center justify-between text-xs">
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/15 px-2.5 py-1 font-semibold text-accent">
-                        <Sparkles className="h-3 w-3" /> Онцлох
+                        <Sparkles className="h-3 w-3" /> {t("home.featured")}
                       </span>
-                      <span className="text-muted-foreground">Шууд · Баталгаажсан</span>
+                      <span className="text-muted-foreground">{t("home.instantVerified")}</span>
                     </div>
                     <div className="relative mt-2 flex h-[70%] items-center justify-center">
-                      <img
-                        src={featured[0].image}
-                        alt={featured[0].name}
-                        className="max-h-full animate-float-slow drop-shadow-[0_20px_60px_hsl(186_100%_50%/0.6)]"
-                      />
+                      <img src={featured[0].image} alt={featured[0].name} className="max-h-full animate-float-slow drop-shadow-[0_20px_60px_hsl(186_100%_50%/0.6)]" />
                     </div>
                     <div className="mt-2">
                       <div className="truncate font-display text-lg font-semibold">{featured[0].name}</div>
                       <div className="mt-1 flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">Float шалгасан · Trade баталгаажсан</span>
+                        <span className="text-xs text-muted-foreground">{t("home.floatVerified")}</span>
                         <span className="font-display text-lg font-bold text-gradient-primary">
                           {new Intl.NumberFormat("mn-MN").format(featured[0].price)}₮
                         </span>
@@ -149,21 +148,20 @@ const Index = () => {
                     </div>
                   </>
                 ) : (
-                  <div className="flex h-full items-center justify-center text-muted-foreground">Loading…</div>
+                  <div className="flex h-full items-center justify-center text-muted-foreground">{t("common.loading")}</div>
                 )}
               </div>
             </div>
 
-            {/* Live activity ticker */}
             <div className="glass-card mt-6 overflow-hidden rounded-2xl">
               <div className="flex items-center justify-between border-b border-border/50 px-4 py-2.5">
                 <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-foreground/90">
                   <Activity className="h-3.5 w-3.5 text-accent" />
-                  Сүүлд худалдан авалт
+                  {t("home.recent")}
                 </div>
                 <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" />
-                  ШУУД
+                  {t("common.live")}
                 </span>
               </div>
               <div className="relative h-32 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_15%,black_85%,transparent)]">
@@ -187,33 +185,19 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Why UBskins */}
       <section className="container py-16">
         <div className="mb-10 text-center">
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary">
-            <Sparkles className="h-3 w-3" /> Яагаад UBskins?
+            <Sparkles className="h-3 w-3" /> {t("home.whyBadge")}
           </div>
           <h2 className="font-display text-3xl font-bold md:text-4xl">
-            Монголд <span className="text-gradient-primary">итгэгдсэн</span> CS2 marketplace
+            {t("home.whyTitle1")} <span className="text-gradient-primary">{t("home.whyTitleAccent")}</span> {t("home.whyTitle2")}
           </h2>
-          <p className="mx-auto mt-2 max-w-xl text-muted-foreground">
-            Local payment, гар аргаар float шалгалт, шуурхай trade — бүгд нэг дор.
-          </p>
+          <p className="mx-auto mt-2 max-w-xl text-muted-foreground">{t("home.whyDesc")}</p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[
-            { icon: Wallet, title: "Local төлбөр", desc: "QPay, Storepay, банкны шилжүүлэг — төгрөгөөр л шууд төл." },
-            { icon: Zap, title: "Шуурхай хүргэлт", desc: "Төлбөр баталгаажсан тэр даруйд trade offer илгээнэ." },
-            { icon: BadgeCheck, title: "Float шалгасан", desc: "Скин бүрийн float-ыг гар аргаар шалгана." },
-            { icon: ShieldCheck, title: "Trade баталгаажсан", desc: "Албан Steam trade — scam, fake account-аас хамгаалагдсан." },
-            { icon: Headphones, title: "Монгол support", desc: "Монгол хэлээр 24/7 чат, утсаар тусална." },
-            { icon: CreditCard, title: "Storepay-р авах", desc: "Хүүгүй 4 хуваан төлбөр — өнөөдөр л скинээ ав." },
-          ].map((f, i) => (
-            <div
-              key={f.title}
-              className="glass-card group relative overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-[0_20px_50px_-15px_hsl(186_100%_50%/0.4)]"
-              style={{ animationDelay: `${i * 60}ms` }}
-            >
+          {features.map((f, i) => (
+            <div key={f.title} className="glass-card group relative overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-[0_20px_50px_-15px_hsl(186_100%_50%/0.4)]" style={{ animationDelay: `${i * 60}ms` }}>
               <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-primary/10 blur-2xl transition-opacity duration-500 group-hover:opacity-60 opacity-30" />
               <div className="relative">
                 <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary/25 to-accent/25 text-primary ring-1 ring-primary/30">
@@ -227,26 +211,19 @@ const Index = () => {
         </div>
       </section>
 
-      {/* How it works — visual flow */}
       <section className="container py-16">
         <div className="mb-12 text-center">
-          <h2 className="font-display text-3xl font-bold md:text-4xl">Хэрхэн ажилладаг вэ</h2>
-          <p className="mt-2 text-muted-foreground">4 хялбар алхам — 5 минутад скинтэй</p>
+          <h2 className="font-display text-3xl font-bold md:text-4xl">{t("home.howTitle")}</h2>
+          <p className="mt-2 text-muted-foreground">{t("home.howSub")}</p>
         </div>
         <div className="relative">
-          {/* connecting line */}
           <div className="pointer-events-none absolute left-0 right-0 top-[44px] hidden h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent lg:block" />
           <div className="relative grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { icon: ShoppingBag, title: "Скинээ сонгоно", desc: "Зэвсэг, wear, float-оор шүүж тохирох скинээ ол." },
-              { icon: CreditCard, title: "Аюулгүй төлбөр", desc: "QPay, Storepay, банкаар төгрөгөөр шууд төл." },
-              { icon: Send, title: "Trade link илгээ", desc: "Steam trade URL-аа орууллаа уу. Бид зөвхөн албан Steam trade ашигладаг." },
-              { icon: Package, title: "Скинээ хүлээн ав", desc: "Trade offer 5 минутад очно. Steam дээр хүлээн ав." },
-            ].map((s, i) => (
+            {steps.map((s, i) => (
               <div key={s.title} className="relative">
                 <div className="glass-card group relative rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50">
                   <div className="absolute -top-4 left-6 inline-flex h-8 items-center rounded-full bg-gradient-to-r from-primary to-accent px-3 text-xs font-bold text-primary-foreground shadow-[0_8px_24px_-8px_hsl(186_100%_50%/0.6)]">
-                    Алхам {i + 1}
+                    {t("home.step")} {i + 1}
                   </div>
                   <div className="mb-3 mt-2 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 text-primary ring-1 ring-primary/30 transition-transform group-hover:scale-110">
                     <s.icon className="h-5 w-5" />
@@ -260,27 +237,14 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Trust & Social Proof — temporarily hidden */}
-      {false && (
-      <section className="container py-16">
-        <div className="mb-10 text-center">
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs text-accent">
-            <Star className="h-3 w-3 fill-accent" /> Хэрэглэгчдийн сэтгэгдэл
-          </div>
-        </div>
-      </section>
-      )}
-
-
-      {/* Ready (БЭЛЭН) section */}
       <section className="container py-12">
         <div className="mb-6 flex items-end justify-between">
           <div>
-            <h2 className="font-display text-3xl font-bold md:text-4xl">🟢 БЭЛЭН СКИНҮҮД</h2>
-            <p className="mt-2 text-sm text-emerald-400/90">Шууд бэлэн — өнөөдөр хүргэнэ</p>
+            <h2 className="font-display text-3xl font-bold md:text-4xl">{t("home.readyTitle")}</h2>
+            <p className="mt-2 text-sm text-emerald-400/90">{t("home.readySub")}</p>
           </div>
           <Link to="/shop" className="hidden text-sm text-primary hover:underline sm:inline">
-            Бүгдийг үзэх →
+            {t("home.viewAll")}
           </Link>
         </div>
         {(() => {
@@ -288,7 +252,7 @@ const Index = () => {
           if (ready.length === 0) {
             return (
               <div className="rounded-2xl border border-dashed border-border p-10 text-center text-muted-foreground">
-                Бэлэн скин одоогоор алга. Удахгүй нэмэгдэнэ.
+                {t("home.readyEmpty")}
               </div>
             );
           }
@@ -300,15 +264,14 @@ const Index = () => {
         })()}
       </section>
 
-      {/* Pre-order (ЗАХИАЛГА) section */}
       <section className="container py-12">
         <div className="mb-6 flex items-end justify-between">
           <div>
-            <h2 className="font-display text-3xl font-bold md:text-4xl">🟡 ЗАХИАЛГААР</h2>
-            <p className="mt-2 text-sm text-orange-400/90">Захиалгаар — өдөрт нь хүргэнэ</p>
+            <h2 className="font-display text-3xl font-bold md:text-4xl">{t("home.preorderTitle")}</h2>
+            <p className="mt-2 text-sm text-orange-400/90">{t("home.preorderSub")}</p>
           </div>
           <Link to="/shop" className="hidden text-sm text-primary hover:underline sm:inline">
-            Бүгдийг үзэх →
+            {t("home.viewAll")}
           </Link>
         </div>
         {(() => {
@@ -316,7 +279,7 @@ const Index = () => {
           if (preorder.length === 0) {
             return (
               <div className="rounded-2xl border border-dashed border-border p-10 text-center text-muted-foreground">
-                Захиалгын скин одоогоор алга.
+                {t("home.preorderEmpty")}
               </div>
             );
           }
@@ -328,19 +291,14 @@ const Index = () => {
         })()}
       </section>
 
-      {/* FAQ */}
       <section className="container py-16">
         <div className="mx-auto max-w-3xl">
           <div className="mb-8 text-center">
-            <h2 className="font-display text-3xl font-bold md:text-4xl">Түгээмэл асуултууд</h2>
+            <h2 className="font-display text-3xl font-bold md:text-4xl">{t("home.faqTitle")}</h2>
           </div>
           <Accordion type="single" collapsible className="space-y-3">
             {faqs.map((f, i) => (
-              <AccordionItem
-                key={i}
-                value={`f-${i}`}
-                className="rounded-2xl border border-border bg-gradient-card px-5"
-              >
+              <AccordionItem key={i} value={`f-${i}`} className="rounded-2xl border border-border bg-gradient-card px-5">
                 <AccordionTrigger className="text-left font-semibold hover:no-underline">{f.q}</AccordionTrigger>
                 <AccordionContent className="text-muted-foreground">{f.a}</AccordionContent>
               </AccordionItem>
@@ -349,21 +307,18 @@ const Index = () => {
         </div>
       </section>
 
-      {/* CTA */}
       <section className="container py-16">
         <div className="relative overflow-hidden rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/10 via-background to-accent/10 p-10 text-center md:p-16">
           <div className="absolute inset-0 bg-grid opacity-30" />
           <div className="relative">
             <h2 className="font-display text-3xl font-bold md:text-5xl">
-              Анхны скинээ <span className="text-gradient-primary">өнөөдөр</span> аваарай
+              {t("home.ctaTitle1")} <span className="text-gradient-primary">{t("home.ctaTitleAccent")}</span> {t("home.ctaTitle2")}
             </h2>
-            <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-              Storepay-р 4 хуваагаад л хэрэгтэй скиндээ хүрнэ.
-            </p>
+            <p className="mx-auto mt-3 max-w-xl text-muted-foreground">{t("home.ctaDesc")}</p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <Link to="/shop"><Button variant="hero" size="xl">Скин үзэх</Button></Link>
+              <Link to="/shop"><Button variant="hero" size="xl">{t("home.ctaShop")}</Button></Link>
               <Button variant="steam" size="xl" onClick={handleSteam}>
-                <LogIn className="mr-1" /> Steam-р нэвтрэх
+                <LogIn className="mr-1" /> {t("nav.loginSteam")}
               </Button>
             </div>
           </div>

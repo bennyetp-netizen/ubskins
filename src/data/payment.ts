@@ -13,27 +13,21 @@ export interface PaymentInfo {
   notes: string[];
 }
 
-// 30% урьдчилгаа
 export const PREPAYMENT_RATE = 0.3;
 
 export const calcPrepayment = (total: number) => {
   const raw = total * PREPAYMENT_RATE;
-  // Round up to nearest 1000, but never exceed total
   const rounded = Math.ceil(raw / 1000) * 1000;
   return Math.min(rounded, total);
 };
 
-// USD ханш (тогтмол ойролцоо) - зөвхөн Wise/SWIFT/Payoneer гэх мэт олон улсын төлбөрт ашиглана
 export const USD_RATE = 3500;
 export const mntToUsd = (mnt: number) => Math.ceil(mnt / USD_RATE);
 
-// CNY (Юань) ханш — BUFF163 нь юань-аар арилждаг тул үндсэн харьцуулалтын валют
-// 1 CNY ≈ 490 MNT (ойролцоо, market rate-аас хамаарч өөрчлөгдөнө)
 export const CNY_RATE = 490;
 export const mntToCny = (mnt: number) => Math.ceil(mnt / CNY_RATE);
 export const formatCNY = (cny: number) => `¥${cny.toLocaleString("en-US")}`;
 
-// Хаан банкны дансны мэдээлэл
 export const KHAN_BANK = {
   bank: "Хаан Банк",
   account: "5037634064",
@@ -41,86 +35,99 @@ export const KHAN_BANK = {
   phone: "99577732",
 };
 
-export const PAYMENTS: Record<PaymentMethod, PaymentInfo> = {
-  qpay: {
-    id: "qpay",
-    label: "QPay (QR код)",
-    short: "QPay",
-    badge: "Шуурхай · Бүх банк · QR уншуулна",
-    fields: [],
-    notes: [
-      "Захиалга үүсгэсний дараа QR код автоматаар үүснэ.",
-      "Аль ч банкны апп-аар QR-г уншуулж төлбөрөө төлнө.",
-      "Төлбөр төлсний дараа захиалга автоматаар баталгаажна.",
-    ],
-  },
-  bank: {
-    id: "bank",
-    label: "Хаан Банк (MNT)",
-    short: "Хаан Банк",
-    badge: "Шуурхай · Монголд тохиромжтой",
-    fields: [
-      { key: "bank", label: "Банк", value: KHAN_BANK.bank, copy: true },
-      { key: "account", label: "Дансны дугаар", value: KHAN_BANK.account, copy: true },
-      { key: "holder", label: "Хүлээн авагч", value: KHAN_BANK.holder, copy: true },
-      { key: "phone", label: "Утас", value: KHAN_BANK.phone, copy: true },
-    ],
-    notes: [
-      "Хаан банкны апп-аас доорх дансруу шилжүүлнэ үү.",
-      "Гүйлгээний утга дээр заавал захиалгын дугаараа (UBS-XXX) бичнэ — тохирохгүй бол захиалга баталгаажихгүй.",
-      "Шилжүүлсэн screenshot-ыг @ubskins Telegram руу илгээнэ.",
-    ],
-  },
-  wise: {
-    id: "wise",
-    label: "Wise (TransferWise)",
-    short: "Wise",
-    badge: "Олон улсын · 1-2 өдөр",
-    fields: [
-      { key: "email", label: "Wise email", value: "ubskins@wise.com", copy: true },
-      { key: "name", label: "Хүлээн авагч", value: "UBSkins LLC", copy: true },
-      { key: "currency", label: "Валют", value: "USD" },
-    ],
-    notes: [
-      "Reference дээр захиалгын дугаараа (UBS-XXX) заавал бичнэ үү.",
-    ],
-  },
-  payoneer: {
-    id: "payoneer",
-    label: "Payoneer",
-    short: "Payoneer",
-    badge: "Олон улсын · USD",
-    fields: [
-      { key: "email", label: "Payoneer email", value: "pay@ubskins.mn", copy: true },
-      { key: "name", label: "Хүлээн авагч", value: "UBSkins LLC", copy: true },
-    ],
-    notes: ["Шимтгэл ~1% орчим."],
-  },
-  swift: {
-    id: "swift",
-    label: "SWIFT шилжүүлэг",
-    short: "SWIFT",
-    badge: "Олон улсын · 2-5 өдөр",
-    fields: [
-      { key: "bank", label: "Банк", value: "Khan Bank", copy: true },
-      { key: "swift", label: "SWIFT/BIC", value: "AGMOMNUB", copy: true },
-      { key: "iban", label: "Дансны дугаар", value: "5001234567 (USD)", copy: true },
-      { key: "name", label: "Хүлээн авагч", value: "UBSkins LLC", copy: true },
-    ],
-    notes: ["Шимтгэл 25-50 USD орчим."],
-  },
-  usdt: {
-    id: "usdt",
-    label: "USDT (TRC-20)",
-    short: "USDT",
-    badge: "Крипто · хурдан",
-    fields: [
-      { key: "network", label: "Сүлжээ", value: "TRON (TRC-20)", copy: true },
-      { key: "address", label: "Хаяг", value: "TXYZabcdEFGHijklMNOPqrstUVWXyz1234", copy: true },
-    ],
-    notes: ["Сүлжээ заавал TRC-20 байх ёстой."],
-  },
+type TFn = (key: string, options?: any) => string;
+
+export const getPayments = (t: TFn): Record<PaymentMethod, PaymentInfo> => {
+  const arr = (key: string): string[] => {
+    const v = t(key, { returnObjects: true }) as unknown;
+    return Array.isArray(v) ? (v as string[]) : [];
+  };
+  return {
+    qpay: {
+      id: "qpay",
+      label: t("payment.qpay.label"),
+      short: t("payment.qpay.short"),
+      badge: t("payment.qpay.badge"),
+      fields: [],
+      notes: arr("payment.qpay.notes"),
+    },
+    bank: {
+      id: "bank",
+      label: t("payment.bank.label"),
+      short: t("payment.bank.short"),
+      badge: t("payment.bank.badge"),
+      fields: [
+        { key: "bank", label: t("payment.bank.fBank"), value: KHAN_BANK.bank, copy: true },
+        { key: "account", label: t("payment.bank.fAccount"), value: KHAN_BANK.account, copy: true },
+        { key: "holder", label: t("payment.bank.fHolder"), value: KHAN_BANK.holder, copy: true },
+        { key: "phone", label: t("payment.bank.fPhone"), value: KHAN_BANK.phone, copy: true },
+      ],
+      notes: arr("payment.bank.notes"),
+    },
+    wise: {
+      id: "wise",
+      label: t("payment.wise.label"),
+      short: t("payment.wise.short"),
+      badge: t("payment.wise.badge"),
+      fields: [
+        { key: "email", label: t("payment.wise.fEmail"), value: "ubskins@wise.com", copy: true },
+        { key: "name", label: t("payment.wise.fName"), value: "UBSkins LLC", copy: true },
+        { key: "currency", label: t("payment.wise.fCurrency"), value: "USD" },
+      ],
+      notes: arr("payment.wise.notes"),
+    },
+    payoneer: {
+      id: "payoneer",
+      label: t("payment.payoneer.label"),
+      short: t("payment.payoneer.short"),
+      badge: t("payment.payoneer.badge"),
+      fields: [
+        { key: "email", label: t("payment.payoneer.fEmail"), value: "pay@ubskins.mn", copy: true },
+        { key: "name", label: t("payment.payoneer.fName"), value: "UBSkins LLC", copy: true },
+      ],
+      notes: arr("payment.payoneer.notes"),
+    },
+    swift: {
+      id: "swift",
+      label: t("payment.swift.label"),
+      short: t("payment.swift.short"),
+      badge: t("payment.swift.badge"),
+      fields: [
+        { key: "bank", label: t("payment.swift.fBank"), value: "Khan Bank", copy: true },
+        { key: "swift", label: t("payment.swift.fSwift"), value: "AGMOMNUB", copy: true },
+        { key: "iban", label: t("payment.swift.fIban"), value: "5001234567 (USD)", copy: true },
+        { key: "name", label: t("payment.swift.fName"), value: "UBSkins LLC", copy: true },
+      ],
+      notes: arr("payment.swift.notes"),
+    },
+    usdt: {
+      id: "usdt",
+      label: t("payment.usdt.label"),
+      short: t("payment.usdt.short"),
+      badge: t("payment.usdt.badge"),
+      fields: [
+        { key: "network", label: t("payment.usdt.fNetwork"), value: "TRON (TRC-20)", copy: true },
+        { key: "address", label: t("payment.usdt.fAddress"), value: "TXYZabcdEFGHijklMNOPqrstUVWXyz1234", copy: true },
+      ],
+      notes: arr("payment.usdt.notes"),
+    },
+  };
 };
 
+// Legacy fallback (MN strings) for code paths that haven't been migrated.
+import i18nInstance from "@/i18n";
+const _t: TFn = (k, o) => i18nInstance.t(k, o) as string;
+export const PAYMENTS: Record<PaymentMethod, PaymentInfo> = new Proxy({} as any, {
+  get(_target, prop: string) {
+    return getPayments(_t)[prop as PaymentMethod];
+  },
+  ownKeys() {
+    return ["qpay", "bank", "wise", "payoneer", "swift", "usdt"];
+  },
+  getOwnPropertyDescriptor() {
+    return { enumerable: true, configurable: true };
+  },
+});
+
 export const paymentLabel = (m: string): string =>
-  PAYMENTS[m as PaymentMethod]?.label ?? m.toUpperCase();
+  getPayments(_t)[m as PaymentMethod]?.label ?? m.toUpperCase();

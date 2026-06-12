@@ -3,8 +3,10 @@ import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 
 const Unsubscribe = () => {
+  const { t } = useTranslation();
   const [params] = useSearchParams();
   const token = params.get("token") || "";
   const [state, setState] = useState<"loading" | "ready" | "done" | "error">("loading");
@@ -15,7 +17,7 @@ const Unsubscribe = () => {
   const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
 
   useEffect(() => {
-    if (!token) { setState("error"); setError("Token олдсонгүй"); return; }
+    if (!token) { setState("error"); setError(t("unsub.tokenMissing")); return; }
     (async () => {
       try {
         const res = await fetch(
@@ -23,15 +25,15 @@ const Unsubscribe = () => {
           { headers: { apikey: anonKey } }
         );
         const data = await res.json();
-        if (!res.ok) throw new Error(data?.error || "Token буруу");
+        if (!res.ok) throw new Error(data?.error || t("unsub.tokenInvalid"));
         setEmail(data?.email || "");
         setState("ready");
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Алдаа");
+        setError(e instanceof Error ? e.message : t("common.error"));
         setState("error");
       }
     })();
-  }, [token, supabaseUrl, anonKey]);
+  }, [token, supabaseUrl, anonKey, t]);
 
   const confirm = async () => {
     try {
@@ -39,7 +41,7 @@ const Unsubscribe = () => {
       if (error) throw error;
       setState("done");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Алдаа");
+      setError(e instanceof Error ? e.message : t("common.error"));
       setState("error");
     }
   };
@@ -48,25 +50,25 @@ const Unsubscribe = () => {
     <div className="container max-w-md py-20 text-center">
       {state === "loading" && (
         <><Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-muted-foreground" />
-        <p className="text-muted-foreground">Шалгаж байна...</p></>
+        <p className="text-muted-foreground">{t("unsub.checking")}</p></>
       )}
       {state === "ready" && (
         <>
-          <h1 className="mb-2 font-display text-2xl font-bold">Имэйл захиалгаа цуцлах</h1>
+          <h1 className="mb-2 font-display text-2xl font-bold">{t("unsub.title")}</h1>
           <p className="mb-6 text-muted-foreground">
-            {email ? <><strong>{email}</strong> хаягт</> : "Энэ хаягт"} цаашид имэйл илгээхгүй.
+            {email ? <><strong>{email}</strong> {t("unsub.toAddr")} {t("unsub.willStop")}</> : t("unsub.toThis")}
           </p>
-          <Button variant="hero" onClick={confirm}>Баталгаажуулах</Button>
+          <Button variant="hero" onClick={confirm}>{t("unsub.confirm")}</Button>
         </>
       )}
       {state === "done" && (
         <><CheckCircle2 className="mx-auto mb-4 h-10 w-10 text-emerald-500" />
-        <h1 className="font-display text-2xl font-bold">Цуцлагдлаа</h1>
-        <p className="mt-2 text-muted-foreground">Цаашид имэйл илгээхгүй.</p></>
+        <h1 className="font-display text-2xl font-bold">{t("unsub.doneTitle")}</h1>
+        <p className="mt-2 text-muted-foreground">{t("unsub.doneDesc")}</p></>
       )}
       {state === "error" && (
         <><XCircle className="mx-auto mb-4 h-10 w-10 text-destructive" />
-        <h1 className="font-display text-2xl font-bold">Алдаа</h1>
+        <h1 className="font-display text-2xl font-bold">{t("unsub.errTitle")}</h1>
         <p className="mt-2 text-muted-foreground">{error}</p></>
       )}
     </div>
