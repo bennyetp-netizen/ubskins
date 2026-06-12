@@ -252,7 +252,7 @@ const Shop = () => {
             <div className="mb-2 flex items-center justify-between">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("shop.priceRange")}</p>
               <span className="text-xs text-foreground">
-                {new Intl.NumberFormat("mn-MN").format(minPrice)}₮ – {new Intl.NumberFormat("mn-MN").format(maxPrice)}₮
+                {formatMNT(minPrice)} – {formatMNT(maxPrice)}
               </span>
             </div>
             <Slider
