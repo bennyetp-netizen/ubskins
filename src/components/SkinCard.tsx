@@ -1,20 +1,21 @@
 import { Link } from "react-router-dom";
 import type { Skin } from "@/data/skins";
-import { formatMNT, storepayMonthly, wearColor, wearLabel } from "@/data/skins";
+import { formatMNT, wearColor } from "@/data/skins";
 import { Badge } from "@/components/ui/badge";
 import ProductTypeBadge from "@/components/ProductTypeBadge";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   skin: Skin;
 }
 
 const SkinCard = ({ skin }: Props) => {
+  const { t } = useTranslation();
   return (
     <Link
       to={`/skin/${skin.id}`}
       className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-gradient-card card-hover"
     >
-      {/* top accent bar */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
 
       <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-gradient-to-br from-secondary/40 to-background p-6">
@@ -57,16 +58,16 @@ const SkinCard = ({ skin }: Props) => {
         </div>
 
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span className={wearColor[skin.wear]}>{wearLabel[skin.wear]}</span>
+          <span className={wearColor[skin.wear]}>{t(`wearTier.${skin.wear}`)}</span>
           <span>Float {skin.float.toFixed(3)}</span>
         </div>
 
         <div className="flex flex-wrap gap-1">
           <span className="rounded-md border border-sky-400/30 bg-sky-400/10 px-1.5 py-0.5 text-[9px] font-semibold text-sky-300">
-            ✓ Float Checked
+            {t("skinCard.floatChecked")}
           </span>
           <span className="rounded-md border border-emerald-400/30 bg-emerald-400/10 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-300">
-            ⇄ Trade Verified
+            {t("skinCard.tradeVerified")}
           </span>
         </div>
 
@@ -77,15 +78,15 @@ const SkinCard = ({ skin }: Props) => {
             </p>
             <p className="text-[11px] text-muted-foreground">
               {skin.productType === "ready" ? (
-                <span className="text-emerald-400">Өнөөдөр хүргэнэ</span>
+                <span className="text-emerald-400">{t("skinCard.todayShip")}</span>
               ) : (
-                <span className="text-orange-400">өдөрт нь</span>
+                <span className="text-orange-400">{t("skinCard.sameDay")}</span>
               )}
             </p>
           </div>
           {skin.productType === "ready" && (
             <span className="text-[11px] text-muted-foreground">
-              Үлд: {skin.stockQuantity || skin.stock}
+              {t("skinCard.stockLeft", { n: skin.stockQuantity || skin.stock })}
             </span>
           )}
         </div>

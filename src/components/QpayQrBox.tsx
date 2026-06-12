@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { formatMNT } from "@/data/skins";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   orderId: string;
@@ -16,6 +17,7 @@ interface Props {
 }
 
 const QpayQrBox = ({ orderId, amount, initialQrImage, initialInvoiceId, paymentConfirmed, stage = "deposit", onPaid }: Props) => {
+  const { t } = useTranslation();
   const [qrImage, setQrImage] = useState<string | null>(initialQrImage ?? null);
   const [invoiceId, setInvoiceId] = useState<string | null>(initialInvoiceId ?? null);
   const [loading, setLoading] = useState(false);
@@ -33,10 +35,10 @@ const QpayQrBox = ({ orderId, amount, initialQrImage, initialInvoiceId, paymentC
         setQrImage(data.qr_image);
         setInvoiceId(data.invoice_id);
       } else {
-        throw new Error(data?.error ?? "QR үүсгэж чадсангүй");
+        throw new Error(data?.error ?? t("qpay.qrErr"));
       }
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "QPay алдаа");
+      toast.error(e instanceof Error ? e.message : t("qpay.err"));
     } finally {
       setLoading(false);
     }
@@ -51,13 +53,13 @@ const QpayQrBox = ({ orderId, amount, initialQrImage, initialInvoiceId, paymentC
       if (error) throw error;
       if (data?.paid) {
         setPaid(true);
-        toast.success("✅ Төлбөр баталгаажлаа!");
+        toast.success(t("qpay.paidToast"));
         onPaid?.();
       } else {
-        toast.info("Төлбөр хараахан ороогүй байна");
+        toast.info(t("qpay.notYet"));
       }
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Шалгах үед алдаа");
+      toast.error(e instanceof Error ? e.message : t("qpay.checkErr"));
     } finally {
       setChecking(false);
     }
@@ -68,7 +70,6 @@ const QpayQrBox = ({ orderId, amount, initialQrImage, initialInvoiceId, paymentC
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Poll every 5s while QR is shown
   useEffect(() => {
     if (paid || !invoiceId) return;
     const t = setInterval(checkPayment, 5000);
@@ -80,8 +81,8 @@ const QpayQrBox = ({ orderId, amount, initialQrImage, initialInvoiceId, paymentC
     return (
       <div className="flex flex-col items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-6 text-center">
         <CheckCircle2 className="h-10 w-10 text-emerald-400" />
-        <p className="font-display text-lg font-bold text-emerald-400">Төлбөр баталгаажсан</p>
-        <p className="text-xs text-muted-foreground">Бид удахгүй тантай холбогдоно.</p>
+        <p className="font-display text-lg font-bold text-emerald-400">{t("qpay.paid")}</p>
+        <p className="text-xs text-muted-foreground">{t("qpay.paidSub")}</p>
       </div>
     );
   }
@@ -89,7 +90,7 @@ const QpayQrBox = ({ orderId, amount, initialQrImage, initialInvoiceId, paymentC
   return (
     <div className="flex flex-col items-center gap-3 rounded-xl border border-primary/30 bg-background/60 p-5">
       <p className="font-display text-sm font-semibold uppercase tracking-wider text-primary">
-        {stage === "remaining" ? "Үлдсэн 70% төлөх" : "QPay-р төлөх"} — {formatMNT(amount)}
+        {stage === "remaining" ? t("qpay.remaining") : t("qpay.qrPay")} — {formatMNT(amount)}
       </p>
       {loading || !qrImage ? (
         <div className="flex h-56 w-56 items-center justify-center rounded-lg bg-secondary/40">
@@ -103,13 +104,13 @@ const QpayQrBox = ({ orderId, amount, initialQrImage, initialInvoiceId, paymentC
         />
       )}
       <p className="max-w-xs text-center text-[11px] text-muted-foreground">
-        Аль ч банкны апп нээж QR код уншуулна. Төлсний дараа автоматаар шалгана.
+        {t("qpay.scanHint")}
       </p>
       <Button variant="outline" size="sm" onClick={checkPayment} disabled={checking}>
         {checking ? (
-          <><Loader2 className="mr-1.5 h-3 w-3 animate-spin" /> Шалгаж байна...</>
+          <><Loader2 className="mr-1.5 h-3 w-3 animate-spin" /> {t("qpay.checking")}</>
         ) : (
-          <><RefreshCw className="mr-1.5 h-3 w-3" /> Төлбөр шалгах</>
+          <><RefreshCw className="mr-1.5 h-3 w-3" /> {t("qpay.check")}</>
         )}
       </Button>
     </div>

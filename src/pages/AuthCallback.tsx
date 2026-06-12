@@ -3,17 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 const AuthCallback = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        const query = window.location.search.slice(1); // strip leading "?"
+        const query = window.location.search.slice(1);
         if (!query) {
-          setError("Steam-аас хариу ирсэнгүй");
+          setError(t("auth.noResponse"));
           return;
         }
 
@@ -30,7 +32,7 @@ const AuthCallback = () => {
 
         const data = await res.json();
         if (!res.ok) {
-          setError(data?.error ?? "Нэвтрэхэд алдаа гарлаа");
+          setError(data?.error ?? t("auth.loginErr"));
           return;
         }
 
@@ -46,12 +48,12 @@ const AuthCallback = () => {
 
         navigate("/account", { replace: true });
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Алдаа гарлаа");
+        setError(e instanceof Error ? e.message : t("common.error"));
       }
     };
 
     handleCallback();
-  }, [navigate]);
+  }, [navigate, t]);
 
   return (
     <div className="container flex min-h-[60vh] items-center justify-center">
@@ -59,17 +61,17 @@ const AuthCallback = () => {
         {error ? (
           <>
             <AlertCircle className="mx-auto mb-3 h-8 w-8 text-destructive" />
-            <h2 className="font-display text-xl font-semibold">Нэвтрэх амжилтгүй</h2>
+            <h2 className="font-display text-xl font-semibold">{t("auth.failTitle")}</h2>
             <p className="mt-2 text-sm text-muted-foreground">{error}</p>
             <Button className="mt-4" onClick={() => navigate("/")}>
-              Нүүр рүү буцах
+              {t("auth.toHome")}
             </Button>
           </>
         ) : (
           <>
             <Loader2 className="mx-auto mb-3 h-8 w-8 animate-spin text-primary" />
-            <h2 className="font-display text-xl font-semibold">Steam-р нэвтэрч байна...</h2>
-            <p className="mt-2 text-sm text-muted-foreground">Түр хүлээнэ үү</p>
+            <h2 className="font-display text-xl font-semibold">{t("auth.loading")}</h2>
+            <p className="mt-2 text-sm text-muted-foreground">{t("auth.wait")}</p>
           </>
         )}
       </div>

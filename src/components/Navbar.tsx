@@ -1,27 +1,27 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { ShoppingCart, User, Shield, LogOut } from "lucide-react";
+import { ShoppingCart, User, Shield, LogOut, Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-
-const baseLinks = [
-  { to: "/", label: "Нүүр" },
-  { to: "/shop", label: "Дэлгүүр" },
-];
-
-const authLinks = [
-  { to: "/orders", label: "Захиалга" },
-  { to: "/account", label: "Хэрэглэгч" },
-];
-
-const adminLinks = [{ to: "/admin", label: "Админ" }];
+import { useTranslation } from "react-i18next";
 
 const Navbar = () => {
   const { items } = useCart();
   const { user, profile, signInWithSteam, signOut } = useAuth();
   const loc = useLocation();
+  const { t, i18n } = useTranslation();
+
+  const baseLinks = [
+    { to: "/", label: t("nav.home") },
+    { to: "/shop", label: t("nav.shop") },
+  ];
+  const authLinks = [
+    { to: "/orders", label: t("nav.orders") },
+    { to: "/account", label: t("nav.account") },
+  ];
+  const adminLinks = [{ to: "/admin", label: t("nav.admin") }];
 
   const links = [
     ...baseLinks,
@@ -33,8 +33,13 @@ const Navbar = () => {
     try {
       await signInWithSteam();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Алдаа гарлаа");
+      toast.error(e instanceof Error ? e.message : t("common.error"));
     }
+  };
+
+  const toggleLang = () => {
+    const next = i18n.language === "en" ? "mn" : "en";
+    i18n.changeLanguage(next);
   };
 
   return (
@@ -67,8 +72,19 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={toggleLang}
+            aria-label={t("lang.switchTo")}
+            className="inline-flex items-center gap-1 rounded-full border border-border bg-secondary/40 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <Languages className="h-3.5 w-3.5" />
+            <span className={i18n.language === "mn" ? "text-primary" : ""}>{t("lang.mn")}</span>
+            <span className="opacity-40">/</span>
+            <span className={i18n.language === "en" ? "text-primary" : ""}>{t("lang.en")}</span>
+          </button>
+
           <Link to="/cart">
-            <Button variant="ghost" size="icon" className="relative" aria-label="Сагс">
+            <Button variant="ghost" size="icon" className="relative" aria-label={t("nav.cart")}>
               <ShoppingCart className="h-5 w-5" />
               {items.length > 0 && (
                 <Badge className="absolute -right-1 -top-1 h-5 min-w-5 rounded-full bg-primary p-0 text-[10px] text-primary-foreground">
@@ -84,9 +100,9 @@ const Navbar = () => {
                 {profile?.avatar_url && (
                   <img src={profile.avatar_url} alt="" className="h-6 w-6 rounded-full" />
                 )}
-                <span className="text-xs font-medium">{profile?.display_name ?? "Хэрэглэгч"}</span>
+                <span className="text-xs font-medium">{profile?.display_name ?? t("nav.user")}</span>
               </Link>
-              <Button variant="ghost" size="icon" onClick={signOut} aria-label="Гарах">
+              <Button variant="ghost" size="icon" onClick={signOut} aria-label={t("nav.logout")}>
                 <LogOut className="h-4 w-4" />
               </Button>
             </div>
@@ -96,10 +112,10 @@ const Navbar = () => {
               size="sm"
               className="px-3"
               onClick={handleSteamLogin}
-              aria-label="Steam-р нэвтрэх"
+              aria-label={t("nav.loginSteam")}
             >
               <User className="h-4 w-4 sm:mr-1.5" />
-              <span className="hidden sm:inline">Steam-р нэвтрэх</span>
+              <span className="hidden sm:inline">{t("nav.loginSteam")}</span>
             </Button>
           )}
         </div>
