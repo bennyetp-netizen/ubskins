@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { formatMNT, calcSellingPrice } from "@/data/skins";
+import { formatMNTRaw as formatMNT, calcSellingPrice } from "@/data/skins";
 import ProductTypeBadge from "@/components/ProductTypeBadge";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
