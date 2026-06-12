@@ -109,6 +109,7 @@ import i18nInstance from "@/i18n";
 export const formatMNT = (n: number) => {
   const lang = i18nInstance?.language ?? "mn";
   if (lang === "en") {
+    if (!n || n <= 0) return "$0";
     const usd = Math.max(1, Math.ceil(n / DISPLAY_USD_RATE));
     return "$" + new Intl.NumberFormat("en-US").format(usd);
   }
