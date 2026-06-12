@@ -95,8 +95,25 @@ export const wearColor: Record<Wear, string> = {
   BS: "text-wear-bs",
 };
 
-export const formatMNT = (n: number) =>
+// Always MNT — for admin / internal use.
+export const formatMNTRaw = (n: number) =>
   new Intl.NumberFormat("mn-MN").format(n) + "₮";
+
+// USD rate for display conversion when the UI language is English.
+// Keep in sync with src/data/payment.ts USD_RATE.
+const DISPLAY_USD_RATE = 3500;
+
+import i18nInstance from "@/i18n";
+
+// Language-aware: MNT when lang=mn (default), USD when lang=en.
+export const formatMNT = (n: number) => {
+  const lang = i18nInstance?.language ?? "mn";
+  if (lang === "en") {
+    const usd = Math.max(1, Math.ceil(n / DISPLAY_USD_RATE));
+    return "$" + new Intl.NumberFormat("en-US").format(usd);
+  }
+  return new Intl.NumberFormat("mn-MN").format(n) + "₮";
+};
 
 export const storepayMonthly = (price: number) =>
   Math.ceil(price / 4 / 1000) * 1000;
