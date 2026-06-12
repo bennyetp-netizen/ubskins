@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { LogIn, Package, Clock, CheckCircle2, Truck, ShoppingBag, Copy, ChevronDown, ChevronUp, Globe2, Banknote, X, Facebook } from "lucide-react";
+import { LogIn, Package, Clock, CheckCircle2, Truck, ShoppingBag, Copy, ChevronDown, ChevronUp, Banknote, X, Facebook } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatMNT } from "@/data/skins";
-import { PAYMENTS, calcPrepayment, mntToCny, paymentLabel, type PaymentMethod } from "@/data/payment";
+import { getPayments, calcPrepayment, mntToCny, type PaymentMethod } from "@/data/payment";
 import ProductTypeBadge from "@/components/ProductTypeBadge";
 import QpayQrBox from "@/components/QpayQrBox";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface OrderRow {
   id: string;
@@ -36,32 +37,37 @@ interface OrderRow {
   buff_purchased_at?: string | null;
 }
 
-const statusMap: Record<string, { label: string; color: string; icon: typeof Clock }> = {
-  pending: { label: "Төлбөр хүлээж буй", color: "border-warning/40 bg-warning/10 text-warning", icon: Clock },
-  paid: { label: "Төлөгдсөн", color: "border-primary/40 bg-primary/10 text-primary", icon: CheckCircle2 },
-  trade_holding: { label: "Steam 7 хоног hold", color: "border-warning/40 bg-warning/10 text-warning", icon: Clock },
-  delivered: { label: "Хүргэгдсэн", color: "border-accent/40 bg-accent/10 text-accent", icon: Truck },
-  cancelled: { label: "Цуцлагдсан", color: "border-destructive/40 bg-destructive/10 text-destructive", icon: Clock },
-};
-
-function formatHoldRemaining(until: string): string {
-  const ms = new Date(until).getTime() - Date.now();
-  if (ms <= 0) return "Дууссан — trade боломжтой";
-  const days = Math.floor(ms / 86400000);
-  const hours = Math.floor((ms % 86400000) / 3600000);
-  const mins = Math.floor((ms % 3600000) / 60000);
-  if (days > 0) return `${days} хоног ${hours} цаг`;
-  if (hours > 0) return `${hours} цаг ${mins} мин`;
-  return `${mins} мин`;
-}
-
 const Orders = () => {
+  const { t, i18n } = useTranslation();
+  const PAYMENTS = getPayments(t);
   const { user, loading, signInWithSteam } = useAuth();
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [filter, setFilter] = useState<"all" | "pending" | "paid" | "delivered">("all");
   const [expanded, setExpanded] = useState<string | null>(null);
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const openId = searchParams.get("open");
+
+  const statusMap: Record<string, { label: string; color: string; icon: typeof Clock }> = {
+    pending: { label: t("status.pending"), color: "border-warning/40 bg-warning/10 text-warning", icon: Clock },
+    paid: { label: t("status.paid"), color: "border-primary/40 bg-primary/10 text-primary", icon: CheckCircle2 },
+    trade_holding: { label: t("status.trade_holding"), color: "border-warning/40 bg-warning/10 text-warning", icon: Clock },
+    delivered: { label: t("status.delivered"), color: "border-accent/40 bg-accent/10 text-accent", icon: Truck },
+    cancelled: { label: t("status.cancelled"), color: "border-destructive/40 bg-destructive/10 text-destructive", icon: Clock },
+  };
+
+  const formatHoldRemaining = (until: string): string => {
+    const ms = new Date(until).getTime() - Date.now();
+    if (ms <= 0) return t("orders.holdEnded");
+    const days = Math.floor(ms / 86400000);
+    const hours = Math.floor((ms % 86400000) / 3600000);
+    const mins = Math.floor((ms % 3600000) / 60000);
+    if (days > 0) return `${t("time.days", { n: days })} ${t("time.hours", { n: hours })}`;
+    if (hours > 0) return `${t("time.hours", { n: hours })} ${t("time.mins", { n: mins })}`;
+    return t("time.mins", { n: mins });
+  };
+
+  const paymentLabelLocal = (m: string) => PAYMENTS[m as PaymentMethod]?.label ?? m.toUpperCase();
+  const locale = i18n.language === "en" ? "en-US" : "mn-MN";
 
   useEffect(() => {
     if (!user) return;
@@ -74,13 +80,8 @@ const Orders = () => {
         if (data) {
           setOrders(data as unknown as OrderRow[]);
           const list = data as unknown as OrderRow[];
-          // Prefer ?open=ID, then orders owing remaining 70%, then first pending
           const remainingDueOrder = list.find(
-            (o) =>
-              (o.product_type ?? "ready") === "preorder" &&
-              !!o.deposit_paid &&
-              !o.remaining_paid &&
-              o.status === "pending",
+            (o) => (o.product_type ?? "ready") === "preorder" && !!o.deposit_paid && !o.remaining_paid && o.status === "pending",
           );
           const target = openId && list.find((o) => o.id === openId)
             ? openId
@@ -88,56 +89,43 @@ const Orders = () => {
           if (target) {
             setExpanded(target);
             setFilter("all");
-            // scroll to it after render
             setTimeout(() => {
-              const el = document.getElementById(`order-${target}`);
-              el?.scrollIntoView({ behavior: "smooth", block: "start" });
+              document.getElementById(`order-${target}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
             }, 200);
           }
         }
       });
   }, [user, openId]);
 
-  // Realtime: instantly reflect payment status updates
   useEffect(() => {
     if (!user) return;
     const channel = supabase
       .channel(`orders-${user.id}`)
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "orders", filter: `user_id=eq.${user.id}` },
-        (payload) => {
-          const updated = payload.new as unknown as OrderRow;
-          setOrders((prev) => {
-            const wasPaid = prev.find((o) => o.id === updated.id)?.payment_confirmed;
-            if (!wasPaid && updated.payment_confirmed) {
-              toast.success(`✅ ${updated.order_number ?? "Захиалга"} — Төлбөр баталгаажлаа!`);
-            }
-            return prev.map((o) => (o.id === updated.id ? { ...o, ...updated } : o));
-          });
-        },
-      )
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "orders", filter: `user_id=eq.${user.id}` },
-        (payload) => {
-          const inserted = payload.new as unknown as OrderRow;
-          setOrders((prev) => (prev.some((o) => o.id === inserted.id) ? prev : [inserted, ...prev]));
-        },
-      )
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders", filter: `user_id=eq.${user.id}` }, (payload) => {
+        const updated = payload.new as unknown as OrderRow;
+        setOrders((prev) => {
+          const wasPaid = prev.find((o) => o.id === updated.id)?.payment_confirmed;
+          if (!wasPaid && updated.payment_confirmed) {
+            toast.success(t("orders.paymentConfirmed", { order: updated.order_number ?? t("orders.orderFallback") }));
+          }
+          return prev.map((o) => (o.id === updated.id ? { ...o, ...updated } : o));
+        });
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "orders", filter: `user_id=eq.${user.id}` }, (payload) => {
+        const inserted = payload.new as unknown as OrderRow;
+        setOrders((prev) => (prev.some((o) => o.id === inserted.id) ? prev : [inserted, ...prev]));
+      })
       .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user]);
+    return () => { supabase.removeChannel(channel); };
+  }, [user, t]);
 
   const copy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
-    toast.success(`${label} хуулагдлаа`);
+    toast.success(t("common.copied", { label }));
   };
 
   if (loading) {
-    return <div className="container py-20 text-center text-muted-foreground">Уншиж байна...</div>;
+    return <div className="container py-20 text-center text-muted-foreground">{t("common.loading")}</div>;
   }
 
   if (!user) {
@@ -147,12 +135,10 @@ const Orders = () => {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent">
             <LogIn className="h-6 w-6 text-primary-foreground" />
           </div>
-          <h2 className="font-display text-xl font-semibold">Захиалга харахын тулд нэвтэрнэ үү</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Steam дансаараа нэвтэрснээр захиалгын түүхээ харах боломжтой
-          </p>
+          <h2 className="font-display text-xl font-semibold">{t("orders.loginTitle")}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{t("orders.loginDesc")}</p>
           <Button variant="steam" className="mt-5 w-full" onClick={signInWithSteam}>
-            <LogIn className="mr-1.5 h-4 w-4" /> Steam-р нэвтрэх
+            <LogIn className="mr-1.5 h-4 w-4" /> {t("nav.loginSteam")}
           </Button>
         </div>
       </div>
@@ -168,11 +154,7 @@ const Orders = () => {
   };
 
   const remainingDueOrders = orders.filter(
-    (o) =>
-      (o.product_type ?? "ready") === "preorder" &&
-      !!o.deposit_paid &&
-      !o.remaining_paid &&
-      o.status === "pending",
+    (o) => (o.product_type ?? "ready") === "preorder" && !!o.deposit_paid && !o.remaining_paid && o.status === "pending",
   );
 
   const openOrder = (id: string) => {
@@ -187,52 +169,35 @@ const Orders = () => {
     <div className="container py-10">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-bold md:text-4xl">Миний захиалгууд</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Нийт {orders.length} захиалга
-          </p>
+          <h1 className="font-display text-3xl font-bold md:text-4xl">{t("orders.title")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t("orders.totalCount", { count: orders.length })}</p>
         </div>
         <Link to="/shop">
           <Button variant="hero">
-            <ShoppingBag className="mr-1.5 h-4 w-4" /> Дэлгүүрт буцах
+            <ShoppingBag className="mr-1.5 h-4 w-4" /> {t("orders.backShop")}
           </Button>
         </Link>
       </div>
 
-      {/* Remaining-payment alert — surfaces 70% step so users don't miss it */}
       {remainingDueOrders.length > 0 && (
         <div className="mb-6 overflow-hidden rounded-2xl border-2 border-orange-500/60 bg-gradient-to-r from-orange-500/15 to-amber-500/10 shadow-[0_0_0_4px_hsl(25_95%_53%/0.08)]">
           <div className="flex items-start gap-3 p-4 sm:p-5">
-            <div className="flex h-12 w-12 shrink-0 animate-pulse items-center justify-center rounded-full bg-orange-500/25 text-2xl">
-              ⚠️
-            </div>
+            <div className="flex h-12 w-12 shrink-0 animate-pulse items-center justify-center rounded-full bg-orange-500/25 text-2xl">⚠️</div>
             <div className="min-w-0 flex-1">
-              <p className="font-display text-base font-bold text-orange-400 sm:text-lg">
-                Үлдсэн 70% төлбөрөө төлөх ёстой
-              </p>
-              <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">
-                Та 30% урьдчилгаагаа төлсөн. Скиныг танд илгээхийн тулд үлдсэн 70%-ийг QPay QR-аар төлнө үү.
-              </p>
+              <p className="font-display text-base font-bold text-orange-400 sm:text-lg">{t("orders.remainingAlertTitle")}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">{t("orders.remainingAlertDesc")}</p>
               <div className="mt-3 flex flex-col gap-2">
                 {remainingDueOrders.map((o) => {
                   const due = o.remaining_amount ?? (o.price_mnt - (o.deposit_amount ?? calcPrepayment(o.price_mnt)));
                   return (
-                    <button
-                      key={o.id}
-                      onClick={() => openOrder(o.id)}
-                      className="group flex items-center justify-between gap-3 rounded-xl border border-orange-500/40 bg-background/60 p-3 text-left transition-colors hover:border-orange-400 hover:bg-orange-500/10"
-                    >
+                    <button key={o.id} onClick={() => openOrder(o.id)} className="group flex items-center justify-between gap-3 rounded-xl border border-orange-500/40 bg-background/60 p-3 text-left transition-colors hover:border-orange-400 hover:bg-orange-500/10">
                       <div className="min-w-0 flex-1">
-                        <p className="font-mono text-xs font-bold text-primary">
-                          {o.order_number ?? o.id.slice(0, 8).toUpperCase()}
-                        </p>
+                        <p className="font-mono text-xs font-bold text-primary">{o.order_number ?? o.id.slice(0, 8).toUpperCase()}</p>
                         <p className="truncate text-sm font-semibold">{o.skin_name}</p>
                       </div>
                       <div className="text-right">
                         <p className="font-display text-base font-bold text-orange-400">{formatMNT(due)}</p>
-                        <p className="text-[10px] text-muted-foreground group-hover:text-orange-300">
-                          ТӨЛӨХ →
-                        </p>
+                        <p className="text-[10px] text-muted-foreground group-hover:text-orange-300">{t("orders.payNow")}</p>
                       </div>
                     </button>
                   );
@@ -243,26 +208,15 @@ const Orders = () => {
         </div>
       )}
 
-
-
-      {/* Filter tabs */}
       <div className="mb-6 flex flex-wrap gap-2">
         {([
-          { key: "all", label: "Бүгд" },
-          { key: "pending", label: "Төлбөр хүлээж буй" },
-          { key: "paid", label: "Төлөгдсөн" },
-          { key: "delivered", label: "Хүргэгдсэн" },
-        ] as const).map((t) => (
-          <button
-            key={t.key}
-            onClick={() => setFilter(t.key)}
-            className={`rounded-full border px-4 py-1.5 text-xs font-medium transition-colors ${
-              filter === t.key
-                ? "border-primary bg-primary/10 text-primary"
-                : "border-border bg-secondary/40 text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {t.label} <span className="ml-1 opacity-60">({counts[t.key]})</span>
+          { key: "all", label: t("orders.tabAll") },
+          { key: "pending", label: t("orders.tabPending") },
+          { key: "paid", label: t("orders.tabPaid") },
+          { key: "delivered", label: t("orders.tabDelivered") },
+        ] as const).map((tab) => (
+          <button key={tab.key} onClick={() => setFilter(tab.key)} className={`rounded-full border px-4 py-1.5 text-xs font-medium transition-colors ${filter === tab.key ? "border-primary bg-primary/10 text-primary" : "border-border bg-secondary/40 text-muted-foreground hover:text-foreground"}`}>
+            {tab.label} <span className="ml-1 opacity-60">({counts[tab.key]})</span>
           </button>
         ))}
       </div>
@@ -271,12 +225,10 @@ const Orders = () => {
         <div className="rounded-2xl border border-border bg-gradient-card p-16 text-center">
           <Package className="mx-auto h-12 w-12 text-muted-foreground/40" />
           <p className="mt-4 text-sm text-muted-foreground">
-            {filter === "all"
-              ? "Одоогоор захиалга алга. Дэлгүүрээс скинээ сонгоорой."
-              : "Энэ ангилалд захиалга алга байна."}
+            {filter === "all" ? t("orders.emptyAll") : t("orders.emptyFilter")}
           </p>
           <Link to="/shop" className="mt-4 inline-block">
-            <Button variant="hero" size="sm">Скин сонгох</Button>
+            <Button variant="hero" size="sm">{t("orders.pickSkin")}</Button>
           </Link>
         </div>
       ) : (
@@ -286,38 +238,20 @@ const Orders = () => {
             const isOpen = expanded === o.id;
             const payment = PAYMENTS[o.payment_method as PaymentMethod];
             const prepay = calcPrepayment(o.price_mnt);
-            const cny = mntToCny(o.price_mnt);
-            void cny;
+            void mntToCny(o.price_mnt);
 
             return (
-              <div
-                key={o.id}
-                id={`order-${o.id}`}
-                className={`relative rounded-2xl border bg-gradient-card transition-colors ${
-                  o.id === openId
-                    ? "border-primary shadow-[0_0_0_3px_hsl(var(--primary)/0.2)]"
-                    : "border-border hover:border-primary/30"
-                }`}
-              >
+              <div key={o.id} id={`order-${o.id}`} className={`relative rounded-2xl border bg-gradient-card transition-colors ${o.id === openId ? "border-primary shadow-[0_0_0_3px_hsl(var(--primary)/0.2)]" : "border-border hover:border-primary/30"}`}>
                 {o.status === "pending" && (
-                  <button
-                    type="button"
-                    aria-label="Захиалга устгах"
-                    onClick={async (e) => {
-                      e.stopPropagation();
-                      if (!confirm("Энэ захиалгыг устгах уу?")) return;
-                      const prev = orders;
-                      setOrders((list) => list.filter((x) => x.id !== o.id));
-                      const { error } = await supabase.from("orders").delete().eq("id", o.id);
-                      if (error) {
-                        setOrders(prev);
-                        toast.error("Устгаж чадсангүй");
-                      } else {
-                        toast.success("Захиалга устгагдлаа");
-                      }
-                    }}
-                    className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-background/80 text-muted-foreground hover:bg-destructive hover:text-destructive-foreground"
-                  >
+                  <button type="button" aria-label={t("orders.deleteAria")} onClick={async (e) => {
+                    e.stopPropagation();
+                    if (!confirm(t("orders.confirmDelete"))) return;
+                    const prev = orders;
+                    setOrders((list) => list.filter((x) => x.id !== o.id));
+                    const { error } = await supabase.from("orders").delete().eq("id", o.id);
+                    if (error) { setOrders(prev); toast.error(t("orders.deleteErr")); }
+                    else { toast.success(t("orders.deleted")); }
+                  }} className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-background/80 text-muted-foreground hover:bg-destructive hover:text-destructive-foreground">
                     <X className="h-4 w-4" />
                   </button>
                 )}
@@ -336,88 +270,52 @@ const Orders = () => {
                       <Badge variant="outline" className={s.color}>
                         <s.icon className="mr-1 h-3 w-3" /> {s.label}
                       </Badge>
-                      {o.wear && (
-                        <Badge variant="outline" className="border-border text-[10px]">
-                          {o.wear}
-                        </Badge>
-                      )}
+                      {o.wear && (<Badge variant="outline" className="border-border text-[10px]">{o.wear}</Badge>)}
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">
                       <span className="font-mono font-bold text-primary">{o.order_number ?? o.id.slice(0, 8).toUpperCase()}</span>
                       {" · "}
-                      {new Date(o.created_at).toLocaleString("mn-MN", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}{" "}
-                      · {paymentLabel(o.payment_method)}
+                      {new Date(o.created_at).toLocaleString(locale, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}{" "}
+                      · {paymentLabelLocal(o.payment_method)}
                     </p>
                     {o.trade_offer_id && (
-                      <a
-                        href={`https://steamcommunity.com/tradeoffer/${o.trade_offer_id}/`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-1 inline-block text-xs text-primary hover:underline"
-                      >
-                        Steam Trade Offer харах →
+                      <a href={`https://steamcommunity.com/tradeoffer/${o.trade_offer_id}/`} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block text-xs text-primary hover:underline">
+                        {t("orders.tradeOfferLink")}
                       </a>
                     )}
                     {o.trade_hold_until && o.status !== "delivered" && (
                       <div className="mt-2 rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-xs">
-                        <p className="font-display font-bold text-warning">
-                          🔒 Steam trade hold: {formatHoldRemaining(o.trade_hold_until)}
-                        </p>
-                        <p className="mt-0.5 text-[10px] text-muted-foreground">
-                          Скин худалдан авагдсан. Steam дүрмээр 7 хоног үнгэрсний дараа trade offer илгээгдэнэ
-                          ({new Date(o.trade_hold_until).toLocaleString("mn-MN")}).
-                        </p>
+                        <p className="font-display font-bold text-warning">{t("orders.holdTitle", { remaining: formatHoldRemaining(o.trade_hold_until) })}</p>
+                        <p className="mt-0.5 text-[10px] text-muted-foreground">{t("orders.holdDesc", { date: new Date(o.trade_hold_until).toLocaleString(locale) })}</p>
                       </div>
                     )}
                   </div>
                   <div className="text-right">
                     <p className="font-display text-lg font-bold">{formatMNT(o.price_mnt)}</p>
                     {o.status === "pending" && (
-                      <button
-                        onClick={() => setExpanded(isOpen ? null : o.id)}
-                        className="mt-1 inline-flex items-center gap-1 text-xs text-primary hover:underline"
-                      >
-                        Төлбөрийн заавар
+                      <button onClick={() => setExpanded(isOpen ? null : o.id)} className="mt-1 inline-flex items-center gap-1 text-xs text-primary hover:underline">
+                        {t("orders.instructions")}
                         {isOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                       </button>
                     )}
                   </div>
                 </div>
 
-                {/* Remaining-due banner on collapsed card */}
-                {(o.product_type ?? "ready") === "preorder" &&
-                  !!o.deposit_paid &&
-                  !o.remaining_paid &&
-                  o.status === "pending" && (
-                    <button
-                      type="button"
-                      onClick={() => setExpanded(isOpen ? null : o.id)}
-                      className="flex w-full items-center justify-between gap-3 border-t-2 border-orange-500/50 bg-gradient-to-r from-orange-500/15 to-amber-500/10 p-3 text-left transition-colors hover:from-orange-500/25 hover:to-amber-500/15"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">⚠️</span>
-                        <div>
-                          <p className="font-display text-sm font-bold text-orange-400">
-                            Үлдсэн 70% — {formatMNT(o.remaining_amount ?? (o.price_mnt - (o.deposit_amount ?? prepay)))} төлөх
-                          </p>
-                          <p className="text-[10px] text-muted-foreground">
-                            {isOpen ? "QR код доор гарч ирнэ" : "Дарж QR код нээх"}
-                          </p>
-                        </div>
+                {(o.product_type ?? "ready") === "preorder" && !!o.deposit_paid && !o.remaining_paid && o.status === "pending" && (
+                  <button type="button" onClick={() => setExpanded(isOpen ? null : o.id)} className="flex w-full items-center justify-between gap-3 border-t-2 border-orange-500/50 bg-gradient-to-r from-orange-500/15 to-amber-500/10 p-3 text-left transition-colors hover:from-orange-500/25 hover:to-amber-500/15">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">⚠️</span>
+                      <div>
+                        <p className="font-display text-sm font-bold text-orange-400">
+                          {t("orders.remaining70", { amount: formatMNT(o.remaining_amount ?? (o.price_mnt - (o.deposit_amount ?? prepay))) })}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">{isOpen ? t("orders.qrBelow") : t("orders.qrOpen")}</p>
                       </div>
-                      <span className="text-xs font-bold text-orange-400">
-                        {isOpen ? "▲" : "ТӨЛӨХ →"}
-                      </span>
-                    </button>
-                  )}
+                    </div>
+                    <span className="text-xs font-bold text-orange-400">{isOpen ? "▲" : t("orders.payNow")}</span>
+                  </button>
+                )}
 
-                {/* Fully paid success banner */}
                 {o.status === "paid" && (
                   <div className="border-t border-emerald-500/30 bg-emerald-500/10 p-4">
                     <div className="flex items-center gap-3">
@@ -425,50 +323,30 @@ const Orders = () => {
                         <CheckCircle2 className="h-6 w-6 text-emerald-400" />
                       </div>
                       <div className="flex-1">
-                        <p className="font-display text-base font-bold text-emerald-400">
-                          ✅ Амжилттай төлөгдлөө!
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Таны төлбөр бүрэн баталгаажлаа. Скиныг Steam trade offer-ээр удахгүй илгээнэ.
-                        </p>
+                        <p className="font-display text-base font-bold text-emerald-400">{t("orders.paidTitle")}</p>
+                        <p className="text-xs text-muted-foreground">{t("orders.paidDesc")}</p>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* Payment instructions */}
                 {isOpen && o.status === "pending" && payment && (() => {
                   const isPreorder = (o.product_type ?? "ready") === "preorder";
                   const remainingDue = o.remaining_amount ?? (o.price_mnt - (o.deposit_amount ?? prepay));
                   const showRemaining = isPreorder && !!o.deposit_paid && !o.remaining_paid && remainingDue > 0;
 
-                  // Streamlined: show QPay QR immediately for the 70% step
                   if (showRemaining) {
                     const ref = o.order_number ?? `UBS-${o.id.slice(0, 8).toUpperCase()}`;
                     return (
                       <div className="border-t border-border bg-background/40 p-5">
-                        <QpayQrBox
-                          orderId={o.id}
-                          stage="remaining"
-                          amount={remainingDue}
-                          initialQrImage={o.qpay_remaining_qr_image}
-                          initialInvoiceId={o.qpay_remaining_invoice_id}
-                          paymentConfirmed={!!o.remaining_paid}
-                          onPaid={() =>
-                            setOrders((prev) =>
-                              prev.map((x) =>
-                                x.id === o.id ? { ...x, remaining_paid: true, status: "paid" } : x,
-                              ),
-                            )
-                          }
-                        />
+                        <QpayQrBox orderId={o.id} stage="remaining" amount={remainingDue} initialQrImage={o.qpay_remaining_qr_image} initialInvoiceId={o.qpay_remaining_invoice_id} paymentConfirmed={!!o.remaining_paid} onPaid={() => setOrders((prev) => prev.map((x) => x.id === o.id ? { ...x, remaining_paid: true, status: "paid" } : x))} />
                         <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border-2 border-primary/40 bg-primary/10 p-3">
                           <div className="min-w-0 flex-1">
-                            <p className="text-[11px] uppercase tracking-wider text-primary">Гүйлгээний утга</p>
+                            <p className="text-[11px] uppercase tracking-wider text-primary">{t("orders.ref")}</p>
                             <p className="truncate font-mono text-base font-bold text-primary">{ref}</p>
                           </div>
-                          <Button variant="default" size="sm" className="shrink-0" onClick={() => copy(ref, "Гүйлгээний утга")}>
-                            <Copy className="mr-1 h-3.5 w-3.5" /> Хуулах
+                          <Button variant="default" size="sm" className="shrink-0" onClick={() => copy(ref, t("orders.ref"))}>
+                            <Copy className="mr-1 h-3.5 w-3.5" /> {t("common.copy")}
                           </Button>
                         </div>
                       </div>
@@ -481,79 +359,46 @@ const Orders = () => {
                       <div className="flex items-center justify-center gap-2 text-primary">
                         <Banknote className="h-5 w-5" />
                         <h4 className="font-display text-base font-bold uppercase tracking-wider">
-                          Төлбөрийн мэдээлэл — {payment.short}
+                          {t("orders.infoTitle", { name: payment.short })}
                         </h4>
                       </div>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Доорх данс руу шилжүүлж, гүйлгээний утгад захиалгын дугаараа бичнэ үү
-                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">{t("orders.infoDesc")}</p>
                     </div>
 
-                    {/* Amount summary */}
                     {!isPreorder ? (
                       <div className="mb-4 rounded-xl border border-emerald-500/40 bg-emerald-500/5 p-4">
-                        <p className="text-[11px] uppercase tracking-wider text-emerald-400">
-                          🟢 БЭЛЭН — Бүтэн төлбөр
-                        </p>
+                        <p className="text-[11px] uppercase tracking-wider text-emerald-400">{t("orders.readyFullTitle")}</p>
                         <p className="mt-1 font-display text-2xl font-bold">{formatMNT(o.price_mnt)}</p>
-                        <p className="mt-1 text-[11px] text-muted-foreground">
-                          Төлбөр баталгаажсаны дараа Steam trade offer илгээнэ.
-                        </p>
+                        <p className="mt-1 text-[11px] text-muted-foreground">{t("orders.readyFullDesc")}</p>
                       </div>
                     ) : (
                       <div className="mb-4 grid grid-cols-2 gap-3">
                         <div className="rounded-xl border border-orange-500/40 bg-orange-500/5 p-3">
-                          <p className="text-[11px] uppercase tracking-wider text-orange-400">Урьдчилгаа (30%)</p>
+                          <p className="text-[11px] uppercase tracking-wider text-orange-400">{t("orders.depositCard")}</p>
                           <p className="mt-1 font-display text-lg font-bold">{formatMNT(o.deposit_amount ?? prepay)}</p>
-                          <p className="text-[10px] text-muted-foreground">эхлээд төлнө</p>
+                          <p className="text-[10px] text-muted-foreground">{t("orders.depositCardSub")}</p>
                         </div>
                         <div className="rounded-xl border border-border bg-secondary/40 p-3">
-                          <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Үлдэгдэл (70%)</p>
-                          <p className="mt-1 font-display text-lg font-bold">
-                            {formatMNT(o.remaining_amount ?? (o.price_mnt - prepay))}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground">скин ирмэгц</p>
+                          <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{t("orders.remainingCard")}</p>
+                          <p className="mt-1 font-display text-lg font-bold">{formatMNT(o.remaining_amount ?? (o.price_mnt - prepay))}</p>
+                          <p className="text-[10px] text-muted-foreground">{t("orders.remainingCardSub")}</p>
                         </div>
                       </div>
                     )}
 
                     {o.payment_method === "qpay" ? (
-                      <QpayQrBox
-                        orderId={o.id}
-                        stage="deposit"
-                        amount={(isPreorder ? o.deposit_amount : o.price_mnt) ?? o.price_mnt}
-                        initialQrImage={o.qpay_qr_image}
-                        initialInvoiceId={o.qpay_invoice_id}
-                        paymentConfirmed={o.payment_confirmed}
-                        onPaid={() =>
-                          setOrders((prev) =>
-                            prev.map((x) =>
-                              x.id === o.id
-                                ? {
-                                    ...x,
-                                    payment_confirmed: true,
-                                    deposit_paid: true,
-                                    status: (x.product_type ?? "ready") === "preorder" ? "pending" : "paid",
-                                  }
-                                : x,
-                            ),
-                          )
-                        }
-                      />
+                      <QpayQrBox orderId={o.id} stage="deposit" amount={(isPreorder ? o.deposit_amount : o.price_mnt) ?? o.price_mnt} initialQrImage={o.qpay_qr_image} initialInvoiceId={o.qpay_invoice_id} paymentConfirmed={o.payment_confirmed} onPaid={() => setOrders((prev) => prev.map((x) => x.id === o.id ? { ...x, payment_confirmed: true, deposit_paid: true, status: (x.product_type ?? "ready") === "preorder" ? "pending" : "paid" } : x))} />
                     ) : (
                       <div className="space-y-2">
                         {payment.fields.map((f) => (
-                          <div
-                            key={f.key}
-                            className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card/60 p-3"
-                          >
+                          <div key={f.key} className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card/60 p-3">
                             <div className="min-w-0 flex-1">
                               <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{f.label}</p>
                               <p className="truncate font-mono text-sm">{f.value}</p>
                             </div>
                             {f.copy !== false && (
                               <Button variant="outline" size="sm" className="shrink-0" onClick={() => copy(f.value, f.label)}>
-                                <Copy className="mr-1 h-3.5 w-3.5" /> Хуулах
+                                <Copy className="mr-1 h-3.5 w-3.5" /> {t("common.copy")}
                               </Button>
                             )}
                           </div>
@@ -561,61 +406,47 @@ const Orders = () => {
                       </div>
                     )}
 
-                    {/* Reference */}
                     {(() => {
                       const ref = o.order_number ?? `UBS-${o.id.slice(0, 8).toUpperCase()}`;
                       return (
                         <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border-2 border-primary/40 bg-primary/10 p-3">
                           <div className="min-w-0 flex-1">
-                            <p className="text-[11px] uppercase tracking-wider text-primary">Гүйлгээний утга (заавал!)</p>
+                            <p className="text-[11px] uppercase tracking-wider text-primary">{t("orders.refRequired")}</p>
                             <p className="truncate font-mono text-base font-bold text-primary">{ref}</p>
                           </div>
-                          <Button variant="default" size="sm" className="shrink-0" onClick={() => copy(ref, "Гүйлгээний утга")}>
-                            <Copy className="mr-1 h-3.5 w-3.5" /> Хуулах
+                          <Button variant="default" size="sm" className="shrink-0" onClick={() => copy(ref, t("orders.ref"))}>
+                            <Copy className="mr-1 h-3.5 w-3.5" /> {t("common.copy")}
                           </Button>
                         </div>
                       );
                     })()}
 
-                    {/* Notes */}
                     <ul className="mt-4 space-y-1.5">
                       {payment.notes.map((n, i) => (
                         <li key={i} className="flex gap-2 text-xs text-muted-foreground">
-                          <span className="text-primary">•</span>
-                          <span>{n}</span>
+                          <span className="text-primary">•</span><span>{n}</span>
                         </li>
                       ))}
                     </ul>
 
-                    {/* Facebook contact */}
-                    <a
-                      href="https://www.facebook.com/profile.php?id=61590372189026"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-4 flex items-center gap-3 rounded-xl border border-[#1877F2]/30 bg-[#1877F2]/5 p-4 transition-colors hover:bg-[#1877F2]/10"
-                    >
+                    <a href="https://www.facebook.com/profile.php?id=61590372189026" target="_blank" rel="noopener noreferrer" className="mt-4 flex items-center gap-3 rounded-xl border border-[#1877F2]/30 bg-[#1877F2]/5 p-4 transition-colors hover:bg-[#1877F2]/10">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1877F2]/15">
                         <Facebook className="h-5 w-5 text-[#1877F2]" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-[#1877F2]">📩 Facebook-р холбогдох — баримтаа явуулах</p>
-                        <p className="text-[11px] text-muted-foreground">
-                          Скин авсаны дараа энд дарж бидэнтэй холбогдож, гүйлгээний баримтаа илгээнэ үү
-                        </p>
+                        <p className="text-sm font-semibold text-[#1877F2]">{t("orders.fbTitle")}</p>
+                        <p className="text-[11px] text-muted-foreground">{t("orders.fbDesc")}</p>
                       </div>
                     </a>
 
                     <p className="mt-3 rounded-lg border border-border bg-secondary/40 p-3 text-xs text-muted-foreground">
-                      Төлбөр шилжүүлсний дараа{" "}
-                      <a href="https://t.me/ubskins" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">
-                        @ubskins Telegram
-                      </a>{" "}
-                      руу screenshot илгээнэ үү. Бид 1-2 цагийн дотор баталгаажуулна.
+                      {t("orders.tgNote1")}{" "}
+                      <a href="https://t.me/ubskins" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">@ubskins Telegram</a>
+                      {t("orders.tgNote2")}
                     </p>
                   </div>
                   );
                 })()}
-
               </div>
             );
           })}
