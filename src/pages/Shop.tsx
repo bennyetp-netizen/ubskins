@@ -35,7 +35,11 @@ const readSaved = (): Partial<SavedState> => {
   }
 };
 
-const weaponOptions = ["AK-47", "AWP", "M4A4", "M4A1-S", "Desert Eagle", "USP-S", "Glock-18", "Knife", "Gloves", "Agent", "Sticker", "Charm"];
+const weaponOptions = [
+  "AK-47", "AWP", "M4A4", "M4A1-S", "Galil AR", "FAMAS", "SSG 08", "SG 553", "AUG",
+  "Desert Eagle", "USP-S", "Glock-18", "Tec-9", "Dual Berettas", "P2000", "P250", "Five-SeveN", "CZ75-Auto",
+  "Knife", "Gloves", "Agent", "Sticker", "Charm",
+];
 const knifeOptions = [
   "Karambit", "M9 Bayonet", "Bayonet", "Butterfly Knife", "Flip Knife", "Gut Knife",
   "Huntsman Knife", "Falchion Knife", "Bowie Knife", "Shadow Daggers", "Navaja Knife",
