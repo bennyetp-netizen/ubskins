@@ -377,7 +377,7 @@ Deno.serve(async (req) => {
           }
           break;
         }
-        await new Promise((r) => setTimeout(r, 600));
+        await new Promise((r) => setTimeout(r, 200));
 
         for (const it of items) {
           const fullName: string = it?.name ?? "";
