@@ -146,80 +146,91 @@ Deno.serve(async (req) => {
       hasDeviceIdLower: BUFF_COOKIE.includes("device_id="),
     });
     if (!BUFF_COOKIE) throw new Error("BUFF_COOKIE secret тохируулагдаагүй байна");
+    const sb = createClient(SUPABASE_URL, SERVICE_KEY);
+
+    // Parse mode early so health/fillwears can run without auth
+    const url = new URL(req.url);
+    const body = req.method === "GET" ? null : await req.clone().json().catch(() => null);
+    const rawMode = String(body?.mode ?? url.searchParams.get("mode") ?? "all").trim().toLowerCase();
+    const modeAliases: Record<string, string> = {
+      agent: "agents",
+      sticker: "stickers",
+      charm: "charms",
+      knives: "knife",
+      weapons: "weapon",
+    };
+    const mode = modeAliases[rawMode] ?? rawMode;
 
     // Allow either: (a) cron call with SERVICE_ROLE_KEY bearer, or (b) authenticated admin user.
-    const authHeader = req.headers.get("Authorization") ?? "";
-    const bearer = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
-    const sb = createClient(SUPABASE_URL, SERVICE_KEY);
-    const isCron = bearer && bearer === SERVICE_KEY;
+    // Skip auth entirely for health and fillwears modes.
+    if (mode !== "health" && mode !== "fillwears") {
+      const authHeader = req.headers.get("Authorization") ?? "";
+      const bearer = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+      const isCron = bearer && bearer === SERVICE_KEY;
 
-    if (!isCron) {
-      if (!bearer) {
-        return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+      if (!isCron) {
+        if (!bearer) {
+          return new Response(JSON.stringify({ error: "Unauthorized" }), {
+            status: 401,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        const userClient = createClient(SUPABASE_URL, ANON_KEY, {
+          global: { headers: { Authorization: authHeader } },
         });
-      }
-      const userClient = createClient(SUPABASE_URL, ANON_KEY, {
-        global: { headers: { Authorization: authHeader } },
-      });
-      const { data: userData, error: userErr } = await userClient.auth.getUser();
-      if (userErr || !userData.user) {
-        return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        const { data: userData, error: userErr } = await userClient.auth.getUser();
+        if (userErr || !userData.user) {
+          return new Response(JSON.stringify({ error: "Unauthorized" }), {
+            status: 401,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        const { data: isAdmin } = await sb.rpc("has_role", {
+          _user_id: userData.user.id,
+          _role: "admin",
         });
-      }
-      const { data: isAdmin } = await sb.rpc("has_role", {
-        _user_id: userData.user.id,
-        _role: "admin",
-      });
-      if (!isAdmin) {
-        return new Response(JSON.stringify({ error: "Forbidden" }), {
-          status: 403,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        if (!isAdmin) {
+          return new Response(JSON.stringify({ error: "Forbidden" }), {
+            status: 403,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
       }
     }
 
     // === health горим: BUFF cookie хүчинтэй эсэхийг хурдан шалгана ===
-    {
-      const url0 = new URL(req.url);
-      const body0 = req.method === "GET" ? null : await req.clone().json().catch(() => null);
-      const rawMode0 = String(body0?.mode ?? url0.searchParams.get("mode") ?? "").trim().toLowerCase();
-      if (rawMode0 === "health") {
-        try {
-          const res = await fetch(
-            "https://buff.163.com/api/market/goods?game=csgo&page_num=1&page_size=1&sort_by=sell_num.desc",
-            {
-              headers: {
-                "Cookie": BUFF_COOKIE,
-                "User-Agent":
-                  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
-                "Referer": "https://buff.163.com/market/csgo",
-                "Accept": "application/json",
-              },
+    if (mode === "health") {
+      try {
+        const res = await fetch(
+          "https://buff.163.com/api/market/goods?game=csgo&page_num=1&page_size=1&sort_by=sell_num.desc",
+          {
+            headers: {
+              "Cookie": BUFF_COOKIE,
+              "User-Agent":
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+              "Referer": "https://buff.163.com/market/csgo",
+              "Accept": "application/json",
             },
-          );
-          const json = await res.json().catch(() => ({}));
-          const ok = res.ok && json?.code === "OK";
-          const expired = json?.code === "Login Required" ||
-            String(json?.error ?? json?.msg ?? "").toLowerCase().includes("login");
-          return new Response(
-            JSON.stringify({
-              ok,
-              expired,
-              status: res.status,
-              code: json?.code ?? null,
-            }),
-            { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-          );
-        } catch (e) {
-          return new Response(
-            JSON.stringify({ ok: false, expired: false, error: String(e) }),
-            { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-          );
-        }
+          },
+        );
+        const json = await res.json().catch(() => ({}));
+        const ok = res.ok && json?.code === "OK";
+        const expired = json?.code === "Login Required" ||
+          String(json?.error ?? json?.msg ?? "").toLowerCase().includes("login");
+        return new Response(
+          JSON.stringify({
+            ok,
+            expired,
+            status: res.status,
+            code: json?.code ?? null,
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      } catch (e) {
+        return new Response(
+          JSON.stringify({ ok: false, expired: false, error: String(e) }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
       }
     }
 
@@ -313,17 +324,7 @@ Deno.serve(async (req) => {
     // mode=knife → зөвхөн хутга, mode=weapon → зөвхөн зэвсэг,
     // mode=gloves → зөвхөн бээлий, mode=priority → зөвхөн тэргүүлэх зэвсгүүд,
     // default (all) → бүгд
-    const url = new URL(req.url);
-    const body = req.method === "GET" ? null : await req.clone().json().catch(() => null);
-    const rawMode = String(body?.mode ?? url.searchParams.get("mode") ?? "all").trim().toLowerCase();
-    const modeAliases: Record<string, string> = {
-      agent: "agents",
-      sticker: "stickers",
-      charm: "charms",
-      knives: "knife",
-      weapons: "weapon",
-    };
-    const mode = modeAliases[rawMode] ?? rawMode;
+    // mode, body already parsed above
 
     // === fillwears горим: байгаа скинүүдийн дутуу wear-уудыг BUFF search-аар нөхөх ===
     if (mode === "fillwears") {
