@@ -21,7 +21,7 @@ export const calcPrepayment = (total: number) => {
   return Math.min(rounded, total);
 };
 
-export const USD_RATE = 3500;
+export const USD_RATE = 3650;
 export const mntToUsd = (mnt: number) => Math.ceil(mnt / USD_RATE);
 
 export const CNY_RATE = 490;
