@@ -146,7 +146,7 @@ Deno.serve(async (req) => {
       hasDeviceIdLower: BUFF_COOKIE.includes("device_id="),
     });
     if (!BUFF_COOKIE) throw new Error("BUFF_COOKIE secret тохируулагдаагүй байна");
-    const sb = createClient(SUPABASE_URL, SERVICE_KEY);
+    const sb = createClient(SUPABASE_URL, SERVICE_KEY, { db: { schema: "public" } });
 
     // Parse mode early so health/fillwears can run without auth
     const url = new URL(req.url);
