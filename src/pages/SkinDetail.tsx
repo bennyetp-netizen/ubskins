@@ -100,7 +100,13 @@ const SkinDetail = () => {
                 const v = variants.find((x) => x.wear === w);
                 const active = skin.wear === w;
                 const hasVariant = !!v;
-                const displayPrice = v?.price ?? skin.price;
+                // Wear-ийн ердийн зах зээлийн харьцаа (одоогийн скиний wear-аас үржүүлж тооцно)
+                const WEAR_MULT: Record<typeof w, number> = {
+                  FN: 1.6, MW: 1.15, FT: 1.0, WW: 0.78, BS: 0.62,
+                } as const;
+                const base = skin.price / (WEAR_MULT[skin.wear] || 1);
+                const estimated = Math.round((base * WEAR_MULT[w]) / 100) * 100;
+                const displayPrice = v?.price ?? estimated;
                 return (
                   <button
                     key={w}
