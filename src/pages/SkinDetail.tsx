@@ -99,7 +99,7 @@ const SkinDetail = () => {
               {WEAR_ORDER.map((w) => {
                 const v = variants.find((x) => x.wear === w);
                 const active = skin.wear === w;
-                const hasVariant = !!v || active;
+                const displayPrice = v?.price ?? skin.price;
                 return (
                   <button
                     key={w}
@@ -122,15 +122,9 @@ const SkinDetail = () => {
                     <span className="mt-0.5 text-[10px] uppercase text-muted-foreground">
                       {t(`wearTier.${w}`)}
                     </span>
-                    {hasVariant ? (
-                      <span className="mt-1 text-xs font-semibold">
-                        {formatMNT(v?.price ?? skin.price)}
-                      </span>
-                    ) : (
-                      <span className="mt-1 text-[10px] uppercase text-orange-400">
-                        Захиалгаар
-                      </span>
-                    )}
+                    <span className="mt-1 text-xs font-semibold">
+                      {formatMNT(displayPrice)}
+                    </span>
                   </button>
                 );
               })}
