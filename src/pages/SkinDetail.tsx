@@ -99,21 +99,24 @@ const SkinDetail = () => {
               {WEAR_ORDER.map((w) => {
                 const v = variants.find((x) => x.wear === w);
                 const active = skin.wear === w;
-                const inStock = !!v;
+                const hasVariant = !!v;
+                const displayPrice = v?.price ?? skin.price;
                 return (
                   <button
                     key={w}
-                    disabled={active || !inStock}
+                    disabled={active}
                     onClick={() => {
-                      if (active || !v) return;
-                      nav(`/skin/${v.id}`);
+                      if (active) return;
+                      if (v) nav(`/skin/${v.id}`);
+                      else {
+                        add({ ...skin, wear: w, productType: "preorder" });
+                        toast.success(t("detail.addedToCart"));
+                      }
                     }}
                     className={`flex flex-col items-start rounded-xl border px-3 py-2 text-left transition ${
                       active
                         ? "border-primary bg-primary/10 ring-1 ring-primary/40"
-                        : inStock
-                          ? "border-border bg-secondary/30 hover:border-primary/50"
-                          : "cursor-not-allowed border-dashed border-border/50 bg-secondary/10 opacity-50"
+                        : "border-border bg-secondary/30 hover:border-primary/50"
                     }`}
                   >
                     <span className={`font-display text-sm font-bold ${wearColor[w]}`}>{w}</span>
@@ -121,8 +124,13 @@ const SkinDetail = () => {
                       {t(`wearTier.${w}`)}
                     </span>
                     <span className="mt-1 text-xs font-semibold">
-                      {inStock ? formatMNT(v!.price) : t("detail.unavailable")}
+                      {formatMNT(displayPrice)}
                     </span>
+                    {!hasVariant && !active && (
+                      <span className="mt-0.5 text-[9px] uppercase text-orange-400">
+                        Захиалга
+                      </span>
+                    )}
                   </button>
                 );
               })}
