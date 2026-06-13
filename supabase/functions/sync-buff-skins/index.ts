@@ -328,8 +328,8 @@ Deno.serve(async (req) => {
 
     // === fillwears горим: байгаа скинүүдийн дутуу wear-уудыг BUFF search-аар нөхөх ===
     if (mode === "fillwears") {
-      const limit = Math.max(1, Math.min(200, Number(body?.limit ?? 30)));
-      const offset = Math.max(0, Number(body?.offset ?? 0));
+      const limit = Math.max(1, Math.min(200, Number(body?.limit ?? url.searchParams.get("limit") ?? 30)));
+      const offset = Math.max(0, Number(body?.offset ?? url.searchParams.get("offset") ?? 0));
 
       // Distinct (weapon, name) групп — зөвхөн wear-тэй (зэвсэг/хутга/бээлий) скинүүд
       const { data: groups, error: gErr } = await sb
