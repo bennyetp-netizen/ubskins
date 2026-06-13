@@ -1,7 +1,7 @@
 project_id = "dsatymimraxujqyhqccv"
 
 [functions.sync-buff-skins]
-verify_jwt = true
+verify_jwt = false
 
 [functions.fill-buff-wears]
 verify_jwt = false
