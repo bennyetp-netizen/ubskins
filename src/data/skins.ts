@@ -101,7 +101,7 @@ export const formatMNTRaw = (n: number) =>
 
 // USD rate for display conversion when the UI language is English.
 // Keep in sync with src/data/payment.ts USD_RATE.
-const DISPLAY_USD_RATE = 3500;
+const DISPLAY_USD_RATE = 3650;
 
 import i18nInstance from "@/i18n";
 
