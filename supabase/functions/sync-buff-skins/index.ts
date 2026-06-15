@@ -450,16 +450,26 @@ Deno.serve(async (req) => {
         }
       }
 
+      const nextOffset = (offset + scanned >= allGroups.length) ? 0 : (offset + scanned);
+      if (auto) {
+        await sb.from("sync_state").upsert({
+          key: "fillwears",
+          value: { offset: nextOffset, last_run_at: new Date().toISOString(), last_upserted: added, total_groups: allGroups.length },
+          updated_at: new Date().toISOString(),
+        }, { onConflict: "key" });
+      }
+
       return new Response(
         JSON.stringify({
           success: true,
           mode: "fillwears",
+          auto,
           rate_cny_mnt: cnyToMnt,
           total_groups: allGroups.length,
           scanned,
           offset,
           limit,
-          next_offset: offset + scanned,
+          next_offset: nextOffset,
           upserted: added,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
