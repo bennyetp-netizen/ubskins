@@ -332,11 +332,10 @@ Deno.serve(async (req) => {
       const offset = Math.max(0, Number(body?.offset ?? url.searchParams.get("offset") ?? 0));
 
       // Distinct (weapon, name) групп — зөвхөн wear-тэй (зэвсэг/хутга/бээлий) скинүүд
-      // Pagination ашиглан бүх мөрийг татна (default 1000 row limit-ийг давахын тулд)
-      let groups: any[] = [];
-      let rangeStart = 0;
-      const PAGE_SIZE = 1000;
-      while (true) {
+      // Supabase Data API-ийн default limit 1000 учир pagination ашиглаж бүх мөрийг татна
+      const groups: { weapon: string; name: string }[] = [];
+      const pageSize = 1000;
+      for (let from = 0; ; from += pageSize) {
         const { data: page, error: gErr } = await sb
           .from("skins")
           .select("weapon, name")
@@ -346,12 +345,11 @@ Deno.serve(async (req) => {
           ])
           .order("weapon", { ascending: true })
           .order("name", { ascending: true })
-          .range(rangeStart, rangeStart + PAGE_SIZE - 1);
+          .range(from, from + pageSize - 1);
         if (gErr) throw new Error("groups query: " + gErr.message);
         if (!page || page.length === 0) break;
-        groups = groups.concat(page);
-        if (page.length < PAGE_SIZE) break;
-        rangeStart += PAGE_SIZE;
+        groups.push(...page);
+        if (page.length < pageSize) break;
       }
 
       const uniq = new Map<string, { weapon: string; name: string }>();
@@ -360,16 +358,21 @@ Deno.serve(async (req) => {
         if (!uniq.has(key)) uniq.set(key, { weapon: r.weapon, name: r.name });
       }
       const allGroups = Array.from(uniq.values());
-      const slice = allGroups.slice(offset, offset + limit);
+      const onlyWeapon = body?.weapon as string | undefined;
+      const onlyName = body?.name as string | undefined;
+      const slice = (onlyWeapon && onlyName)
+        ? [{ weapon: onlyWeapon, name: onlyName }]
+        : allGroups.slice(offset, offset + limit);
 
       let added = 0;
       let scanned = 0;
       for (const g of slice) {
         scanned++;
         // BUFF search — нэрээр хайна
+        const searchQuery = `${g.weapon} | ${g.name}`;
         const searchUrl =
           `https://buff.163.com/api/market/goods?game=csgo&page_size=40&search=` +
-          encodeURIComponent(`${g.weapon} | ${g.name}`);
+          encodeURIComponent(searchQuery);
         let items: any[] = [];
         for (let attempt = 0; attempt < 2; attempt++) {
           const res = await fetch(searchUrl, { headers: buffHeaders });
@@ -388,6 +391,7 @@ Deno.serve(async (req) => {
           }
           break;
         }
+        console.log(`[fillwears] query="${searchQuery}" items=${items.length}`);
         await new Promise((r) => setTimeout(r, 200));
 
         for (const it of items) {

@@ -99,22 +99,21 @@ const SkinDetail = () => {
               {WEAR_ORDER.map((w) => {
                 const v = variants.find((x) => x.wear === w);
                 const active = skin.wear === w;
+                const unavailable = !v && !active;
                 return (
                   <button
                     key={w}
-                    disabled={active}
+                    disabled={active || unavailable}
                     onClick={() => {
-                      if (active) return;
+                      if (active || unavailable) return;
                       if (v) nav(`/skin/${v.id}`);
-                      else {
-                        add({ ...skin, wear: w, productType: "preorder" });
-                        toast.success(t("detail.addedToCart"));
-                      }
                     }}
                     className={`flex flex-col items-start rounded-xl border px-3 py-2 text-left transition ${
                       active
                         ? "border-primary bg-primary/10 ring-1 ring-primary/40"
-                        : "border-border bg-secondary/30 hover:border-primary/50"
+                        : unavailable
+                          ? "border-border/40 bg-secondary/10 opacity-50 cursor-not-allowed"
+                          : "border-border bg-secondary/30 hover:border-primary/50"
                     }`}
                   >
                     <span className={`font-display text-sm font-bold ${wearColor[w]}`}>{w}</span>
@@ -122,7 +121,7 @@ const SkinDetail = () => {
                       {t(`wearTier.${w}`)}
                     </span>
                     <span className="mt-1 text-xs font-semibold">
-                      {v ? formatMNT(v.price) : <span className="text-orange-400">Бэлэн үнэ</span>}
+                      {v ? formatMNT(v.price) : active ? formatMNT(skin.price) : "—"}
                     </span>
                   </button>
                 );
