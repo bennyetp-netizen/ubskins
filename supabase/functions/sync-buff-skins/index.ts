@@ -332,16 +332,27 @@ Deno.serve(async (req) => {
       const offset = Math.max(0, Number(body?.offset ?? url.searchParams.get("offset") ?? 0));
 
       // Distinct (weapon, name) групп — зөвхөн wear-тэй (зэвсэг/хутга/бээлий) скинүүд
-      const { data: groups, error: gErr } = await sb
-        .from("skins")
-        .select("weapon, name")
-        .not("wear", "is", null)
-        .in("weapon_type", [
-          "Rifle", "Sniper", "Pistol", "SMG", "Shotgun", "Heavy", "Knife", "Gloves",
-        ])
-        .order("weapon", { ascending: true })
-        .order("name", { ascending: true });
-      if (gErr) throw new Error("groups query: " + gErr.message);
+      // Pagination ашиглан бүх мөрийг татна (default 1000 row limit-ийг давахын тулд)
+      let groups: any[] = [];
+      let rangeStart = 0;
+      const PAGE_SIZE = 1000;
+      while (true) {
+        const { data: page, error: gErr } = await sb
+          .from("skins")
+          .select("weapon, name")
+          .not("wear", "is", null)
+          .in("weapon_type", [
+            "Rifle", "Sniper", "Pistol", "SMG", "Shotgun", "Heavy", "Knife", "Gloves",
+          ])
+          .order("weapon", { ascending: true })
+          .order("name", { ascending: true })
+          .range(rangeStart, rangeStart + PAGE_SIZE - 1);
+        if (gErr) throw new Error("groups query: " + gErr.message);
+        if (!page || page.length === 0) break;
+        groups = groups.concat(page);
+        if (page.length < PAGE_SIZE) break;
+        rangeStart += PAGE_SIZE;
+      }
 
       const uniq = new Map<string, { weapon: string; name: string }>();
       for (const r of groups ?? []) {
@@ -358,7 +369,7 @@ Deno.serve(async (req) => {
         // BUFF search — нэрээр хайна
         const searchUrl =
           `https://buff.163.com/api/market/goods?game=csgo&page_size=40&search=` +
-          encodeURIComponent(`${g.weapon} ${g.name}`);
+          encodeURIComponent(`${g.weapon} | ${g.name}`);
         let items: any[] = [];
         for (let attempt = 0; attempt < 2; attempt++) {
           const res = await fetch(searchUrl, { headers: buffHeaders });
