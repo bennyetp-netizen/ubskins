@@ -329,7 +329,12 @@ Deno.serve(async (req) => {
     // === fillwears горим: байгаа скинүүдийн дутуу wear-уудыг BUFF search-аар нөхөх ===
     if (mode === "fillwears") {
       const limit = Math.max(1, Math.min(200, Number(body?.limit ?? url.searchParams.get("limit") ?? 30)));
-      const offset = Math.max(0, Number(body?.offset ?? url.searchParams.get("offset") ?? 0));
+      const auto = body?.auto === true || url.searchParams.get("auto") === "1";
+      let offset = Math.max(0, Number(body?.offset ?? url.searchParams.get("offset") ?? 0));
+      if (auto) {
+        const { data: st } = await sb.from("sync_state").select("value").eq("key", "fillwears").maybeSingle();
+        offset = Math.max(0, Number((st?.value as any)?.offset ?? 0));
+      }
 
       // Distinct (weapon, name) групп — зөвхөн wear-тэй (зэвсэг/хутга/бээлий) скинүүд
       // Supabase Data API-ийн default limit 1000 учир pagination ашиглаж бүх мөрийг татна
