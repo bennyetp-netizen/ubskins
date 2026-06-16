@@ -6,6 +6,7 @@ import { formatMNT, wearColor } from "@/data/skins";
 import { calcPrepayment, mntToCny, formatCNY } from "@/data/payment";
 import SkinCard from "@/components/SkinCard";
 import MarketPriceReference from "@/components/MarketPriceReference";
+import BuffListings from "@/components/BuffListings";
 import { useCart } from "@/hooks/useCart";
 import { useSkin, useSkins } from "@/hooks/useSkins";
 import { toast } from "sonner";
@@ -195,6 +196,8 @@ const SkinDetail = () => {
           </div>
 
           <MarketPriceReference finalPriceMnt={skin.price} />
+
+          <BuffListings skinId={skin.id} limit={5} />
 
           {skin.description && (
             <div className="mt-5 rounded-xl border border-border bg-card/50 p-4 text-sm text-muted-foreground">
