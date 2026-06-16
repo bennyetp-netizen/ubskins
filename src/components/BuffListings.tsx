@@ -1,57 +1,17 @@
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Loader2, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatMNT } from "@/data/skins";
 import { formatCNY } from "@/data/payment";
-
-interface Listing {
-  id: string;
-  price_cny: number;
-  price_mnt: number;
-  float: number | null;
-  stattrak: boolean;
-  paint_seed: number | null;
-  wear_name: string | null;
-  stickers: Array<{ name: string; img: string | null }>;
-  buff_url: string;
-}
+import type { BuffListing } from "@/hooks/useBuffListings";
 
 interface Props {
-  skinId: string;
-  limit?: number;
+  listings: BuffListing[];
+  loading: boolean;
+  error: string | null;
+  buffUrl: string | null;
 }
 
-export default function BuffListings({ skinId, limit = 5 }: Props) {
-  const [listings, setListings] = useState<Listing[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [buffUrl, setBuffUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      setError(null);
-      const { data, error } = await supabase.functions.invoke("buff-listings", {
-        body: { skinId, limit },
-      });
-      if (cancelled) return;
-      if (error) {
-        setError(error.message);
-      } else if (!data?.success) {
-        setError(data?.error ?? "Алдаа");
-      } else {
-        setListings((data.listings ?? []) as Listing[]);
-        setBuffUrl(data.buff_url ?? null);
-      }
-      setLoading(false);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [skinId, limit]);
-
+export default function BuffListings({ listings, loading, error, buffUrl }: Props) {
   if (loading) {
     return (
       <div className="mt-6 rounded-2xl border border-border bg-card/40 p-5">
