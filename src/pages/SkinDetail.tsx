@@ -9,6 +9,7 @@ import MarketPriceReference from "@/components/MarketPriceReference";
 import BuffListings from "@/components/BuffListings";
 import { useCart } from "@/hooks/useCart";
 import { useSkin, useSkins } from "@/hooks/useSkins";
+import { useBuffListings } from "@/hooks/useBuffListings";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
@@ -23,6 +24,8 @@ const SkinDetail = () => {
   const { add } = useCart();
 
   const skin = dbSkin;
+  const buffState = useBuffListings(skin?.id, 5);
+  const cheapestFloat = buffState.listings.find((l) => l.float != null)?.float ?? null;
 
   const variants = skin
     ? all
@@ -145,7 +148,18 @@ const SkinDetail = () => {
           <div className="mt-6 grid grid-cols-3 gap-3">
             <div className="rounded-xl border border-border bg-card p-4">
               <p className="text-xs text-muted-foreground">{t("detail.float")}</p>
-              <p className="mt-1 font-display text-lg font-bold">{skin.float.toFixed(4)}</p>
+              <p className="mt-1 font-display text-lg font-bold">
+                {cheapestFloat != null
+                  ? cheapestFloat.toFixed(4)
+                  : buffState.loading
+                    ? "—"
+                    : skin.float > 0
+                      ? skin.float.toFixed(4)
+                      : "—"}
+              </p>
+              {cheapestFloat != null && (
+                <p className="mt-0.5 text-[10px] text-muted-foreground">Buff163 хямд листинг</p>
+              )}
             </div>
             <div className="rounded-xl border border-border bg-card p-4">
               <p className="text-xs text-muted-foreground">{t("detail.wear")}</p>
@@ -197,7 +211,12 @@ const SkinDetail = () => {
 
           <MarketPriceReference finalPriceMnt={skin.price} />
 
-          <BuffListings skinId={skin.id} limit={5} />
+          <BuffListings
+            listings={buffState.listings}
+            loading={buffState.loading}
+            error={buffState.error}
+            buffUrl={buffState.buffUrl}
+          />
 
           {skin.description && (
             <div className="mt-5 rounded-xl border border-border bg-card/50 p-4 text-sm text-muted-foreground">
