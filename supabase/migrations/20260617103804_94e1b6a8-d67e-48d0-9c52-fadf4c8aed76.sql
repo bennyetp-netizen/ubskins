@@ -1,0 +1,1 @@
+ALTER VIEW public.skins_public SET (security_barrier = true, security_invoker = true);
