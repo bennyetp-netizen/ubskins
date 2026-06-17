@@ -1,1 +1,0 @@
-GRANT SELECT ON public.skins_public TO anon, authenticated;
