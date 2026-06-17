@@ -7,6 +7,7 @@ import { formatMNT } from "@/data/skins";
 import { getPayments, calcPrepayment, mntToCny, type PaymentMethod } from "@/data/payment";
 import ProductTypeBadge from "@/components/ProductTypeBadge";
 import QpayQrBox from "@/components/QpayQrBox";
+import SpinWheel from "@/components/SpinWheel";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -329,6 +330,9 @@ const Orders = () => {
                     </div>
                   </div>
                 )}
+
+                <SpinWheel orderId={o.id} />
+
 
                 {isOpen && o.status === "pending" && payment && (() => {
                   const isPreorder = (o.product_type ?? "ready") === "preorder";
