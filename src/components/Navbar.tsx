@@ -45,6 +45,12 @@ const Navbar = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl">
+      {MAINTENANCE_MODE && (
+        <div className="w-full bg-destructive/90 px-4 py-2 text-center text-xs font-semibold text-destructive-foreground">
+          <AlertTriangle className="mb-0.5 mr-1 inline h-3.5 w-3.5" />
+          {i18n.language === "mn" ? MAINTENANCE_MESSAGE_MN : MAINTENANCE_MESSAGE_EN}
+        </div>
+      )}
       <nav className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-2 font-display text-lg font-bold">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent">
