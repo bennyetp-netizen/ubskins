@@ -33,6 +33,10 @@ const Cart = () => {
   const hasReady = items.some(({ skin }) => skin.productType === "ready");
 
   const handleCreateOrder = async () => {
+    if (MAINTENANCE_MODE) {
+      toast.error("🛠️ Захиалга авах боломжгүй. Сайт засварын горимд байна.");
+      return;
+    }
     if (!user) {
       toast.error(t("cart.needLogin"));
       try { await signInWithSteam(); } catch (e) {
