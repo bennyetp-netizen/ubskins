@@ -201,12 +201,22 @@ const SkinDetail = () => {
             </div>
 
             <div className="mt-5 grid gap-2">
-              <Button variant="hero" size="lg" onClick={orderNow}>
-                <Globe2 className="mr-1.5 h-4 w-4" /> {t("detail.orderNow")}
-              </Button>
-              <Button variant="outline" size="lg" onClick={() => { add(skin); toast.success(t("detail.addedToCart")); }}>
-                <ShoppingCart className="mr-1.5 h-4 w-4" /> {t("detail.addToCart")}
-              </Button>
+              {MAINTENANCE_MODE ? (
+                <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-center text-sm font-semibold text-destructive">
+                  <AlertTriangle className="mb-1 inline h-4 w-4" />
+                  <br />
+                  🛠️ Захиалга авах боломжгүй. Сайт засварын горимд байна.
+                </div>
+              ) : (
+                <>
+                  <Button variant="hero" size="lg" onClick={orderNow}>
+                    <Globe2 className="mr-1.5 h-4 w-4" /> {t("detail.orderNow")}
+                  </Button>
+                  <Button variant="outline" size="lg" onClick={() => { add(skin); toast.success(t("detail.addedToCart")); }}>
+                    <ShoppingCart className="mr-1.5 h-4 w-4" /> {t("detail.addToCart")}
+                  </Button>
+                </>
+              )}
             </div>
           </div>
 
