@@ -3,6 +3,9 @@ project_id = "dsatymimraxujqyhqccv"
 [functions.sync-buff-skins]
 verify_jwt = false
 
+[functions.sync-buff-prices]
+verify_jwt = false
+
 [functions.fill-buff-wears]
 verify_jwt = false
 
