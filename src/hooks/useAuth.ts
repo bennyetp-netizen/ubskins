@@ -51,6 +51,10 @@ export const useAuth = () => {
   };
 
   const signInWithSteam = async () => {
+    // Түр хугацаанд нэвтрэх үйлчилгээг хаасан (Buff163 идэвхгүй тул захиалга авах боломжгүй)
+    alert("Үйлчилгээ түр зогссон байна. Buff163 идэвхгүй учир одоогоор захиалга авах боломжгүй. Та хүлээцтэй хандана уу.");
+    return;
+    // eslint-disable-next-line no-unreachable
     const realm = window.location.origin;
     const returnTo = `${realm}/auth/callback`;
     let popup: Window | null = null;
