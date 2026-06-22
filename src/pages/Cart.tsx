@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { X, ShoppingBag, ShieldCheck, Globe2, Loader2, LogIn, Phone, Mail } from "lucide-react";
+import { X, ShoppingBag, ShieldCheck, Globe2, Loader2, LogIn, Phone, Mail, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,7 @@ import { calcPrepayment, mntToCny, formatCNY, getPayments, type PaymentMethod } 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { MAINTENANCE_MODE } from "@/config/maintenance";
 
 const Cart = () => {
   const { t } = useTranslation();
