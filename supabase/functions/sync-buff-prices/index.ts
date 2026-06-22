@@ -2,7 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
 const CNY_TO_MNT = 450;
-const PRICEMPIRE_URL =
+const PRICEMPIRE_BASE =
   "https://api.pricempire.com/v4/paid/items/prices?sources=buff163&currency=CNY";
 
 const WEAR_MAP: Record<string, string> = {
@@ -83,9 +83,7 @@ Deno.serve(async (req) => {
     );
 
     // Fetch Pricempire prices
-    const pmRes = await fetch(PRICEMPIRE_URL, {
-      headers: { "api-key": apiKey },
-    });
+    const pmRes = await fetch(`${PRICEMPIRE_BASE}&api_key=${encodeURIComponent(apiKey)}`);
     if (!pmRes.ok) {
       const txt = await pmRes.text();
       throw new Error(`Pricempire ${pmRes.status}: ${txt.slice(0, 200)}`);
