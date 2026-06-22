@@ -281,8 +281,16 @@ const Cart = () => {
               {t("cart.priceWarn")}
             </div>
 
-            <Button variant="hero" size="lg" className="mt-4 w-full" onClick={handleCreateOrder} disabled={submitting}>
-              {submitting ? (
+            <Button
+              variant="hero"
+              size="lg"
+              className="mt-4 w-full"
+              onClick={handleCreateOrder}
+              disabled={submitting || MAINTENANCE_MODE}
+            >
+              {MAINTENANCE_MODE ? (
+                <><AlertTriangle className="mr-1.5 h-4 w-4" /> Засварын горим</>
+              ) : submitting ? (
                 <><Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> {t("cart.creating")}</>
               ) : !user ? (
                 <><LogIn className="mr-1.5 h-4 w-4" /> {t("cart.loginCreate")}</>

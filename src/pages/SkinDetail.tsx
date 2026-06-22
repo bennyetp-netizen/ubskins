@@ -1,5 +1,5 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ShieldCheck, Truck, Tag, Loader2, Globe2, ShoppingCart, BadgeCheck, Repeat } from "lucide-react";
+import { ArrowLeft, ShieldCheck, Truck, Tag, Loader2, Globe2, ShoppingCart, BadgeCheck, Repeat, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatMNT, wearColor } from "@/data/skins";
@@ -12,6 +12,7 @@ import { useSkin, useSkins } from "@/hooks/useSkins";
 import { useBuffListings } from "@/hooks/useBuffListings";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { MAINTENANCE_MODE } from "@/config/maintenance";
 
 const WEAR_ORDER: Array<"FN" | "MW" | "FT" | "WW" | "BS"> = ["FN", "MW", "FT", "WW", "BS"];
 
