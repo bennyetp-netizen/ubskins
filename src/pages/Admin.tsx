@@ -20,6 +20,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { MAINTENANCE_MODE } from "@/config/maintenance";
 
 // stats нь dynamic — orders-аас тооцно (доорх useMemo)
 
@@ -83,6 +84,8 @@ const Admin = () => {
 
   // BUFF cookie health-check + автомат sync (cookie сэргэхэд)
   useEffect(() => {
+    // Засварын горимд Buff163 руу огт ханддаггүй
+    if (MAINTENANCE_MODE) return;
     if (!isAdmin) return;
     let cancelled = false;
     let prev: "unknown" | "ok" | "expired" | "error" = "unknown";
@@ -151,6 +154,10 @@ const Admin = () => {
 
 
   const syncFromBuff = async () => {
+    if (MAINTENANCE_MODE) {
+      toast.error("🛠️ Засварын горимд Buff163 sync идэвхгүй байна.");
+      return;
+    }
     setSyncing(true);
     try {
       // Priority weapons-ийг 5-аар хувааж дуудна (wall-time-ээс зайлсхийх).
@@ -230,6 +237,10 @@ const Admin = () => {
   };
 
   const fillMissingWears = async () => {
+    if (MAINTENANCE_MODE) {
+      toast.error("🛠️ Засварын горимд Buff163 sync идэвхгүй байна.");
+      return;
+    }
     setSyncing(true);
     try {
       const LIMIT = 25;

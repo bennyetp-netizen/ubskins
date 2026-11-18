@@ -6,10 +6,8 @@ import { formatMNT, wearColor } from "@/data/skins";
 import { calcPrepayment, mntToCny, formatCNY } from "@/data/payment";
 import SkinCard from "@/components/SkinCard";
 import MarketPriceReference from "@/components/MarketPriceReference";
-import BuffListings from "@/components/BuffListings";
 import { useCart } from "@/hooks/useCart";
 import { useSkin, useSkins } from "@/hooks/useSkins";
-import { useBuffListings } from "@/hooks/useBuffListings";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { MAINTENANCE_MODE } from "@/config/maintenance";
@@ -25,8 +23,6 @@ const SkinDetail = () => {
   const { add } = useCart();
 
   const skin = dbSkin;
-  const buffState = useBuffListings(skin?.id, 5);
-  const cheapestFloat = buffState.listings.find((l) => l.float != null)?.float ?? null;
 
   const variants = skin
     ? all
@@ -150,17 +146,8 @@ const SkinDetail = () => {
             <div className="rounded-xl border border-border bg-card p-4">
               <p className="text-xs text-muted-foreground">{t("detail.float")}</p>
               <p className="mt-1 font-display text-lg font-bold">
-                {cheapestFloat != null
-                  ? cheapestFloat.toFixed(4)
-                  : buffState.loading
-                    ? "—"
-                    : skin.float > 0
-                      ? skin.float.toFixed(4)
-                      : "—"}
+                {skin.float > 0 ? skin.float.toFixed(4) : "—"}
               </p>
-              {cheapestFloat != null && (
-                <p className="mt-0.5 text-[10px] text-muted-foreground">Buff163 хямд листинг</p>
-              )}
             </div>
             <div className="rounded-xl border border-border bg-card p-4">
               <p className="text-xs text-muted-foreground">{t("detail.wear")}</p>
@@ -221,13 +208,6 @@ const SkinDetail = () => {
           </div>
 
           <MarketPriceReference finalPriceMnt={skin.price} />
-
-          <BuffListings
-            listings={buffState.listings}
-            loading={buffState.loading}
-            error={buffState.error}
-            buffUrl={buffState.buffUrl}
-          />
 
           {skin.description && (
             <div className="mt-5 rounded-xl border border-border bg-card/50 p-4 text-sm text-muted-foreground">
