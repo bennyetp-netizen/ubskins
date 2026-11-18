@@ -16,6 +16,8 @@ import Admin from "./pages/Admin";
 import AuthCallback from "./pages/AuthCallback";
 import NotFound from "./pages/NotFound";
 import Unsubscribe from "./pages/Unsubscribe";
+import Maintenance from "./pages/Maintenance";
+import { MAINTENANCE_MODE } from "@/config/maintenance";
 
 const queryClient = new QueryClient();
 
@@ -28,18 +30,22 @@ const App = () => (
         <div className="flex min-h-screen flex-col">
           <Navbar />
           <main className="flex-1">
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/shop" element={<Shop />} />
-              <Route path="/skin/:id" element={<SkinDetail />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/account" element={<Account />} />
-              <Route path="/orders" element={<Orders />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route path="/auth/callback" element={<AuthCallback />} />
-              <Route path="/unsubscribe" element={<Unsubscribe />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            {MAINTENANCE_MODE ? (
+              <Maintenance />
+            ) : (
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/shop" element={<Shop />} />
+                <Route path="/skin/:id" element={<SkinDetail />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/account" element={<Account />} />
+                <Route path="/orders" element={<Orders />} />
+                <Route path="/admin" element={<Admin />} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
+                <Route path="/unsubscribe" element={<Unsubscribe />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            )}
           </main>
           <Footer />
           <FacebookFab />
